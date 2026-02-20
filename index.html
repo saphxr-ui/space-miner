@@ -1173,10 +1173,11 @@
       .card { padding: 12px; }
 
       /* Asteroid stage a bit smaller */
-      .stage { height: 210px; }
+      .clickArea { height: 210px; }
+      .asteroidStage { width: 185px; height: 185px; }
       .asteroid { width: 118px; height: 118px; }
-
-      /* Planet bar wraps nicely */
+      .asteroidWrap { width: 118px; height: 118px; }
+      .ring { inset: -15px; }      /* Planet bar wraps nicely */
       .planetBar { flex-wrap: wrap; gap: 6px; }
       .planetBar .btn { margin-left: 0 !important; width: 100%; justify-content: center; }
 
@@ -1218,16 +1219,15 @@
       /* Skill tree: single column on mobile */
       #skillTreeEl { grid-template-columns: 1fr !important; }
 
-      /* Bigger tap targets for the asteroid click area */
-      #clickArea { min-height: 210px; }
-
       /* Grid buttons (Daily Quests / Reset) */
       .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
     }
 
     @media (max-width: 380px) {
-      .stage { height: 185px; }
+      .clickArea { height: 185px; }
+      .asteroidStage { width: 165px; height: 165px; }
       .asteroid { width: 105px; height: 105px; }
+      .asteroidWrap { width: 105px; height: 105px; }
       .big { font-size: 26px; }
     }
   </style>
