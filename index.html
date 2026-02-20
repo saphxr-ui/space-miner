@@ -2266,6 +2266,7 @@
       toast(`Miner Rank Up! (MR ${state.minerRank})`);
       spawnPop(`MR ${state.minerRank}!`, true, 50, 45, miniIconWrap(ICONS.prospect, 20));
       spawnParticles(14);
+      lbSilentSync();
 
       // Refresh roadmap if it's open
       if(roadmapBackdrop && roadmapBackdrop.classList.contains("show")) renderRoadmap();
@@ -3177,9 +3178,11 @@
     el("lbBackdrop").classList.add("show");
     el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">Loading…</div>`;
 
-    // Restore saved username if any
+    // Restore saved username and show current score
     const saved = localStorage.getItem("spaceminer_username") || "";
     el("lbUsernameInput").value = saved;
+    el("lbSubmitStatus").style.color = "var(--muted)";
+    el("lbSubmitStatus").textContent = `Current score: MR ${state.minerRank} · ${fmt(state.credits)}c`;
 
     const rows = await lbFetch();
     if(rows === null){
@@ -3238,6 +3241,21 @@
   el("openLeaderboardBtn").addEventListener("click", openLeaderboard);
   el("closeLb").addEventListener("click", closeLeaderboard);
   el("lbBackdrop").addEventListener("click", (e) => { if(e.target === el("lbBackdrop")) closeLeaderboard(); });
+
+  // Silent background sync — only if user already has a saved username
+  async function lbSilentSync(){
+    const username = localStorage.getItem("spaceminer_username");
+    if(!username) return;
+    await lbUpsert(username);
+  }
+
+  // Auto-sync every 3 minutes
+  setInterval(lbSilentSync, 3 * 60 * 1000);
+
+  // Sync on tab hide/close (best-effort)
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState === "hidden") lbSilentSync();
+  });
 
   function openQuests(){
     renderQuestModal();
@@ -4341,6 +4359,8 @@
     state = defaultState();
     applyStats(state);
     save();
+    // Push reset score (MR1, 0c) to leaderboard
+    lbSilentSync();
     location.reload();
   });
 
