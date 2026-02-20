@@ -1227,7 +1227,6 @@
             <b>Dock Shop</b>
             <div class="muted">Upgrades, Cargo Features, Trading.</div>
           </div>
-          <button class="btn warn" id="overclockBtn">Overclock: 2× (5 min)</button>
         </div>
 
         <div class="upgradeHeader">
@@ -1254,10 +1253,6 @@
             <button class="btn secondary" id="toggleOffline">Show</button>
           </div>
           <div class="muted" style="margin-top:8px;display:none;" id="offlineText"></div>
-        </div>
-
-        <div style="margin-top:12px;" class="muted">
-          Overclock aktiv: <b id="boostState">nein</b> · verbleibend: <b id="boostTime">0:00</b>
         </div>
       </div>
     </div>
@@ -1865,8 +1860,6 @@
   const xpBarEl = el("xpBar");
   const rankPerkTextEl = el("rankPerkText");
   const nextUnlockTextEl = el("nextUnlockText");
-  const boostStateEl = el("boostState");
-  const boostTimeEl = el("boostTime");
   const upgradesListEl = el("upgradesList");
   const tabCore = el("tabCore");
   const tabCargo = el("tabCargo");
@@ -3979,8 +3972,6 @@
     nextUnlockTextEl.textContent = nextUnlockText();
 
     const active = now() < state.boostUntil;
-    boostStateEl.textContent = active ? "ja (2×)" : "nein";
-    boostTimeEl.textContent = active ? mmss(state.boostUntil - now()) : "0:00";
 
     applyPlanetVisuals();
   }
@@ -4054,7 +4045,6 @@
 
   el("closeSkill").addEventListener("click", ()=>el("skillBackdrop").classList.remove("show"));
   el("skillBackdrop").addEventListener("click", (e)=>{ if(e.target===el("skillBackdrop")) el("skillBackdrop").classList.remove("show"); });
-  el("overclockBtn").addEventListener("click", ()=>overclock());
   el("btnPlanetIron").addEventListener("click", ()=>switchPlanet("iron"));
   el("btnPlanetVulcan").addEventListener("click", ()=>switchPlanet("vulcan"));
   el("reset").addEventListener("click", ()=>{
