@@ -36,7 +36,7 @@
         radial-gradient(circle at 10% 80%, rgba(255,255,255,.6) 0 1px, transparent 2px);
     }
 
-    .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 118px;}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px;}
     .top{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
     .card{
       background:linear-gradient(180deg, var(--panelA), var(--panelB));
@@ -639,18 +639,6 @@
       background:rgba(0,0,0,.14);
       border:1px solid rgba(255,255,255,.08);
       margin-top:8px;
-    }
-
-    .footerAd{
-      position:fixed;left:0;right:0;bottom:0;padding:10px;
-      background:rgba(7,10,20,.88);backdrop-filter:blur(10px);
-      border-top:1px solid rgba(255,255,255,.10);
-    }
-    .adSlot{
-      max-width:1100px;margin:0 auto;border-radius:12px;
-      border:1px dashed rgba(255,255,255,.25);
-      padding:10px;color:rgba(255,255,255,.75);font-size:12px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
     }
 
     .toast{
@@ -1271,25 +1259,7 @@
         <div style="margin-top:12px;" class="muted">
           Overclock aktiv: <b id="boostState">nein</b> · verbleibend: <b id="boostTime">0:00</b>
         </div>
-
-        <div style="margin-top:10px; background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); padding:10px; border-radius:14px; display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <b>Sponsored Dock</b>
-            <div class="muted">Banner Slot (später real via CMP/SDK).</div>
-          </div>
-          <span class="pill">#ad-slot</span>
-        </div>
       </div>
-    </div>
-  </div>
-
-  <div class="footerAd">
-    <div class="adSlot">
-      <div>
-        <b>Sponsored Dock – Banner Slot</b> · später echtes Ad-Snippet (nach Consent)
-        <div style="opacity:.8;margin-top:2px;">MVP: Platzhalter.</div>
-      </div>
-      <button class="btn secondary" id="simulateInterstitial">Sector Transmission (Demo)</button>
     </div>
   </div>
 
@@ -4105,8 +4075,6 @@
   toggleOfflineBtn.addEventListener("click", ()=>{
     offlineTextEl.style.display = (offlineTextEl.style.display==="none" ? "block" : "none");
   });
-
-  el("simulateInterstitial").addEventListener("click", ()=>toast("Demo only."));
 
   closeCodexBtn.addEventListener("click", closeCodex);
   codexBackdrop.addEventListener("click", (e)=>{ if(e.target === codexBackdrop) closeCodex(); });
