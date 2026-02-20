@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="de">
 <head>
   <meta charset="utf-8" />
@@ -21,1219 +20,1217 @@
       --glow2: rgba(124,92,255,.14);
     }
 
-```
-*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;}
-body{
-  margin:0; color:var(--txt);
-  background:
-    radial-gradient(1200px 800px at 50% -240px, rgba(102,163,255,.24) 0%, rgba(124,92,255,.12) 35%, rgba(0,0,0,0) 60%),
-    radial-gradient(900px 500px at 80% 10%, rgba(50,213,131,.10) 0%, rgba(0,0,0,0) 60%),
-    var(--bg);
-  overflow-x:hidden;
-}
-body:before{
-  content:""; position:fixed; inset:0; pointer-events:none; opacity:.25; filter: blur(.2px);
-  background-image:
-    radial-gradient(circle at 20% 15%, rgba(255,255,255,.9) 0 1px, transparent 2px),
-    radial-gradient(circle at 70% 25%, rgba(255,255,255,.7) 0 1px, transparent 2px),
-    radial-gradient(circle at 35% 55%, rgba(255,255,255,.6) 0 1px, transparent 2px),
-    radial-gradient(circle at 85% 70%, rgba(255,255,255,.8) 0 1px, transparent 2px),
-    radial-gradient(circle at 10% 80%, rgba(255,255,255,.6) 0 1px, transparent 2px);
-}
-
-.wrap{max-width:1100px;margin:0 auto;padding:16px;}
-.top{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
-.card{
-  background:linear-gradient(180deg, var(--panelA), var(--panelB));
-  border:1px solid var(--line);
-  border-radius:16px; padding:14px;
-  box-shadow:0 16px 44px rgba(0,0,0,.35);
-  position:relative; overflow:hidden;
-}
-.card:after{content:"";position:absolute;inset:-1px;pointer-events:none;
-  background:radial-gradient(420px 240px at 20% 0%, var(--glow) 0%, transparent 55%);
-}
-.stats{flex:1;min-width:320px;}
-.shop{flex:1.25;min-width:380px;}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.big{font-size:34px;font-weight:900;letter-spacing:.2px;}
-.muted{color:var(--muted);font-size:13px;}
-.pill{
-  display:inline-flex;gap:8px;align-items:center;
-  padding:6px 10px;border-radius:999px;
-  background:rgba(102,163,255,.12);
-  border:1px solid rgba(102,163,255,.22);
-  font-size:12px;
-}
-.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.06);}
-.bar>div{height:100%;width:0;background:linear-gradient(90deg, var(--acc), #2bd4ff, var(--acc2));transition:width .18s;filter:saturate(1.1);}
-
-.btn{
-  cursor:pointer;user-select:none;border:0;border-radius:14px;
-  padding:12px 14px;font-weight:900;color:white;
-  background:linear-gradient(180deg, var(--acc2), #4d7bff);
-  box-shadow:0 12px 26px rgba(102,163,255,.22);
-  transition:transform .05s, filter .15s, opacity .15s;
-}
-.btn:active{transform:translateY(1px) scale(.99);filter:brightness(.95);}
-.btn.secondary{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(255,255,255,.12);font-weight:800;}
-.btn.good{background:linear-gradient(180deg, var(--good), #17b26a);box-shadow:0 12px 26px rgba(50,213,131,.18);color:#052012;}
-.btn.warn{background:linear-gradient(180deg, var(--warn), #ff9f1a);box-shadow:0 12px 26px rgba(255,204,102,.16);color:#1f1600;}
-.btn:disabled{opacity:.45; cursor:not-allowed; transform:none !important; box-shadow:none;}
-
-.panel{margin-top:10px;background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px;}
-
-.clickArea{
-  margin-top:12px; display:flex;align-items:center;justify-content:center;
-  height:244px;border-radius:16px;
-  background:
-    radial-gradient(220px 170px at 52% 46%, rgba(102,163,255,.26), rgba(255,255,255,.03)),
-    radial-gradient(380px 220px at 70% 10%, rgba(124,92,255,.14), transparent 60%);
-  border:1px solid rgba(255,255,255,.10);
-  position:relative;overflow:hidden;
-}
-.scanlines{position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,.04), transparent 60%);opacity:.22;mix-blend-mode:screen;pointer-events:none;}
-
-.asteroidStage{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;}
-.asteroidWrap{position:relative;width:140px;height:140px;}
-.asteroid{
-  width:140px;height:140px;border-radius:50%;
-  background:
-    radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 8px, transparent 10px),
-    radial-gradient(circle at 40% 35%, #b9c7dd 0%, #7f93b2 18%, #4a5a74 52%, #2a3143 78%, #141a28 100%);
-  box-shadow:0 0 0 10px rgba(102,163,255,.08), 0 34px 70px rgba(0,0,0,.42);
-  transition:transform .06s, filter .18s;
-  position:relative;overflow:hidden;will-change: transform, filter;
-}
-.cracks{position:absolute;inset:0;border-radius:50%;
-  background:
-    radial-gradient(60px 40px at 65% 42%, rgba(102,163,255,.24) 0%, transparent 70%),
-    radial-gradient(70px 50px at 35% 65%, rgba(255,204,102,.18) 0%, transparent 72%);
-  opacity:.9;pointer-events:none;transition: filter .18s;
-}
-.ring{position:absolute;inset:-18px;border-radius:50%;border:2px solid rgba(102,163,255,.16);
-  filter:drop-shadow(0 0 14px rgba(102,163,255,.10));animation:ring 5.5s linear infinite;pointer-events:none;}
-@keyframes ring { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-.orbitRing{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.10);opacity:.55;pointer-events:none;filter:drop-shadow(0 0 12px rgba(102,163,255,.08));}
-.orbitRing.r2{inset:18px;opacity:.40;}
-.orbitRing.r3{inset:36px;opacity:.30;}
-
-.shake{animation:shake .18s ease-in-out 0s 1;}
-@keyframes shake{
-  0%{transform:translate(0,0) rotate(0deg);}
-  20%{transform:translate(-2px,1px) rotate(-.7deg);}
-  50%{transform:translate(2px,-1px) rotate(.7deg);}
-  80%{transform:translate(-1px,-1px) rotate(-.4deg);}
-  100%{transform:translate(0,0) rotate(0deg);}
-}
-
-.laser{position:absolute;width:200px;height:2px;background:linear-gradient(90deg, transparent, rgba(43,212,255,.9), transparent);
-  opacity:0;transform-origin:left center;filter:drop-shadow(0 0 10px rgba(43,212,255,.45));pointer-events:none;}
-.laser.fire{animation:laser 220ms ease-out forwards;}
-@keyframes laser{
-  0%{opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.6);}
-  30%{opacity:1;}
-  100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.15);}
-}
-
-.particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;opacity:0;
-  filter:drop-shadow(0 0 12px rgba(255,204,102,.18));animation:particle 520ms ease-out forwards;}
-@keyframes particle{
-  0%{opacity:0;transform:translate(0,0) scale(.9);}
-  12%{opacity:1;}
-  100%{opacity:0;transform:translate(var(--dx), var(--dy)) scale(.6);}
-}
-
-/* Click pop (big) */
-.pop{
-  position:absolute;font-weight:900;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.95);
-  animation:pop 900ms ease-out forwards;text-shadow:0 8px 20px rgba(0,0,0,.55);
-  letter-spacing:.2px;white-space:nowrap;
-  display:inline-flex;align-items:center;gap:8px;
-  padding:0;
-}
-.pop .miniIcon{width:20px;height:20px;display:inline-block;filter:drop-shadow(0 0 16px rgba(255,255,255,.18));opacity:.98;}
-.pop .miniIcon svg{width:100%;height:100%;}
-@keyframes pop{
-  0%{opacity:0;transform:translate(-50%,-50%) scale(.95);}
-  15%{opacity:1;transform:translate(-50%,-64%) scale(1);}
-  100%{opacity:0;transform:translate(-50%,-120%) scale(1.05);}
-}
-
-/* ---------- Drone System ---------- */
-#droneLayer{position:absolute; inset:0; pointer-events:none;}
-
-.droneOrbit{
-  position:absolute; inset:0;
-  transform: rotate(var(--start, 0deg));
-  animation: orbit var(--dur, 10s) linear infinite;
-  animation-direction: var(--dir, normal);
-  pointer-events:none;
-}
-@keyframes orbit { from{transform:rotate(var(--start,0deg));} to{transform:rotate(calc(var(--start,0deg) + 360deg));} }
-
-.drone{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform: translate(calc(var(--radius, 84px) * 1), -50%) translate(-50%, -50%);
-  width:30px;height:30px;
-  opacity:1;
-  pointer-events:none;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-}
-
-/* ===== Drone skin variables (default) ===== */
-.drone{
-  --dA: rgba(255,255,255,.92);
-  --dB: rgba(102,163,255,.45);
-  --dC: rgba(43,212,255,.78);
-  --dD: rgba(124,92,255,.24);
-  --dBorder: rgba(255,255,255,.18);
-  --dGlow: rgba(102,163,255,.20);
-  --thrA: rgba(255,255,255,.95);
-  --thrB: rgba(43,212,255,.55);
-  --thrGlow: rgba(43,212,255,.35);
-}
-
-/* === Skin 1: Stealth Carbon (dark + green) === */
-.drone.skin-carbon{
-  --dA: rgba(255,255,255,.86);
-  --dB: rgba(70,80,105,.55);
-  --dC: rgba(50,213,131,.85);
-  --dD: rgba(50,213,131,.18);
-  --dBorder: rgba(255,255,255,.16);
-  --dGlow: rgba(50,213,131,.16);
-  --thrA: rgba(255,255,255,.92);
-  --thrB: rgba(50,213,131,.55);
-  --thrGlow: rgba(50,213,131,.35);
-}
-
-/* === Skin 2: Neon Pulse (cyan + violet) === */
-.drone.skin-neon{
-  --dA: rgba(255,255,255,.94);
-  --dB: rgba(43,212,255,.50);
-  --dC: rgba(43,212,255,.92);
-  --dD: rgba(124,92,255,.30);
-  --dBorder: rgba(255,255,255,.20);
-  --dGlow: rgba(43,212,255,.22);
-  --thrA: rgba(255,255,255,.95);
-  --thrB: rgba(43,212,255,.62);
-  --thrGlow: rgba(43,212,255,.38);
-}
-
-/* === Skin 3: Solar Alloy (gold + white) === */
-.drone.skin-solar{
-  --dA: rgba(255,255,255,.95);
-  --dB: rgba(255,204,102,.45);
-  --dC: rgba(255,204,102,.90);
-  --dD: rgba(255,159,26,.22);
-  --dBorder: rgba(255,255,255,.20);
-  --dGlow: rgba(255,204,102,.18);
-  --thrA: rgba(255,255,255,.95);
-  --thrB: rgba(255,204,102,.60);
-  --thrGlow: rgba(255,204,102,.38);
-}
-
-.droneInner{
-  position:absolute; inset:0;
-  border-radius:12px;
-  background:linear-gradient(180deg, var(--dA), var(--dB));
-  border:1px solid var(--dBorder);
-  box-shadow:0 10px 24px rgba(0,0,0,.30), 0 0 22px var(--dGlow);
-  overflow:hidden;
-  transform-origin:center;
-  will-change: transform, filter;
-  animation: droneHover 1.6s ease-in-out infinite;
-}
-
-.droneInner::before{
-  content:""; position:absolute; inset:6px 6px;
-  border-radius:10px;
-  background:linear-gradient(90deg, var(--dC), var(--dD));
-  opacity:.88;
-  animation: droneBlink 1.1s steps(2,end) infinite;
-}
-
-.thruster{
-  position:absolute; left:50%; bottom:-10px;
-  width:10px;height:18px; transform:translateX(-50%);
-  border-radius:999px;
-  background: radial-gradient(circle at 50% 20%, var(--thrA), var(--thrB) 45%, rgba(0,0,0,0) 75%);
-  opacity:.65;
-  filter: drop-shadow(0 0 14px var(--thrGlow));
-  animation: thruster 240ms ease-in-out infinite;
-}
-@keyframes thruster{
-  0%{transform:translateX(-50%) scaleY(.85); opacity:.55;}
-  50%{transform:translateX(-50%) scaleY(1.12); opacity:.80;}
-  100%{transform:translateX(-50%) scaleY(.88); opacity:.60;}
-}
-
-@keyframes droneHover{
-  0%   { transform: translateY(0px) scale(1.0); filter:brightness(1); }
-  50%  { transform: translateY(-2px) scale(1.03); filter:brightness(1.10); }
-  100% { transform: translateY(0px) scale(1.0); filter:brightness(1); }
-}
-@keyframes droneBlink{
-  0%,60%{ opacity:.9; }
-  61%,100%{ opacity:.55; }
-}
-
-.drone.aim .droneInner{
-  animation-play-state:paused;
-  filter:brightness(1.22) saturate(1.2);
-  transform: translateY(-1px) scale(1.04);
-}
-.drone.fire .droneInner{
-  animation-play-state:paused;
-  filter:brightness(1.30) saturate(1.25);
-  animation: recoil 180ms ease-out forwards;
-}
-@keyframes recoil{
-  0%{ transform: translateY(-1px) scale(1.04); }
-  40%{ transform: translateY(1px)  scale(.97); }
-  100%{transform: translateY(0px)  scale(1.00); }
-}
-
-.muzzle{
-  position:absolute;
-  right:-8px;
-  top:50%;
-  width:14px;height:14px;
-  transform:translateY(-50%);
-  border-radius:50%;
-  background:radial-gradient(circle, rgba(255,255,255,.95), var(--dC), rgba(0,0,0,0) 70%);
-  opacity:0;
-  filter: drop-shadow(0 0 18px var(--dGlow));
-  pointer-events:none;
-}
-.blastRing{
-  position:absolute; inset:-8px;
-  border-radius:16px;
-  border:2px solid rgba(0,0,0,0);
-  opacity:0; pointer-events:none;
-}
-.drone.fire .muzzle{ animation:muzzleFlash 170ms ease-out forwards; }
-.drone.fire .blastRing{ animation: ringBlast 260ms ease-out forwards; }
-@keyframes muzzleFlash{
-  0%{opacity:0; transform:translateY(-50%) scale(.6);}
-  35%{opacity:1; transform:translateY(-50%) scale(1.2);}
-  100%{opacity:0; transform:translateY(-50%) scale(1.7);}
-}
-@keyframes ringBlast{
-  0%{opacity:0; transform:scale(.92); border-color:rgba(0,0,0,0);}
-  20%{opacity:1; border-color:rgba(255,255,255,.24);}
-  100%{opacity:0; transform:scale(1.10); border-color:rgba(0,0,0,0);}
-}
-
-.chargeTrack{
-  position:absolute; left:4px; right:4px; bottom:4px;
-  height:4px; border-radius:999px;
-  background:rgba(0,0,0,.30);
-  border:1px solid rgba(255,255,255,.14);
-  overflow:hidden;
-  pointer-events:none;
-}
-.chargeFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg, var(--dC), rgba(255,255,255,.78), var(--dD));
-  filter:drop-shadow(0 0 14px var(--dGlow));
-  transition:width .08s linear;
-}
-
-/* Drone beam element is created in JS, but base styling here */
-.droneBeam{
-  position:absolute;
-  height:6px;
-  border-radius:999px;
-  filter:drop-shadow(0 0 20px rgba(43,212,255,.60));
-  opacity:0;
-  pointer-events:none;
-  transform-origin:left center;
-  mix-blend-mode:screen;
-}
-.droneBeam.fire{ animation: droneBeam2 280ms ease-out forwards; }
-@keyframes droneBeam2{
-  0%{ opacity:0; transform:scaleX(.65) scaleY(.8); filter:drop-shadow(0 0 8px rgba(43,212,255,.25)); }
-  18%{ opacity:1; transform:scaleX(1) scaleY(1.05); }
-  60%{ opacity:.95; filter:drop-shadow(0 0 28px rgba(43,212,255,.70)); }
-  100%{opacity:0; transform:scaleX(1.22) scaleY(.9); }
-}
-
-.impactGlow{
-  position:absolute;
-  width:46px;height:46px;border-radius:50%;
-  background:radial-gradient(circle, rgba(255,255,255,.95), rgba(43,212,255,.55), rgba(43,212,255,0) 72%);
-  filter: drop-shadow(0 0 28px rgba(43,212,255,.55));
-  pointer-events:none;
-  opacity:0;
-  animation: impact 320ms ease-out forwards;
-  mix-blend-mode:screen;
-}
-@keyframes impact{
-  0%{opacity:0; transform:scale(.55);}
-  20%{opacity:1; transform:scale(1);}
-  100%{opacity:0; transform:scale(1.55);}
-}
-
-.oreShard{
-  position:absolute;
-  width:10px;height:10px;border-radius:3px;
-  background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,204,102,.65));
-  filter: drop-shadow(0 0 14px rgba(255,204,102,.28));
-  pointer-events:none;
-  opacity:0;
-  animation: shardFly 420ms cubic-bezier(.2,.8,.2,1) forwards;
-}
-.oreShard.rare{
-  background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(124,92,255,.70));
-  filter: drop-shadow(0 0 16px rgba(124,92,255,.38));
-}
-@keyframes shardFly{
-  0%{ opacity:0; transform:translate(0,0) scale(.85) rotate(0deg);}
-  12%{opacity:1;}
-  100%{opacity:0; transform:translate(var(--dx), var(--dy)) scale(.65) rotate(220deg);}
-}
-
-.dronePop{
-  position:absolute;
-  padding:6px 10px;
-  border-radius:999px;
-  font-weight:950;
-  font-size:12px;
-  letter-spacing:.15px;
-  white-space:nowrap;
-  pointer-events:none;
-  opacity:0;
-  transform: translate(-50%,-50%) scale(.96);
-  background:rgba(0,0,0,.45);
-  border:1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(6px);
-  box-shadow:0 14px 30px rgba(0,0,0,.35);
-  text-shadow:0 10px 24px rgba(0,0,0,.55);
-  animation: dronePopAnim 1050ms ease-out forwards;
-  display:inline-flex; align-items:center; gap:7px;
-}
-.dronePop .ico{width:14px;height:14px;display:inline-block;filter: drop-shadow(0 0 12px rgba(255,255,255,.15));}
-.dronePop .ico svg{width:100%;height:100%;}
-.dronePop.credit{border-color:rgba(43,212,255,.22);background:rgba(43,212,255,.10);}
-.dronePop.ore{border-color:rgba(255,204,102,.22);background:rgba(255,204,102,.10);}
-.dronePop.rare{border-color:rgba(124,92,255,.28);background:rgba(124,92,255,.12);}
-@keyframes dronePopAnim{
-  0%{opacity:0; transform:translate(-50%,-50%) scale(.96);}
-  15%{opacity:1; transform:translate(-50%,-68%) scale(1.0);}
-  100%{opacity:0; transform:translate(calc(-50% + var(--dx, 0px)), calc(-120% + var(--dy, -10px))) scale(1.04);}
-}
-
-.drone.spawn .droneInner{
-  animation: droneSpawnIn 520ms cubic-bezier(.16,.9,.2,1) forwards;
-  filter: brightness(1.35) saturate(1.3) drop-shadow(0 0 24px rgba(43,212,255,.35));
-}
-.drone.spawn .thruster{ animation: thrusterSpawn 180ms ease-in-out 7; opacity:.95; }
-@keyframes droneSpawnIn{
-  0%{opacity:0; transform: scale(.35) rotate(-18deg); filter: blur(1px) brightness(1.6);}
-  55%{opacity:1; transform: scale(1.08) rotate(6deg); filter: blur(0) brightness(1.25);}
-  100%{opacity:1; transform: scale(1) rotate(0deg); filter: blur(0) brightness(1.05);}
-}
-@keyframes thrusterSpawn{
-  0%{transform:translateX(-50%) scaleY(1.6); opacity:1;}
-  50%{transform:translateX(-50%) scaleY(2.0); opacity:1;}
-  100%{transform:translateX(-50%) scaleY(1.3); opacity:.75;}
-}
-
-.spawnRingFX{
-  position:absolute;
-  width:16px;height:16px;border-radius:50%;
-  border:2px solid rgba(43,212,255,.0);
-  pointer-events:none;
-  opacity:0;
-  filter: drop-shadow(0 0 22px rgba(43,212,255,.40));
-  mix-blend-mode:screen;
-  animation: spawnRing 520ms ease-out forwards;
-}
-@keyframes spawnRing{
-  0%{opacity:0; transform:scale(.6); border-color:rgba(43,212,255,0);}
-  15%{opacity:1; border-color:rgba(43,212,255,.65);}
-  100%{opacity:0; transform:scale(6.2); border-color:rgba(43,212,255,0);}
-}
-.spawnSpark{
-  position:absolute; width:6px;height:6px;border-radius:50%;
-  background:rgba(255,255,255,.95);
-  opacity:0; pointer-events:none;
-  filter: drop-shadow(0 0 14px rgba(43,212,255,.35));
-  animation: spawnSpark 520ms ease-out forwards;
-}
-@keyframes spawnSpark{
-  0%{opacity:0; transform:translate(0,0) scale(.9);}
-  15%{opacity:1;}
-  100%{opacity:0; transform:translate(var(--dx), var(--dy)) scale(.55);}
-}
-
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-@media (max-width:920px){ .grid{grid-template-columns:1fr;} }
-
-.upgradeHeader{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin-top:10px;padding:10px 10px;
-  background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.08);border-radius:14px;
-}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;}
-.tab{
-  cursor:pointer;padding:7px 10px;border-radius:999px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
-  color:var(--muted);font-weight:800;font-size:12px;user-select:none;
-}
-.tab.active{color:var(--txt);border-color:rgba(102,163,255,.35);background:rgba(102,163,255,.12);box-shadow:0 10px 18px rgba(102,163,255,.10);}
-
-.upgradeList{display:grid;gap:10px;margin-top:10px;}
-.uCard{
-  position:relative;padding:12px;border-radius:16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
-  border:1px solid rgba(255,255,255,.10);overflow:hidden;
-  transition:transform .08s, border-color .12s, box-shadow .12s, filter .12s;
-}
-.uCard:hover{transform:translateY(-1px);}
-.uCard:before{content:"";position:absolute;inset:-1px;background:radial-gradient(520px 220px at 0% 0%, rgba(102,163,255,.14), transparent 55%);pointer-events:none;}
-.uCard.affordable{border-color:rgba(50,213,131,.28);box-shadow:0 18px 36px rgba(50,213,131,.10);}
-.uCard.affordable:before{background:radial-gradient(520px 220px at 0% 0%, rgba(50,213,131,.12), transparent 55%);}
-
-.uTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.uLeft{display:flex;align-items:flex-start;gap:10px;min-width:0;}
-.uIcon{
-  width:44px;height:44px;border-radius:14px;
-  background:linear-gradient(180deg, rgba(102,163,255,.20), rgba(124,92,255,.12));
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 14px 26px rgba(0,0,0,.22);
-  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
-}
-.uIcon svg{width:24px;height:24px;opacity:.95;filter:drop-shadow(0 0 12px rgba(43,212,255,.12));}
-.uName{font-weight:950;letter-spacing:.2px;}
-.uDesc{color:var(--muted);font-size:12px;line-height:1.35;margin-top:2px;max-width:460px;}
-.uMeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
-.chip{
-  font-size:11px;padding:4px 8px;border-radius:999px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
-  color:var(--muted);white-space:nowrap;
-  display:inline-flex; align-items:center; gap:6px;
-}
-.chip strong{color:var(--txt);}
-.chip.good{border-color:rgba(50,213,131,.25);background:rgba(50,213,131,.09);}
-.chip.warn{border-color:rgba(255,204,102,.25);background:rgba(255,204,102,.08);color:rgba(255,240,210,.95);}
-.chip.bad{border-color:rgba(255,90,111,.28);background:rgba(255,90,111,.10);color:rgba(255,220,230,.95);}
-
-.ico{width:16px;height:16px;display:inline-block;opacity:.98;filter:drop-shadow(0 0 12px rgba(255,255,255,.10));}
-.ico svg{width:100%;height:100%;}
-
-.uRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto;}
-.uCost{font-weight:900;color:rgba(255,255,255,.9);text-align:right;font-size:12px;}
-.uCost span{color:var(--muted);font-weight:800;}
-.uBuy{padding:10px 12px;border-radius:14px;font-weight:950;min-width:120px;}
-.uBuy.aff{background:linear-gradient(180deg, var(--good), #17b26a);box-shadow:0 12px 26px rgba(50,213,131,.16);color:#052012;}
-
-.uPing{position:absolute; inset:-2px;border-radius:18px;border:2px solid rgba(50,213,131,.0);pointer-events:none;}
-.uCard.purchased .uPing{animation:ping 520ms ease-out forwards;}
-@keyframes ping{
-  0%{border-color:rgba(50,213,131,.0); transform:scale(.98); opacity:0;}
-  20%{border-color:rgba(50,213,131,.55); opacity:1;}
-  100%{border-color:rgba(50,213,131,.0); transform:scale(1.02); opacity:0;}
-}
-
-.body{margin-top:10px;}
-
-/* Cargo Feature Module UI */
-.cargoTop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
-.toggle{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 10px;border-radius:999px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
-  font-size:12px;color:var(--muted);user-select:none;cursor:pointer;
-}
-.toggle.on{border-color:rgba(50,213,131,.25);background:rgba(50,213,131,.08);color:rgba(235,255,245,.95);}
-.toggle.off{border-color:rgba(255,90,111,.18);background:rgba(255,90,111,.06);}
-.cargoRow{
-  display:grid;
-  grid-template-columns: 1.05fr 1.15fr .9fr;
-  gap:10px;
-  align-items:center;
-  padding:10px 0;
-  border-bottom:1px solid rgba(255,255,255,.06);
-  position:relative;
-}
-.cargoRow:last-child{border-bottom:0;}
-.cargoRow.newUnlock{border-bottom:1px solid rgba(102,163,255,.14);}
-.cargoRow.newUnlock:before{
-  content:"";
-  position:absolute; inset:-8px -10px;
-  border-radius:16px;
-  background:radial-gradient(520px 110px at 10% 50%, rgba(43,212,255,.14), transparent 55%);
-  border:1px solid rgba(43,212,255,.20);
-  opacity:0;
-  animation: unlockGlow 1.35s ease-out forwards;
-  pointer-events:none;
-}
-@keyframes unlockGlow{
-  0%{opacity:0; transform:scale(.99);}
-  18%{opacity:1; transform:scale(1.00);}
-  100%{opacity:0; transform:scale(1.01);}
-}
-
-.oreHead{display:flex;align-items:center;gap:10px;}
-.oreIcon{
-  width:34px;height:34px;border-radius:13px;
-  background:
-    radial-gradient(18px 16px at 30% 25%, rgba(255,255,255,.16), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.16));
-  border:1px solid rgba(255,255,255,.14);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 16px 28px rgba(0,0,0,.22);
-  position:relative; overflow:hidden;
-}
-.oreIcon:after{
-  content:""; position:absolute; inset:-10px;
-  background: radial-gradient(60px 40px at 20% 10%, rgba(255,255,255,.10), transparent 60%);
-  pointer-events:none; opacity:.85;
-}
-.oreIcon svg{width:22px;height:22px;opacity:.98;filter:drop-shadow(0 0 18px rgba(255,255,255,.10));}
-
-.oreName{font-weight:950;display:flex;align-items:center;gap:8px;}
-.oreMeta{color:var(--muted);font-size:12px;margin-top:2px;}
-
-.badge{
-  font-size:10px;padding:3px 7px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.06);
-  color:rgba(220,235,255,.9);
-}
-.badge.good{border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08);}
-.badge.warn{border-color:rgba(255,204,102,.25); background:rgba(255,204,102,.08);}
-.badge.bad{border-color:rgba(255,90,111,.25); background:rgba(255,90,111,.08);}
-
-.miniControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.miniBtn{
-  padding:7px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);color:var(--txt);font-weight:900;cursor:pointer;font-size:12px;
-}
-.miniBtn.good{background:rgba(50,213,131,.12);border-color:rgba(50,213,131,.22);color:rgba(230,255,245,.95);}
-.miniBtn.warn{background:rgba(255,204,102,.10);border-color:rgba(255,204,102,.22);color:rgba(255,245,220,.95);}
-.miniBtn.bad{background:rgba(255,90,111,.10);border-color:rgba(255,90,111,.22);color:rgba(255,230,235,.95);}
-
-.modeHint{
-  width:100%;
-  color:rgba(180,200,240,.9);
-  font-size:12px;
-  margin-top:2px;
-  opacity:.9;
-}
-.modeHint b{color:rgba(235,245,255,.95);}
-
-.stepper{display:flex;gap:6px;align-items:center;}
-.stepper button{
-  width:30px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);color:var(--txt);font-weight:950;cursor:pointer;
-}
-.stepper input{
-  width:60px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.22);color:var(--txt);text-align:center;font-weight:950;
-}
-.selectRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
-.trade{
-  display:flex;justify-content:space-between;align-items:center;gap:10px;
-  padding:10px;border-radius:14px;
-  background:rgba(0,0,0,.14);
-  border:1px solid rgba(255,255,255,.08);
-  margin-top:8px;
-}
-
-.toast{
-  position:fixed;top:14px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,.58);
-  border:1px solid rgba(255,255,255,.14);
-  padding:10px 12px;border-radius:999px;
-  color:var(--txt);font-weight:800;font-size:13px;
-  opacity:0;transition:opacity .2s;
-  pointer-events:none;z-index:50;
-}
-.toast.show{opacity:1;}
-
-/* -------- Codex modal -------- */
-.modalBackdrop{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.55);
-  backdrop-filter: blur(8px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:80;
-}
-.modalBackdrop.show{display:flex;}
-.modal{
-  width:min(760px, 100%);
-  border-radius:18px;
-  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.35));
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:0 30px 90px rgba(0,0,0,.55);
-  overflow:hidden;
-}
-.modalHeader{
-  padding:12px 14px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-  border-bottom:1px solid rgba(255,255,255,.10);
-  background:rgba(0,0,0,.18);
-}
-.modalTitle{font-weight:950; letter-spacing:.2px;}
-.modalBody{padding:12px 14px;}
-.codexGrid{display:grid; gap:10px;}
-.codexItem{
-  padding:10px 12px;border-radius:16px;
-  background:rgba(0,0,0,.16);
-  border:1px solid rgba(255,255,255,.08);
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-}
-.codexLeft{display:flex; align-items:center; gap:10px;}
-.codexIcon{
-  width:34px;height:34px;border-radius:14px;
-  background:
-    radial-gradient(18px 16px at 30% 25%, rgba(255,255,255,.16), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
-  border:1px solid rgba(255,255,255,.14);
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 16px 28px rgba(0,0,0,.22);
-  overflow:hidden;
-  position:relative;
-}
-.codexIcon:after{
-  content:""; position:absolute; inset:-10px;
-  background: radial-gradient(60px 40px at 20% 10%, rgba(255,255,255,.10), transparent 60%);
-  opacity:.85; pointer-events:none;
-}
-.codexIcon svg{width:22px;height:22px;filter:drop-shadow(0 0 18px rgba(255,255,255,.10));}
-.codexName{font-weight:950;}
-.codexMeta{font-size:12px;color:var(--muted);margin-top:2px;}
-.codexRight{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
-
-/* ===== Planet Switcher ===== */
-.planetBar{
-  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-  margin-top:10px; padding:10px;
-  background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); border-radius:14px;
-}
-.planetBtn{
-  cursor:pointer; user-select:none; border:0; border-radius:12px;
-  padding:8px 14px; font-weight:900; font-size:12px;
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
-  color:var(--muted);
-  transition: transform .08s, background .14s, border-color .14s, color .14s, box-shadow .14s;
-  display:inline-flex; align-items:center; gap:8px;
-}
-.planetBtn:hover{ transform:translateY(-1px); }
-.planetBtn.active-iron{
-  background:rgba(102,163,255,.14); border-color:rgba(102,163,255,.35);
-  color:var(--txt); box-shadow:0 8px 18px rgba(102,163,255,.14);
-}
-.planetBtn.active-vulcan{
-  background:rgba(255,90,50,.16); border-color:rgba(255,130,60,.40);
-  color:#ffd0b0; box-shadow:0 8px 18px rgba(255,90,50,.18);
-}
-.planetBtn:disabled{ opacity:.42; cursor:not-allowed; transform:none !important; box-shadow:none; }
-.planetDot{
-  width:10px; height:10px; border-radius:50%; flex-shrink:0;
-}
-.planetDot.iron{ background:radial-gradient(circle at 35% 30%, #a8ccff, #3a5a9c); }
-.planetDot.vulcan{ background:radial-gradient(circle at 35% 30%, #ffb060, #c93a10); }
-
-/* ===== Vulcan Planet skin for the click area ===== */
-.clickArea.planet-vulcan{
-  background:
-    radial-gradient(220px 170px at 52% 46%, rgba(255,100,30,.28), rgba(255,60,0,.04)),
-    radial-gradient(380px 220px at 70% 10%, rgba(200,60,0,.18), transparent 60%);
-  border-color: rgba(255,100,30,.18);
-}
-/* scanlines warm tint */
-.clickArea.planet-vulcan .scanlines{
-  background:linear-gradient(180deg, rgba(255,100,30,.07), transparent 60%);
-}
-
-/* Vulcan asteroid look */
-.asteroid.planet-vulcan{
-  background:
-    radial-gradient(circle at 30% 28%, rgba(255,255,255,.9) 0 7px, transparent 9px),
-    radial-gradient(circle at 40% 35%, #ff9060 0%, #c05028 20%, #7a2210 50%, #3a0e06 78%, #180602 100%);
-  box-shadow:0 0 0 10px rgba(255,80,20,.10), 0 34px 70px rgba(0,0,0,.42), 0 0 60px rgba(255,70,10,.12);
-}
-.asteroid.planet-vulcan .cracks{
-  background:
-    radial-gradient(60px 40px at 65% 42%, rgba(255,140,30,.32) 0%, transparent 70%),
-    radial-gradient(80px 60px at 35% 65%, rgba(255,60,0,.24) 0%, transparent 72%),
-    radial-gradient(40px 30px at 50% 50%, rgba(255,200,80,.18) 0%, transparent 65%);
-  opacity:1;
-}
-.ring.planet-vulcan{
-  border-color:rgba(255,100,30,.22);
-  filter:drop-shadow(0 0 14px rgba(255,80,20,.14));
-}
-
-/* ===== Miner Rank Roadmap Modal ===== */
-#roadmapBackdrop{ z-index:85; }
-
-.roadmapScroll{
-  max-height: min(72vh, 600px);
-  overflow-y: auto;
-  padding: 4px 14px 14px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(102,163,255,.25) transparent;
-}
-.roadmapScroll::-webkit-scrollbar{ width:4px; }
-.roadmapScroll::-webkit-scrollbar-thumb{ background:rgba(102,163,255,.22); border-radius:999px; }
-
-.roadmap{
-  position:relative;
-  padding-left: 36px;
-}
-/* vertical spine */
-.roadmap::before{
-  content:"";
-  position:absolute;
-  left:11px; top:8px; bottom:8px;
-  width:2px;
-  background: linear-gradient(180deg,
-    rgba(102,163,255,.55) 0%,
-    rgba(124,92,255,.40) 50%,
-    rgba(255,90,50,.30) 100%);
-  border-radius:999px;
-}
-
-.rmItem{
-  position:relative;
-  margin-bottom: 10px;
-  padding: 12px 12px 12px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.14));
-  transition: border-color .15s, box-shadow .15s, background .15s;
-}
-.rmItem.done{
-  background: linear-gradient(180deg, rgba(50,213,131,.07), rgba(0,0,0,.12));
-  border-color: rgba(50,213,131,.20);
-}
-.rmItem.current{
-  background: linear-gradient(180deg, rgba(102,163,255,.12), rgba(124,92,255,.06));
-  border-color: rgba(102,163,255,.38);
-  box-shadow: 0 0 0 1px rgba(102,163,255,.12), 0 12px 32px rgba(102,163,255,.12);
-}
-.rmItem.locked{
-  opacity:.55;
-}
-/* BIG unlock items (planet / major milestone) */
-.rmItem.major{
-  background: linear-gradient(135deg, rgba(255,90,50,.12), rgba(124,92,255,.10), rgba(0,0,0,.18));
-  border-color: rgba(255,130,60,.35);
-  box-shadow: 0 0 0 1px rgba(255,90,50,.10), 0 12px 32px rgba(255,80,20,.10);
-}
-.rmItem.major.done{
-  background: linear-gradient(135deg, rgba(50,213,131,.10), rgba(102,163,255,.07));
-  border-color: rgba(50,213,131,.28);
-  box-shadow: 0 0 0 1px rgba(50,213,131,.10), 0 10px 28px rgba(50,213,131,.08);
-}
-.rmItem.major.current{
-  border-color: rgba(255,130,60,.55);
-  box-shadow: 0 0 0 1px rgba(255,90,50,.16), 0 14px 36px rgba(255,80,20,.16);
-}
-
-/* dot on spine */
-.rmDot{
-  position:absolute;
-  left: -29px; top: 50%; transform: translateY(-50%);
-  width:14px; height:14px; border-radius:50%;
-  border:2px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.08);
-  flex-shrink:0;
-  transition: background .15s, border-color .15s, box-shadow .15s;
-}
-.rmItem.done   .rmDot{ background:var(--good); border-color:rgba(50,213,131,.55); box-shadow:0 0 10px rgba(50,213,131,.35); }
-.rmItem.current .rmDot{ background:var(--acc); border-color:rgba(102,163,255,.65); box-shadow:0 0 14px rgba(102,163,255,.45); animation:dotPulse 1.6s ease-in-out infinite; }
-.rmItem.major:not(.done):not(.current) .rmDot{ background:rgba(255,100,40,.18); border-color:rgba(255,100,40,.38); }
-.rmItem.major.done .rmDot{ background:var(--good); border-color:rgba(50,213,131,.55); box-shadow:0 0 12px rgba(50,213,131,.40); }
-@keyframes dotPulse{
-  0%,100%{ box-shadow:0 0 8px rgba(102,163,255,.35); }
-  50%{ box-shadow:0 0 18px rgba(102,163,255,.65); }
-}
-
-.rmHeader{ display:flex; align-items:center; gap:10px; justify-content:space-between; }
-.rmLeft{ display:flex; align-items:center; gap:10px; min-width:0; }
-.rmRank{
-  font-size:11px; font-weight:900; color:var(--muted);
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-  border-radius:999px; padding:3px 8px; flex-shrink:0; white-space:nowrap;
-}
-.rmItem.done .rmRank{ color:var(--good); border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); }
-.rmItem.current .rmRank{ color:var(--acc); border-color:rgba(102,163,255,.30); background:rgba(102,163,255,.10); }
-.rmItem.major .rmRank{ color:#ffb060; border-color:rgba(255,130,60,.30); background:rgba(255,100,30,.10); }
-.rmItem.major.done .rmRank{ color:var(--good); border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); }
-
-.rmTitle{ font-weight:900; letter-spacing:.1px; font-size:13px; }
-.rmItem.major .rmTitle{ font-size:14px; }
-
-.rmRewards{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-.rmReward{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:5px 9px; border-radius:999px; font-size:11px; font-weight:800;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
-  color:rgba(220,235,255,.9);
-}
-.rmReward.ore{ border-color:rgba(255,204,102,.22); background:rgba(255,204,102,.08); color:rgba(255,240,210,.95); }
-.rmReward.planet{ border-color:rgba(255,100,40,.30); background:rgba(255,90,30,.12); color:#ffd0a8; font-size:12px; }
-.rmReward.planet.unlocked{ border-color:rgba(50,213,131,.28); background:rgba(50,213,131,.09); color:rgba(220,255,235,.95); }
-.rmReward.perk{ border-color:rgba(124,92,255,.28); background:rgba(124,92,255,.10); color:#d4c0ff; }
-.rmReward.perk.unlocked{ border-color:rgba(50,213,131,.28); background:rgba(50,213,131,.09); color:rgba(220,255,235,.95); }
-.rmReward.trade{ border-color:rgba(43,212,255,.22); background:rgba(43,212,255,.08); color:rgba(200,245,255,.95); }
-
-.rmStatusTag{
-  font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; flex-shrink:0; white-space:nowrap;
-}
-.rmStatusTag.done{ background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.25); color:var(--good); }
-.rmStatusTag.current{ background:rgba(102,163,255,.12); border:1px solid rgba(102,163,255,.28); color:var(--acc); }
-.rmStatusTag.locked{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); color:var(--muted); }
-
-/* XP mini-bar inside current item */
-.rmXpBar{ height:4px; border-radius:999px; background:rgba(255,255,255,.07); margin-top:8px; overflow:hidden; }
-.rmXpFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--acc), #2bd4ff); transition:width .3s; }
-
-/* progress summary bar at top */
-.rmProgress{
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.07);
-  background:rgba(0,0,0,.12);
-}
-.rmProgressBar{ flex:1; min-width:120px; height:6px; border-radius:999px; background:rgba(255,255,255,.07); overflow:hidden; }
-.rmProgressFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--good), var(--acc)); transition:width .3s; }
-/* ===== Daily Quests ===== */
-.questCard{
-  padding:12px; border-radius:16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.14));
-  border:1px solid rgba(255,255,255,.09);
-  position:relative; overflow:hidden;
-}
-.questCard.complete{
-  background:linear-gradient(180deg, rgba(50,213,131,.08), rgba(0,0,0,.12));
-  border-color:rgba(50,213,131,.25);
-}
-.questCard.claimed{
-  opacity:.55;
-  background:rgba(0,0,0,.10);
-  border-color:rgba(255,255,255,.06);
-}
-.questTop{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-.questLeft{ min-width:0; }
-.questTitle{ font-weight:900; font-size:13px; }
-.questDesc{ color:var(--muted); font-size:12px; margin-top:2px; }
-.questRewards{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-.questReward{
-  display:inline-flex; align-items:center; gap:5px;
-  padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800;
-  background:rgba(50,213,131,.10); border:1px solid rgba(50,213,131,.22); color:rgba(210,255,235,.95);
-}
-.questDiff{
-  font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; flex-shrink:0;
-}
-.questDiff.easy{ background:rgba(50,213,131,.12); border:1px solid rgba(50,213,131,.22); color:var(--good); }
-.questDiff.medium{ background:rgba(255,204,102,.10); border:1px solid rgba(255,204,102,.22); color:var(--warn); }
-.questDiff.hard{ background:rgba(255,90,111,.10); border:1px solid rgba(255,90,111,.22); color:var(--danger); }
-.questProgressBar{ height:5px; border-radius:999px; background:rgba(255,255,255,.07); margin-top:10px; overflow:hidden; }
-.questProgressFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--good), #2bd4ff); transition:width .3s; }
-.questProgressLabel{ font-size:11px; color:var(--muted); margin-top:4px; }
-
-/* quest strip preview in HUD */
-.questStrip{
-  display:flex; align-items:center; gap:8px;
-  padding:6px 10px; border-radius:12px;
-  background:rgba(0,0,0,.14); border:1px solid rgba(255,255,255,.07);
-  font-size:12px; cursor:pointer;
-  transition: border-color .14s, background .14s;
-}
-.questStrip:hover{ border-color:rgba(102,163,255,.25); background:rgba(102,163,255,.07); }
-.questStripDot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.questStripDot.done{ background:var(--good); }
-.questStripDot.active{ background:var(--warn); }
-.questStripDot.locked{ background:rgba(255,255,255,.18); }
-
-/* ===== Skill Tree ===== */
-.skillBranch{
-  display:flex; flex-direction:column; gap:8px;
-}
-.skillBranchHeader{
-  padding:8px 10px; border-radius:12px; text-align:center; font-weight:900; font-size:12px;
-  margin-bottom:2px;
-}
-.skillBranch.mining .skillBranchHeader{ background:rgba(43,212,255,.10); border:1px solid rgba(43,212,255,.20); color:rgba(180,245,255,.95); }
-.skillBranch.economy .skillBranchHeader{ background:rgba(255,204,102,.10); border:1px solid rgba(255,204,102,.20); color:rgba(255,245,200,.95); }
-.skillBranch.exploration .skillBranchHeader{ background:rgba(255,90,50,.10); border:1px solid rgba(255,100,50,.20); color:rgba(255,210,180,.95); }
-
-.skillConnector{
-  width:2px; height:10px; border-radius:999px;
-  background:rgba(255,255,255,.12); margin:0 auto;
-}
-.skillBranch.mining .skillConnector{ background:rgba(43,212,255,.25); }
-.skillBranch.economy .skillConnector{ background:rgba(255,204,102,.22); }
-.skillBranch.exploration .skillConnector{ background:rgba(255,100,50,.22); }
-
-.skillNode{
-  padding:10px; border-radius:14px;
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.16));
-  border:1px solid rgba(255,255,255,.08);
-  cursor:pointer;
-  transition: transform .08s, border-color .14s, box-shadow .14s, opacity .14s;
-  position:relative; overflow:hidden;
-}
-.skillNode:hover:not(.locked-node){ transform:translateY(-1px); }
-.skillNode.owned{
-  background:linear-gradient(180deg, rgba(50,213,131,.09), rgba(0,0,0,.14));
-  border-color:rgba(50,213,131,.28);
-}
-.skillNode.locked-node{ opacity:.42; cursor:not-allowed; }
-.skillNode.affordable{ border-color:rgba(50,213,131,.28); box-shadow:0 8px 22px rgba(50,213,131,.10); }
-
-.skillBranch.mining .skillNode.affordable{ border-color:rgba(43,212,255,.35); box-shadow:0 8px 22px rgba(43,212,255,.12); }
-.skillBranch.economy .skillNode.affordable{ border-color:rgba(255,204,102,.32); box-shadow:0 8px 22px rgba(255,204,102,.10); }
-.skillBranch.exploration .skillNode.affordable{ border-color:rgba(255,100,50,.35); box-shadow:0 8px 22px rgba(255,100,50,.10); }
-
-.skillNodeName{ font-weight:900; font-size:12px; margin-bottom:3px; }
-.skillNodeDesc{ font-size:11px; color:var(--muted); line-height:1.35; }
-.skillNodeCost{ display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
-.skillCostChip{
-  font-size:10px; font-weight:800; padding:3px 7px; border-radius:999px;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--muted);
-  display:inline-flex; align-items:center; gap:4px;
-}
-.skillCostChip.met{ border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); color:rgba(210,255,235,.9); }
-.skillOwnedBadge{
-  position:absolute; top:6px; right:6px;
-  font-size:9px; font-weight:900; padding:2px 6px; border-radius:999px;
-  background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.25); color:var(--good);
-}
-/* ===== Planet Overview Cards ===== */
-.planetCard{
-  border-radius:20px;
-  border:1px solid rgba(255,255,255,.09);
-  overflow:hidden;
-  position:relative;
-}
-.planetCard.active-card{
-  border-color:rgba(102,163,255,.35);
-  box-shadow:0 0 0 1px rgba(102,163,255,.12), 0 12px 32px rgba(102,163,255,.10);
-}
-.planetCard.vulcan-card{
-  border-color:rgba(255,100,40,.22);
-}
-.planetCard.vulcan-card.active-card{
-  border-color:rgba(255,130,60,.45);
-  box-shadow:0 0 0 1px rgba(255,90,40,.14), 0 12px 32px rgba(255,80,20,.12);
-}
-.planetCard.locked-card{
-  opacity:.72;
-}
-.planetCard.future-card{
-  opacity:.45;
-  border-style:dashed;
-}
-
-.planetCardBanner{
-  height:90px;
-  position:relative;
-  display:flex;
-  align-items:center;
-  padding:0 20px;
-  gap:16px;
-}
-.planetCardBanner.iron-banner{
-  background:linear-gradient(135deg,
-    rgba(30,50,100,.85) 0%,
-    rgba(20,35,80,.70) 50%,
-    rgba(10,20,55,.80) 100%);
-}
-.planetCardBanner.vulcan-banner{
-  background:linear-gradient(135deg,
-    rgba(120,30,10,.80) 0%,
-    rgba(80,20,5,.70) 40%,
-    rgba(40,10,3,.80) 100%);
-}
-.planetCardBanner.future-banner{
-  background:linear-gradient(135deg,
-    rgba(50,20,80,.70),
-    rgba(20,10,40,.80));
-}
-
-/* animated stars inside banner */
-.planetCardBanner::before{
-  content:"";
-  position:absolute; inset:0;
-  background-image:
-    radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,.55), transparent),
-    radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.40), transparent),
-    radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,.35), transparent),
-    radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,.50), transparent),
-    radial-gradient(1px 1px at 25% 80%, rgba(255,255,255,.30), transparent);
-  pointer-events:none;
-}
-
-.planetOrb{
-  width:60px; height:60px; border-radius:50%; flex-shrink:0;
-  position:relative; z-index:1;
-  box-shadow:0 8px 24px rgba(0,0,0,.40);
-}
-.planetOrb.iron-orb{
-  background:radial-gradient(circle at 35% 30%,
-    #a8d4ff 0%, #4a7ac0 25%, #2a4a8a 55%, #0e1f55 85%, #050e2e 100%);
-  box-shadow:0 0 0 2px rgba(100,160,255,.20), 0 8px 24px rgba(0,0,0,.40), 0 0 30px rgba(60,120,255,.15);
-}
-.planetOrb.vulcan-orb{
-  background:radial-gradient(circle at 35% 30%,
-    #ff9060 0%, #c05028 25%, #7a2210 55%, #3a0e06 85%, #180602 100%);
-  box-shadow:0 0 0 2px rgba(255,100,40,.22), 0 8px 24px rgba(0,0,0,.40), 0 0 30px rgba(255,70,10,.18);
-}
-.planetOrb.future-orb{
-  background:radial-gradient(circle at 35% 30%,
-    rgba(180,130,255,.6), rgba(80,40,160,.5), rgba(20,10,60,.8));
-  box-shadow:0 0 0 2px rgba(150,100,255,.15), 0 8px 24px rgba(0,0,0,.50);
-}
-.planetOrb.iron-orb::after{
-  content:"";
-  position:absolute; inset:0; border-radius:50%;
-  background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.30) 0 18%, transparent 45%);
-}
-.planetOrb.vulcan-orb::after{
-  content:"";
-  position:absolute; inset:0; border-radius:50%;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,220,180,.25) 0 18%, transparent 45%),
-    radial-gradient(ellipse at 60% 65%, rgba(255,80,10,.18), transparent 55%);
-}
-
-.planetBannerInfo{ z-index:1; min-width:0; }
-.planetBannerName{ font-size:18px; font-weight:950; letter-spacing:.2px; }
-.planetBannerSub{ font-size:12px; color:rgba(255,255,255,.55); margin-top:2px; }
-
-.planetBannerBadge{
-  margin-left:auto; z-index:1; flex-shrink:0;
-  font-size:11px; font-weight:900; padding:5px 10px; border-radius:999px;
-}
-.planetBannerBadge.current{ background:rgba(102,163,255,.20); border:1px solid rgba(102,163,255,.35); color:var(--acc); }
-.planetBannerBadge.owned{ background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.28); color:var(--good); }
-.planetBannerBadge.locked{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--muted); }
-.planetBannerBadge.unlockable{ background:rgba(255,204,102,.12); border:1px solid rgba(255,204,102,.28); color:var(--warn); }
-
-.planetCardBody{
-  padding:14px 16px 16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
-  display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;
-}
-
-.planetStats{ display:flex; flex-wrap:wrap; gap:6px; }
-.planetStat{
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 9px; border-radius:999px; font-size:11px; font-weight:800;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
-  color:rgba(220,235,255,.85);
-}
-.planetStat.good{ border-color:rgba(50,213,131,.22); background:rgba(50,213,131,.08); color:rgba(210,255,235,.95); }
-.planetStat.warn{ border-color:rgba(255,204,102,.22); background:rgba(255,204,102,.08); color:rgba(255,245,200,.95); }
-.planetStat.ore{ border-color:rgba(255,160,60,.22); background:rgba(255,140,40,.08); color:rgba(255,230,180,.95); }
-
-.planetOres{ margin-top:8px; display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
-.planetOreLabel{ font-size:10px; font-weight:800; color:var(--muted); }
-
-.planetCardActions{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; justify-content:center; }
-.planetBuyInfo{ font-size:11px; color:var(--muted); text-align:right; line-height:1.4; }
-.planetBuyInfo.can-afford{ color:var(--good); }
-.planetBuyInfo.locked-mr{ color:var(--danger); }
-
-/* Active planet glow ring on orb */
-.planetOrb.active-glow.iron-orb{ box-shadow:0 0 0 3px rgba(102,163,255,.45), 0 0 0 6px rgba(102,163,255,.12), 0 8px 24px rgba(0,0,0,.40); }
-.planetOrb.active-glow.vulcan-orb{ box-shadow:0 0 0 3px rgba(255,120,50,.50), 0 0 0 6px rgba(255,90,20,.14), 0 8px 24px rgba(0,0,0,.40); }
-/* ===== Mobile / Touch fixes ===== */
-
-/* Prevent ALL double-tap zoom globally */
-* { touch-action: manipulation; }
-
-/* But allow scrolling inside modals */
-.modalBackdrop, .roadmapScroll { touch-action: pan-y; }
-
-/* Prevent text selection on rapid taps (asteroid, buttons) */
-.asteroid, .btn, .tab, .planetBtn, .uBuy, .miniBtn {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-@media (max-width: 640px) {
-  .wrap { padding: 10px 10px 24px; }
-
-  /* Stack the two main cards vertically (they already do, but tighten gaps) */
-  .top { gap: 10px; }
-  .card { padding: 12px; }
-
-  /* Asteroid stage a bit smaller */
-  .stage { height: 210px; }
-  .asteroid { width: 118px; height: 118px; }
-
-  /* Planet bar wraps nicely */
-  .planetBar { flex-wrap: wrap; gap: 6px; }
-  .planetBar .btn { margin-left: 0 !important; width: 100%; justify-content: center; }
-
-  /* Quest strip text doesn't overflow */
-  .questStrip span { font-size: 11px; }
-
-  /* Shop tabs scrollable on tiny screens */
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 2px; }
-  .tab  { flex-shrink: 0; }
-
-  /* Upgrade cards full width */
-  .upgradeList { grid-template-columns: 1fr; }
-
-  /* Modals full screen on mobile */
-  .modal {
-    width: 100% !important;
-    max-height: 92dvh;
-    border-radius: 20px 20px 0 0;
-    margin-top: auto;
-  }
-  .modalBackdrop {
-    align-items: flex-end;
-  }
-
-  /* Planet overview cards: orb + info side by side, actions below */
-  .planetCardBody {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .planetCardActions {
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .planetCardBanner { height: 75px; }
-  .planetOrb { width: 48px; height: 48px; }
-  .planetBannerName { font-size: 15px; }
-
-  /* Skill tree: single column on mobile */
-  #skillTreeEl { grid-template-columns: 1fr !important; }
-
-  /* Bigger tap targets for the asteroid click area */
-  #clickArea { min-height: 210px; }
-
-  /* Grid buttons (Daily Quests / Reset) */
-  .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-}
-
-@media (max-width: 380px) {
-  .stage { height: 185px; }
-  .asteroid { width: 105px; height: 105px; }
-  .big { font-size: 26px; }
-}
-```
-
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;}
+    body{
+      margin:0; color:var(--txt);
+      background:
+        radial-gradient(1200px 800px at 50% -240px, rgba(102,163,255,.24) 0%, rgba(124,92,255,.12) 35%, rgba(0,0,0,0) 60%),
+        radial-gradient(900px 500px at 80% 10%, rgba(50,213,131,.10) 0%, rgba(0,0,0,0) 60%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+    body:before{
+      content:""; position:fixed; inset:0; pointer-events:none; opacity:.25; filter: blur(.2px);
+      background-image:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,.9) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 25%, rgba(255,255,255,.7) 0 1px, transparent 2px),
+        radial-gradient(circle at 35% 55%, rgba(255,255,255,.6) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 70%, rgba(255,255,255,.8) 0 1px, transparent 2px),
+        radial-gradient(circle at 10% 80%, rgba(255,255,255,.6) 0 1px, transparent 2px);
+    }
+
+    .wrap{max-width:1100px;margin:0 auto;padding:16px;}
+    .top{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+    .card{
+      background:linear-gradient(180deg, var(--panelA), var(--panelB));
+      border:1px solid var(--line);
+      border-radius:16px; padding:14px;
+      box-shadow:0 16px 44px rgba(0,0,0,.35);
+      position:relative; overflow:hidden;
+    }
+    .card:after{content:"";position:absolute;inset:-1px;pointer-events:none;
+      background:radial-gradient(420px 240px at 20% 0%, var(--glow) 0%, transparent 55%);
+    }
+    .stats{flex:1;min-width:320px;}
+    .shop{flex:1.25;min-width:380px;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .big{font-size:34px;font-weight:900;letter-spacing:.2px;}
+    .muted{color:var(--muted);font-size:13px;}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:6px 10px;border-radius:999px;
+      background:rgba(102,163,255,.12);
+      border:1px solid rgba(102,163,255,.22);
+      font-size:12px;
+    }
+    .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.06);}
+    .bar>div{height:100%;width:0;background:linear-gradient(90deg, var(--acc), #2bd4ff, var(--acc2));transition:width .18s;filter:saturate(1.1);}
+
+    .btn{
+      cursor:pointer;user-select:none;border:0;border-radius:14px;
+      padding:12px 14px;font-weight:900;color:white;
+      background:linear-gradient(180deg, var(--acc2), #4d7bff);
+      box-shadow:0 12px 26px rgba(102,163,255,.22);
+      transition:transform .05s, filter .15s, opacity .15s;
+    }
+    .btn:active{transform:translateY(1px) scale(.99);filter:brightness(.95);}
+    .btn.secondary{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(255,255,255,.12);font-weight:800;}
+    .btn.good{background:linear-gradient(180deg, var(--good), #17b26a);box-shadow:0 12px 26px rgba(50,213,131,.18);color:#052012;}
+    .btn.warn{background:linear-gradient(180deg, var(--warn), #ff9f1a);box-shadow:0 12px 26px rgba(255,204,102,.16);color:#1f1600;}
+    .btn:disabled{opacity:.45; cursor:not-allowed; transform:none !important; box-shadow:none;}
+
+    .panel{margin-top:10px;background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px;}
+
+    .clickArea{
+      margin-top:12px; display:flex;align-items:center;justify-content:center;
+      height:244px;border-radius:16px;
+      background:
+        radial-gradient(220px 170px at 52% 46%, rgba(102,163,255,.26), rgba(255,255,255,.03)),
+        radial-gradient(380px 220px at 70% 10%, rgba(124,92,255,.14), transparent 60%);
+      border:1px solid rgba(255,255,255,.10);
+      position:relative;overflow:hidden;
+    }
+    .scanlines{position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,.04), transparent 60%);opacity:.22;mix-blend-mode:screen;pointer-events:none;}
+
+    .asteroidStage{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;}
+    .asteroidWrap{position:relative;width:140px;height:140px;}
+    .asteroid{
+      width:140px;height:140px;border-radius:50%;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 8px, transparent 10px),
+        radial-gradient(circle at 40% 35%, #b9c7dd 0%, #7f93b2 18%, #4a5a74 52%, #2a3143 78%, #141a28 100%);
+      box-shadow:0 0 0 10px rgba(102,163,255,.08), 0 34px 70px rgba(0,0,0,.42);
+      transition:transform .06s, filter .18s;
+      position:relative;overflow:hidden;will-change: transform, filter;
+    }
+    .cracks{position:absolute;inset:0;border-radius:50%;
+      background:
+        radial-gradient(60px 40px at 65% 42%, rgba(102,163,255,.24) 0%, transparent 70%),
+        radial-gradient(70px 50px at 35% 65%, rgba(255,204,102,.18) 0%, transparent 72%);
+      opacity:.9;pointer-events:none;transition: filter .18s;
+    }
+    .ring{position:absolute;inset:-18px;border-radius:50%;border:2px solid rgba(102,163,255,.16);
+      filter:drop-shadow(0 0 14px rgba(102,163,255,.10));animation:ring 5.5s linear infinite;pointer-events:none;}
+    @keyframes ring { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+    .orbitRing{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.10);opacity:.55;pointer-events:none;filter:drop-shadow(0 0 12px rgba(102,163,255,.08));}
+    .orbitRing.r2{inset:18px;opacity:.40;}
+    .orbitRing.r3{inset:36px;opacity:.30;}
+
+    .shake{animation:shake .18s ease-in-out 0s 1;}
+    @keyframes shake{
+      0%{transform:translate(0,0) rotate(0deg);}
+      20%{transform:translate(-2px,1px) rotate(-.7deg);}
+      50%{transform:translate(2px,-1px) rotate(.7deg);}
+      80%{transform:translate(-1px,-1px) rotate(-.4deg);}
+      100%{transform:translate(0,0) rotate(0deg);}
+    }
+
+    .laser{position:absolute;width:200px;height:2px;background:linear-gradient(90deg, transparent, rgba(43,212,255,.9), transparent);
+      opacity:0;transform-origin:left center;filter:drop-shadow(0 0 10px rgba(43,212,255,.45));pointer-events:none;}
+    .laser.fire{animation:laser 220ms ease-out forwards;}
+    @keyframes laser{
+      0%{opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.6);}
+      30%{opacity:1;}
+      100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.15);}
+    }
+
+    .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;opacity:0;
+      filter:drop-shadow(0 0 12px rgba(255,204,102,.18));animation:particle 520ms ease-out forwards;}
+    @keyframes particle{
+      0%{opacity:0;transform:translate(0,0) scale(.9);}
+      12%{opacity:1;}
+      100%{opacity:0;transform:translate(var(--dx), var(--dy)) scale(.6);}
+    }
+
+    /* Click pop (big) */
+    .pop{
+      position:absolute;font-weight:900;pointer-events:none;opacity:0;transform:translate(-50%,-50%) scale(.95);
+      animation:pop 900ms ease-out forwards;text-shadow:0 8px 20px rgba(0,0,0,.55);
+      letter-spacing:.2px;white-space:nowrap;
+      display:inline-flex;align-items:center;gap:8px;
+      padding:0;
+    }
+    .pop .miniIcon{width:20px;height:20px;display:inline-block;filter:drop-shadow(0 0 16px rgba(255,255,255,.18));opacity:.98;}
+    .pop .miniIcon svg{width:100%;height:100%;}
+    @keyframes pop{
+      0%{opacity:0;transform:translate(-50%,-50%) scale(.95);}
+      15%{opacity:1;transform:translate(-50%,-64%) scale(1);}
+      100%{opacity:0;transform:translate(-50%,-120%) scale(1.05);}
+    }
+
+    /* ---------- Drone System ---------- */
+    #droneLayer{position:absolute; inset:0; pointer-events:none;}
+
+    .droneOrbit{
+      position:absolute; inset:0;
+      transform: rotate(var(--start, 0deg));
+      animation: orbit var(--dur, 10s) linear infinite;
+      animation-direction: var(--dir, normal);
+      pointer-events:none;
+    }
+    @keyframes orbit { from{transform:rotate(var(--start,0deg));} to{transform:rotate(calc(var(--start,0deg) + 360deg));} }
+
+    .drone{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(calc(var(--radius, 84px) * 1), -50%) translate(-50%, -50%);
+      width:30px;height:30px;
+      opacity:1;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+    }
+
+    /* ===== Drone skin variables (default) ===== */
+    .drone{
+      --dA: rgba(255,255,255,.92);
+      --dB: rgba(102,163,255,.45);
+      --dC: rgba(43,212,255,.78);
+      --dD: rgba(124,92,255,.24);
+      --dBorder: rgba(255,255,255,.18);
+      --dGlow: rgba(102,163,255,.20);
+      --thrA: rgba(255,255,255,.95);
+      --thrB: rgba(43,212,255,.55);
+      --thrGlow: rgba(43,212,255,.35);
+    }
+
+    /* === Skin 1: Stealth Carbon (dark + green) === */
+    .drone.skin-carbon{
+      --dA: rgba(255,255,255,.86);
+      --dB: rgba(70,80,105,.55);
+      --dC: rgba(50,213,131,.85);
+      --dD: rgba(50,213,131,.18);
+      --dBorder: rgba(255,255,255,.16);
+      --dGlow: rgba(50,213,131,.16);
+      --thrA: rgba(255,255,255,.92);
+      --thrB: rgba(50,213,131,.55);
+      --thrGlow: rgba(50,213,131,.35);
+    }
+
+    /* === Skin 2: Neon Pulse (cyan + violet) === */
+    .drone.skin-neon{
+      --dA: rgba(255,255,255,.94);
+      --dB: rgba(43,212,255,.50);
+      --dC: rgba(43,212,255,.92);
+      --dD: rgba(124,92,255,.30);
+      --dBorder: rgba(255,255,255,.20);
+      --dGlow: rgba(43,212,255,.22);
+      --thrA: rgba(255,255,255,.95);
+      --thrB: rgba(43,212,255,.62);
+      --thrGlow: rgba(43,212,255,.38);
+    }
+
+    /* === Skin 3: Solar Alloy (gold + white) === */
+    .drone.skin-solar{
+      --dA: rgba(255,255,255,.95);
+      --dB: rgba(255,204,102,.45);
+      --dC: rgba(255,204,102,.90);
+      --dD: rgba(255,159,26,.22);
+      --dBorder: rgba(255,255,255,.20);
+      --dGlow: rgba(255,204,102,.18);
+      --thrA: rgba(255,255,255,.95);
+      --thrB: rgba(255,204,102,.60);
+      --thrGlow: rgba(255,204,102,.38);
+    }
+
+    .droneInner{
+      position:absolute; inset:0;
+      border-radius:12px;
+      background:linear-gradient(180deg, var(--dA), var(--dB));
+      border:1px solid var(--dBorder);
+      box-shadow:0 10px 24px rgba(0,0,0,.30), 0 0 22px var(--dGlow);
+      overflow:hidden;
+      transform-origin:center;
+      will-change: transform, filter;
+      animation: droneHover 1.6s ease-in-out infinite;
+    }
+
+    .droneInner::before{
+      content:""; position:absolute; inset:6px 6px;
+      border-radius:10px;
+      background:linear-gradient(90deg, var(--dC), var(--dD));
+      opacity:.88;
+      animation: droneBlink 1.1s steps(2,end) infinite;
+    }
+
+    .thruster{
+      position:absolute; left:50%; bottom:-10px;
+      width:10px;height:18px; transform:translateX(-50%);
+      border-radius:999px;
+      background: radial-gradient(circle at 50% 20%, var(--thrA), var(--thrB) 45%, rgba(0,0,0,0) 75%);
+      opacity:.65;
+      filter: drop-shadow(0 0 14px var(--thrGlow));
+      animation: thruster 240ms ease-in-out infinite;
+    }
+    @keyframes thruster{
+      0%{transform:translateX(-50%) scaleY(.85); opacity:.55;}
+      50%{transform:translateX(-50%) scaleY(1.12); opacity:.80;}
+      100%{transform:translateX(-50%) scaleY(.88); opacity:.60;}
+    }
+
+    @keyframes droneHover{
+      0%   { transform: translateY(0px) scale(1.0); filter:brightness(1); }
+      50%  { transform: translateY(-2px) scale(1.03); filter:brightness(1.10); }
+      100% { transform: translateY(0px) scale(1.0); filter:brightness(1); }
+    }
+    @keyframes droneBlink{
+      0%,60%{ opacity:.9; }
+      61%,100%{ opacity:.55; }
+    }
+
+    .drone.aim .droneInner{
+      animation-play-state:paused;
+      filter:brightness(1.22) saturate(1.2);
+      transform: translateY(-1px) scale(1.04);
+    }
+    .drone.fire .droneInner{
+      animation-play-state:paused;
+      filter:brightness(1.30) saturate(1.25);
+      animation: recoil 180ms ease-out forwards;
+    }
+    @keyframes recoil{
+      0%{ transform: translateY(-1px) scale(1.04); }
+      40%{ transform: translateY(1px)  scale(.97); }
+      100%{transform: translateY(0px)  scale(1.00); }
+    }
+
+    .muzzle{
+      position:absolute;
+      right:-8px;
+      top:50%;
+      width:14px;height:14px;
+      transform:translateY(-50%);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.95), var(--dC), rgba(0,0,0,0) 70%);
+      opacity:0;
+      filter: drop-shadow(0 0 18px var(--dGlow));
+      pointer-events:none;
+    }
+    .blastRing{
+      position:absolute; inset:-8px;
+      border-radius:16px;
+      border:2px solid rgba(0,0,0,0);
+      opacity:0; pointer-events:none;
+    }
+    .drone.fire .muzzle{ animation:muzzleFlash 170ms ease-out forwards; }
+    .drone.fire .blastRing{ animation: ringBlast 260ms ease-out forwards; }
+    @keyframes muzzleFlash{
+      0%{opacity:0; transform:translateY(-50%) scale(.6);}
+      35%{opacity:1; transform:translateY(-50%) scale(1.2);}
+      100%{opacity:0; transform:translateY(-50%) scale(1.7);}
+    }
+    @keyframes ringBlast{
+      0%{opacity:0; transform:scale(.92); border-color:rgba(0,0,0,0);}
+      20%{opacity:1; border-color:rgba(255,255,255,.24);}
+      100%{opacity:0; transform:scale(1.10); border-color:rgba(0,0,0,0);}
+    }
+
+    .chargeTrack{
+      position:absolute; left:4px; right:4px; bottom:4px;
+      height:4px; border-radius:999px;
+      background:rgba(0,0,0,.30);
+      border:1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+      pointer-events:none;
+    }
+    .chargeFill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--dC), rgba(255,255,255,.78), var(--dD));
+      filter:drop-shadow(0 0 14px var(--dGlow));
+      transition:width .08s linear;
+    }
+
+    /* Drone beam element is created in JS, but base styling here */
+    .droneBeam{
+      position:absolute;
+      height:6px;
+      border-radius:999px;
+      filter:drop-shadow(0 0 20px rgba(43,212,255,.60));
+      opacity:0;
+      pointer-events:none;
+      transform-origin:left center;
+      mix-blend-mode:screen;
+    }
+    .droneBeam.fire{ animation: droneBeam2 280ms ease-out forwards; }
+    @keyframes droneBeam2{
+      0%{ opacity:0; transform:scaleX(.65) scaleY(.8); filter:drop-shadow(0 0 8px rgba(43,212,255,.25)); }
+      18%{ opacity:1; transform:scaleX(1) scaleY(1.05); }
+      60%{ opacity:.95; filter:drop-shadow(0 0 28px rgba(43,212,255,.70)); }
+      100%{opacity:0; transform:scaleX(1.22) scaleY(.9); }
+    }
+
+    .impactGlow{
+      position:absolute;
+      width:46px;height:46px;border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.95), rgba(43,212,255,.55), rgba(43,212,255,0) 72%);
+      filter: drop-shadow(0 0 28px rgba(43,212,255,.55));
+      pointer-events:none;
+      opacity:0;
+      animation: impact 320ms ease-out forwards;
+      mix-blend-mode:screen;
+    }
+    @keyframes impact{
+      0%{opacity:0; transform:scale(.55);}
+      20%{opacity:1; transform:scale(1);}
+      100%{opacity:0; transform:scale(1.55);}
+    }
+
+    .oreShard{
+      position:absolute;
+      width:10px;height:10px;border-radius:3px;
+      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,204,102,.65));
+      filter: drop-shadow(0 0 14px rgba(255,204,102,.28));
+      pointer-events:none;
+      opacity:0;
+      animation: shardFly 420ms cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .oreShard.rare{
+      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(124,92,255,.70));
+      filter: drop-shadow(0 0 16px rgba(124,92,255,.38));
+    }
+    @keyframes shardFly{
+      0%{ opacity:0; transform:translate(0,0) scale(.85) rotate(0deg);}
+      12%{opacity:1;}
+      100%{opacity:0; transform:translate(var(--dx), var(--dy)) scale(.65) rotate(220deg);}
+    }
+
+    .dronePop{
+      position:absolute;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:950;
+      font-size:12px;
+      letter-spacing:.15px;
+      white-space:nowrap;
+      pointer-events:none;
+      opacity:0;
+      transform: translate(-50%,-50%) scale(.96);
+      background:rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(6px);
+      box-shadow:0 14px 30px rgba(0,0,0,.35);
+      text-shadow:0 10px 24px rgba(0,0,0,.55);
+      animation: dronePopAnim 1050ms ease-out forwards;
+      display:inline-flex; align-items:center; gap:7px;
+    }
+    .dronePop .ico{width:14px;height:14px;display:inline-block;filter: drop-shadow(0 0 12px rgba(255,255,255,.15));}
+    .dronePop .ico svg{width:100%;height:100%;}
+    .dronePop.credit{border-color:rgba(43,212,255,.22);background:rgba(43,212,255,.10);}
+    .dronePop.ore{border-color:rgba(255,204,102,.22);background:rgba(255,204,102,.10);}
+    .dronePop.rare{border-color:rgba(124,92,255,.28);background:rgba(124,92,255,.12);}
+    @keyframes dronePopAnim{
+      0%{opacity:0; transform:translate(-50%,-50%) scale(.96);}
+      15%{opacity:1; transform:translate(-50%,-68%) scale(1.0);}
+      100%{opacity:0; transform:translate(calc(-50% + var(--dx, 0px)), calc(-120% + var(--dy, -10px))) scale(1.04);}
+    }
+
+    .drone.spawn .droneInner{
+      animation: droneSpawnIn 520ms cubic-bezier(.16,.9,.2,1) forwards;
+      filter: brightness(1.35) saturate(1.3) drop-shadow(0 0 24px rgba(43,212,255,.35));
+    }
+    .drone.spawn .thruster{ animation: thrusterSpawn 180ms ease-in-out 7; opacity:.95; }
+    @keyframes droneSpawnIn{
+      0%{opacity:0; transform: scale(.35) rotate(-18deg); filter: blur(1px) brightness(1.6);}
+      55%{opacity:1; transform: scale(1.08) rotate(6deg); filter: blur(0) brightness(1.25);}
+      100%{opacity:1; transform: scale(1) rotate(0deg); filter: blur(0) brightness(1.05);}
+    }
+    @keyframes thrusterSpawn{
+      0%{transform:translateX(-50%) scaleY(1.6); opacity:1;}
+      50%{transform:translateX(-50%) scaleY(2.0); opacity:1;}
+      100%{transform:translateX(-50%) scaleY(1.3); opacity:.75;}
+    }
+
+    .spawnRingFX{
+      position:absolute;
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(43,212,255,.0);
+      pointer-events:none;
+      opacity:0;
+      filter: drop-shadow(0 0 22px rgba(43,212,255,.40));
+      mix-blend-mode:screen;
+      animation: spawnRing 520ms ease-out forwards;
+    }
+    @keyframes spawnRing{
+      0%{opacity:0; transform:scale(.6); border-color:rgba(43,212,255,0);}
+      15%{opacity:1; border-color:rgba(43,212,255,.65);}
+      100%{opacity:0; transform:scale(6.2); border-color:rgba(43,212,255,0);}
+    }
+    .spawnSpark{
+      position:absolute; width:6px;height:6px;border-radius:50%;
+      background:rgba(255,255,255,.95);
+      opacity:0; pointer-events:none;
+      filter: drop-shadow(0 0 14px rgba(43,212,255,.35));
+      animation: spawnSpark 520ms ease-out forwards;
+    }
+    @keyframes spawnSpark{
+      0%{opacity:0; transform:translate(0,0) scale(.9);}
+      15%{opacity:1;}
+      100%{opacity:0; transform:translate(var(--dx), var(--dy)) scale(.55);}
+    }
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+    @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+
+    .upgradeHeader{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-top:10px;padding:10px 10px;
+      background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.08);border-radius:14px;
+    }
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;}
+    .tab{
+      cursor:pointer;padding:7px 10px;border-radius:999px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);font-weight:800;font-size:12px;user-select:none;
+    }
+    .tab.active{color:var(--txt);border-color:rgba(102,163,255,.35);background:rgba(102,163,255,.12);box-shadow:0 10px 18px rgba(102,163,255,.10);}
+
+    .upgradeList{display:grid;gap:10px;margin-top:10px;}
+    .uCard{
+      position:relative;padding:12px;border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+      border:1px solid rgba(255,255,255,.10);overflow:hidden;
+      transition:transform .08s, border-color .12s, box-shadow .12s, filter .12s;
+    }
+    .uCard:hover{transform:translateY(-1px);}
+    .uCard:before{content:"";position:absolute;inset:-1px;background:radial-gradient(520px 220px at 0% 0%, rgba(102,163,255,.14), transparent 55%);pointer-events:none;}
+    .uCard.affordable{border-color:rgba(50,213,131,.28);box-shadow:0 18px 36px rgba(50,213,131,.10);}
+    .uCard.affordable:before{background:radial-gradient(520px 220px at 0% 0%, rgba(50,213,131,.12), transparent 55%);}
+
+    .uTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+    .uLeft{display:flex;align-items:flex-start;gap:10px;min-width:0;}
+    .uIcon{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(180deg, rgba(102,163,255,.20), rgba(124,92,255,.12));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 14px 26px rgba(0,0,0,.22);
+      display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+    }
+    .uIcon svg{width:24px;height:24px;opacity:.95;filter:drop-shadow(0 0 12px rgba(43,212,255,.12));}
+    .uName{font-weight:950;letter-spacing:.2px;}
+    .uDesc{color:var(--muted);font-size:12px;line-height:1.35;margin-top:2px;max-width:460px;}
+    .uMeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+    .chip{
+      font-size:11px;padding:4px 8px;border-radius:999px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);white-space:nowrap;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .chip strong{color:var(--txt);}
+    .chip.good{border-color:rgba(50,213,131,.25);background:rgba(50,213,131,.09);}
+    .chip.warn{border-color:rgba(255,204,102,.25);background:rgba(255,204,102,.08);color:rgba(255,240,210,.95);}
+    .chip.bad{border-color:rgba(255,90,111,.28);background:rgba(255,90,111,.10);color:rgba(255,220,230,.95);}
+
+    .ico{width:16px;height:16px;display:inline-block;opacity:.98;filter:drop-shadow(0 0 12px rgba(255,255,255,.10));}
+    .ico svg{width:100%;height:100%;}
+
+    .uRight{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto;}
+    .uCost{font-weight:900;color:rgba(255,255,255,.9);text-align:right;font-size:12px;}
+    .uCost span{color:var(--muted);font-weight:800;}
+    .uBuy{padding:10px 12px;border-radius:14px;font-weight:950;min-width:120px;}
+    .uBuy.aff{background:linear-gradient(180deg, var(--good), #17b26a);box-shadow:0 12px 26px rgba(50,213,131,.16);color:#052012;}
+
+    .uPing{position:absolute; inset:-2px;border-radius:18px;border:2px solid rgba(50,213,131,.0);pointer-events:none;}
+    .uCard.purchased .uPing{animation:ping 520ms ease-out forwards;}
+    @keyframes ping{
+      0%{border-color:rgba(50,213,131,.0); transform:scale(.98); opacity:0;}
+      20%{border-color:rgba(50,213,131,.55); opacity:1;}
+      100%{border-color:rgba(50,213,131,.0); transform:scale(1.02); opacity:0;}
+    }
+
+    .body{margin-top:10px;}
+
+    /* Cargo Feature Module UI */
+    .cargoTop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+    .toggle{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      font-size:12px;color:var(--muted);user-select:none;cursor:pointer;
+    }
+    .toggle.on{border-color:rgba(50,213,131,.25);background:rgba(50,213,131,.08);color:rgba(235,255,245,.95);}
+    .toggle.off{border-color:rgba(255,90,111,.18);background:rgba(255,90,111,.06);}
+    .cargoRow{
+      display:grid;
+      grid-template-columns: 1.05fr 1.15fr .9fr;
+      gap:10px;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      position:relative;
+    }
+    .cargoRow:last-child{border-bottom:0;}
+    .cargoRow.newUnlock{border-bottom:1px solid rgba(102,163,255,.14);}
+    .cargoRow.newUnlock:before{
+      content:"";
+      position:absolute; inset:-8px -10px;
+      border-radius:16px;
+      background:radial-gradient(520px 110px at 10% 50%, rgba(43,212,255,.14), transparent 55%);
+      border:1px solid rgba(43,212,255,.20);
+      opacity:0;
+      animation: unlockGlow 1.35s ease-out forwards;
+      pointer-events:none;
+    }
+    @keyframes unlockGlow{
+      0%{opacity:0; transform:scale(.99);}
+      18%{opacity:1; transform:scale(1.00);}
+      100%{opacity:0; transform:scale(1.01);}
+    }
+
+    .oreHead{display:flex;align-items:center;gap:10px;}
+    .oreIcon{
+      width:34px;height:34px;border-radius:13px;
+      background:
+        radial-gradient(18px 16px at 30% 25%, rgba(255,255,255,.16), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.16));
+      border:1px solid rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 16px 28px rgba(0,0,0,.22);
+      position:relative; overflow:hidden;
+    }
+    .oreIcon:after{
+      content:""; position:absolute; inset:-10px;
+      background: radial-gradient(60px 40px at 20% 10%, rgba(255,255,255,.10), transparent 60%);
+      pointer-events:none; opacity:.85;
+    }
+    .oreIcon svg{width:22px;height:22px;opacity:.98;filter:drop-shadow(0 0 18px rgba(255,255,255,.10));}
+
+    .oreName{font-weight:950;display:flex;align-items:center;gap:8px;}
+    .oreMeta{color:var(--muted);font-size:12px;margin-top:2px;}
+
+    .badge{
+      font-size:10px;padding:3px 7px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:rgba(220,235,255,.9);
+    }
+    .badge.good{border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08);}
+    .badge.warn{border-color:rgba(255,204,102,.25); background:rgba(255,204,102,.08);}
+    .badge.bad{border-color:rgba(255,90,111,.25); background:rgba(255,90,111,.08);}
+
+    .miniControls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .miniBtn{
+      padding:7px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);color:var(--txt);font-weight:900;cursor:pointer;font-size:12px;
+    }
+    .miniBtn.good{background:rgba(50,213,131,.12);border-color:rgba(50,213,131,.22);color:rgba(230,255,245,.95);}
+    .miniBtn.warn{background:rgba(255,204,102,.10);border-color:rgba(255,204,102,.22);color:rgba(255,245,220,.95);}
+    .miniBtn.bad{background:rgba(255,90,111,.10);border-color:rgba(255,90,111,.22);color:rgba(255,230,235,.95);}
+
+    .modeHint{
+      width:100%;
+      color:rgba(180,200,240,.9);
+      font-size:12px;
+      margin-top:2px;
+      opacity:.9;
+    }
+    .modeHint b{color:rgba(235,245,255,.95);}
+
+    .stepper{display:flex;gap:6px;align-items:center;}
+    .stepper button{
+      width:30px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);color:var(--txt);font-weight:950;cursor:pointer;
+    }
+    .stepper input{
+      width:60px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);color:var(--txt);text-align:center;font-weight:950;
+    }
+    .selectRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+    .trade{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      padding:10px;border-radius:14px;
+      background:rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.08);
+      margin-top:8px;
+    }
+
+    .toast{
+      position:fixed;top:14px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.58);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px;border-radius:999px;
+      color:var(--txt);font-weight:800;font-size:13px;
+      opacity:0;transition:opacity .2s;
+      pointer-events:none;z-index:50;
+    }
+    .toast.show{opacity:1;}
+
+    /* -------- Codex modal -------- */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:80;
+    }
+    .modalBackdrop.show{display:flex;}
+    .modal{
+      width:min(760px, 100%);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.35));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modalHeader{
+      padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+    }
+    .modalTitle{font-weight:950; letter-spacing:.2px;}
+    .modalBody{padding:12px 14px;}
+    .codexGrid{display:grid; gap:10px;}
+    .codexItem{
+      padding:10px 12px;border-radius:16px;
+      background:rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .codexLeft{display:flex; align-items:center; gap:10px;}
+    .codexIcon{
+      width:34px;height:34px;border-radius:14px;
+      background:
+        radial-gradient(18px 16px at 30% 25%, rgba(255,255,255,.16), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+      border:1px solid rgba(255,255,255,.14);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 16px 28px rgba(0,0,0,.22);
+      overflow:hidden;
+      position:relative;
+    }
+    .codexIcon:after{
+      content:""; position:absolute; inset:-10px;
+      background: radial-gradient(60px 40px at 20% 10%, rgba(255,255,255,.10), transparent 60%);
+      opacity:.85; pointer-events:none;
+    }
+    .codexIcon svg{width:22px;height:22px;filter:drop-shadow(0 0 18px rgba(255,255,255,.10));}
+    .codexName{font-weight:950;}
+    .codexMeta{font-size:12px;color:var(--muted);margin-top:2px;}
+    .codexRight{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+
+    /* ===== Planet Switcher ===== */
+    .planetBar{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      margin-top:10px; padding:10px;
+      background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.08); border-radius:14px;
+    }
+    .planetBtn{
+      cursor:pointer; user-select:none; border:0; border-radius:12px;
+      padding:8px 14px; font-weight:900; font-size:12px;
+      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+      color:var(--muted);
+      transition: transform .08s, background .14s, border-color .14s, color .14s, box-shadow .14s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .planetBtn:hover{ transform:translateY(-1px); }
+    .planetBtn.active-iron{
+      background:rgba(102,163,255,.14); border-color:rgba(102,163,255,.35);
+      color:var(--txt); box-shadow:0 8px 18px rgba(102,163,255,.14);
+    }
+    .planetBtn.active-vulcan{
+      background:rgba(255,90,50,.16); border-color:rgba(255,130,60,.40);
+      color:#ffd0b0; box-shadow:0 8px 18px rgba(255,90,50,.18);
+    }
+    .planetBtn:disabled{ opacity:.42; cursor:not-allowed; transform:none !important; box-shadow:none; }
+    .planetDot{
+      width:10px; height:10px; border-radius:50%; flex-shrink:0;
+    }
+    .planetDot.iron{ background:radial-gradient(circle at 35% 30%, #a8ccff, #3a5a9c); }
+    .planetDot.vulcan{ background:radial-gradient(circle at 35% 30%, #ffb060, #c93a10); }
+
+    /* ===== Vulcan Planet skin for the click area ===== */
+    .clickArea.planet-vulcan{
+      background:
+        radial-gradient(220px 170px at 52% 46%, rgba(255,100,30,.28), rgba(255,60,0,.04)),
+        radial-gradient(380px 220px at 70% 10%, rgba(200,60,0,.18), transparent 60%);
+      border-color: rgba(255,100,30,.18);
+    }
+    /* scanlines warm tint */
+    .clickArea.planet-vulcan .scanlines{
+      background:linear-gradient(180deg, rgba(255,100,30,.07), transparent 60%);
+    }
+
+    /* Vulcan asteroid look */
+    .asteroid.planet-vulcan{
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.9) 0 7px, transparent 9px),
+        radial-gradient(circle at 40% 35%, #ff9060 0%, #c05028 20%, #7a2210 50%, #3a0e06 78%, #180602 100%);
+      box-shadow:0 0 0 10px rgba(255,80,20,.10), 0 34px 70px rgba(0,0,0,.42), 0 0 60px rgba(255,70,10,.12);
+    }
+    .asteroid.planet-vulcan .cracks{
+      background:
+        radial-gradient(60px 40px at 65% 42%, rgba(255,140,30,.32) 0%, transparent 70%),
+        radial-gradient(80px 60px at 35% 65%, rgba(255,60,0,.24) 0%, transparent 72%),
+        radial-gradient(40px 30px at 50% 50%, rgba(255,200,80,.18) 0%, transparent 65%);
+      opacity:1;
+    }
+    .ring.planet-vulcan{
+      border-color:rgba(255,100,30,.22);
+      filter:drop-shadow(0 0 14px rgba(255,80,20,.14));
+    }
+
+    /* ===== Miner Rank Roadmap Modal ===== */
+    #roadmapBackdrop{ z-index:85; }
+
+    .roadmapScroll{
+      max-height: min(72vh, 600px);
+      overflow-y: auto;
+      padding: 4px 14px 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(102,163,255,.25) transparent;
+    }
+    .roadmapScroll::-webkit-scrollbar{ width:4px; }
+    .roadmapScroll::-webkit-scrollbar-thumb{ background:rgba(102,163,255,.22); border-radius:999px; }
+
+    .roadmap{
+      position:relative;
+      padding-left: 36px;
+    }
+    /* vertical spine */
+    .roadmap::before{
+      content:"";
+      position:absolute;
+      left:11px; top:8px; bottom:8px;
+      width:2px;
+      background: linear-gradient(180deg,
+        rgba(102,163,255,.55) 0%,
+        rgba(124,92,255,.40) 50%,
+        rgba(255,90,50,.30) 100%);
+      border-radius:999px;
+    }
+
+    .rmItem{
+      position:relative;
+      margin-bottom: 10px;
+      padding: 12px 12px 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.14));
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .rmItem.done{
+      background: linear-gradient(180deg, rgba(50,213,131,.07), rgba(0,0,0,.12));
+      border-color: rgba(50,213,131,.20);
+    }
+    .rmItem.current{
+      background: linear-gradient(180deg, rgba(102,163,255,.12), rgba(124,92,255,.06));
+      border-color: rgba(102,163,255,.38);
+      box-shadow: 0 0 0 1px rgba(102,163,255,.12), 0 12px 32px rgba(102,163,255,.12);
+    }
+    .rmItem.locked{
+      opacity:.55;
+    }
+    /* BIG unlock items (planet / major milestone) */
+    .rmItem.major{
+      background: linear-gradient(135deg, rgba(255,90,50,.12), rgba(124,92,255,.10), rgba(0,0,0,.18));
+      border-color: rgba(255,130,60,.35);
+      box-shadow: 0 0 0 1px rgba(255,90,50,.10), 0 12px 32px rgba(255,80,20,.10);
+    }
+    .rmItem.major.done{
+      background: linear-gradient(135deg, rgba(50,213,131,.10), rgba(102,163,255,.07));
+      border-color: rgba(50,213,131,.28);
+      box-shadow: 0 0 0 1px rgba(50,213,131,.10), 0 10px 28px rgba(50,213,131,.08);
+    }
+    .rmItem.major.current{
+      border-color: rgba(255,130,60,.55);
+      box-shadow: 0 0 0 1px rgba(255,90,50,.16), 0 14px 36px rgba(255,80,20,.16);
+    }
+
+    /* dot on spine */
+    .rmDot{
+      position:absolute;
+      left: -29px; top: 50%; transform: translateY(-50%);
+      width:14px; height:14px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      flex-shrink:0;
+      transition: background .15s, border-color .15s, box-shadow .15s;
+    }
+    .rmItem.done   .rmDot{ background:var(--good); border-color:rgba(50,213,131,.55); box-shadow:0 0 10px rgba(50,213,131,.35); }
+    .rmItem.current .rmDot{ background:var(--acc); border-color:rgba(102,163,255,.65); box-shadow:0 0 14px rgba(102,163,255,.45); animation:dotPulse 1.6s ease-in-out infinite; }
+    .rmItem.major:not(.done):not(.current) .rmDot{ background:rgba(255,100,40,.18); border-color:rgba(255,100,40,.38); }
+    .rmItem.major.done .rmDot{ background:var(--good); border-color:rgba(50,213,131,.55); box-shadow:0 0 12px rgba(50,213,131,.40); }
+    @keyframes dotPulse{
+      0%,100%{ box-shadow:0 0 8px rgba(102,163,255,.35); }
+      50%{ box-shadow:0 0 18px rgba(102,163,255,.65); }
+    }
+
+    .rmHeader{ display:flex; align-items:center; gap:10px; justify-content:space-between; }
+    .rmLeft{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .rmRank{
+      font-size:11px; font-weight:900; color:var(--muted);
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+      border-radius:999px; padding:3px 8px; flex-shrink:0; white-space:nowrap;
+    }
+    .rmItem.done .rmRank{ color:var(--good); border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); }
+    .rmItem.current .rmRank{ color:var(--acc); border-color:rgba(102,163,255,.30); background:rgba(102,163,255,.10); }
+    .rmItem.major .rmRank{ color:#ffb060; border-color:rgba(255,130,60,.30); background:rgba(255,100,30,.10); }
+    .rmItem.major.done .rmRank{ color:var(--good); border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); }
+
+    .rmTitle{ font-weight:900; letter-spacing:.1px; font-size:13px; }
+    .rmItem.major .rmTitle{ font-size:14px; }
+
+    .rmRewards{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .rmReward{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 9px; border-radius:999px; font-size:11px; font-weight:800;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
+      color:rgba(220,235,255,.9);
+    }
+    .rmReward.ore{ border-color:rgba(255,204,102,.22); background:rgba(255,204,102,.08); color:rgba(255,240,210,.95); }
+    .rmReward.planet{ border-color:rgba(255,100,40,.30); background:rgba(255,90,30,.12); color:#ffd0a8; font-size:12px; }
+    .rmReward.planet.unlocked{ border-color:rgba(50,213,131,.28); background:rgba(50,213,131,.09); color:rgba(220,255,235,.95); }
+    .rmReward.perk{ border-color:rgba(124,92,255,.28); background:rgba(124,92,255,.10); color:#d4c0ff; }
+    .rmReward.perk.unlocked{ border-color:rgba(50,213,131,.28); background:rgba(50,213,131,.09); color:rgba(220,255,235,.95); }
+    .rmReward.trade{ border-color:rgba(43,212,255,.22); background:rgba(43,212,255,.08); color:rgba(200,245,255,.95); }
+
+    .rmStatusTag{
+      font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; flex-shrink:0; white-space:nowrap;
+    }
+    .rmStatusTag.done{ background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.25); color:var(--good); }
+    .rmStatusTag.current{ background:rgba(102,163,255,.12); border:1px solid rgba(102,163,255,.28); color:var(--acc); }
+    .rmStatusTag.locked{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); color:var(--muted); }
+
+    /* XP mini-bar inside current item */
+    .rmXpBar{ height:4px; border-radius:999px; background:rgba(255,255,255,.07); margin-top:8px; overflow:hidden; }
+    .rmXpFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--acc), #2bd4ff); transition:width .3s; }
+
+    /* progress summary bar at top */
+    .rmProgress{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.07);
+      background:rgba(0,0,0,.12);
+    }
+    .rmProgressBar{ flex:1; min-width:120px; height:6px; border-radius:999px; background:rgba(255,255,255,.07); overflow:hidden; }
+    .rmProgressFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--good), var(--acc)); transition:width .3s; }
+    /* ===== Daily Quests ===== */
+    .questCard{
+      padding:12px; border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.14));
+      border:1px solid rgba(255,255,255,.09);
+      position:relative; overflow:hidden;
+    }
+    .questCard.complete{
+      background:linear-gradient(180deg, rgba(50,213,131,.08), rgba(0,0,0,.12));
+      border-color:rgba(50,213,131,.25);
+    }
+    .questCard.claimed{
+      opacity:.55;
+      background:rgba(0,0,0,.10);
+      border-color:rgba(255,255,255,.06);
+    }
+    .questTop{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .questLeft{ min-width:0; }
+    .questTitle{ font-weight:900; font-size:13px; }
+    .questDesc{ color:var(--muted); font-size:12px; margin-top:2px; }
+    .questRewards{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .questReward{
+      display:inline-flex; align-items:center; gap:5px;
+      padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800;
+      background:rgba(50,213,131,.10); border:1px solid rgba(50,213,131,.22); color:rgba(210,255,235,.95);
+    }
+    .questDiff{
+      font-size:10px; font-weight:900; padding:3px 8px; border-radius:999px; flex-shrink:0;
+    }
+    .questDiff.easy{ background:rgba(50,213,131,.12); border:1px solid rgba(50,213,131,.22); color:var(--good); }
+    .questDiff.medium{ background:rgba(255,204,102,.10); border:1px solid rgba(255,204,102,.22); color:var(--warn); }
+    .questDiff.hard{ background:rgba(255,90,111,.10); border:1px solid rgba(255,90,111,.22); color:var(--danger); }
+    .questProgressBar{ height:5px; border-radius:999px; background:rgba(255,255,255,.07); margin-top:10px; overflow:hidden; }
+    .questProgressFill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--good), #2bd4ff); transition:width .3s; }
+    .questProgressLabel{ font-size:11px; color:var(--muted); margin-top:4px; }
+
+    /* quest strip preview in HUD */
+    .questStrip{
+      display:flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:12px;
+      background:rgba(0,0,0,.14); border:1px solid rgba(255,255,255,.07);
+      font-size:12px; cursor:pointer;
+      transition: border-color .14s, background .14s;
+    }
+    .questStrip:hover{ border-color:rgba(102,163,255,.25); background:rgba(102,163,255,.07); }
+    .questStripDot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .questStripDot.done{ background:var(--good); }
+    .questStripDot.active{ background:var(--warn); }
+    .questStripDot.locked{ background:rgba(255,255,255,.18); }
+
+    /* ===== Skill Tree ===== */
+    .skillBranch{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .skillBranchHeader{
+      padding:8px 10px; border-radius:12px; text-align:center; font-weight:900; font-size:12px;
+      margin-bottom:2px;
+    }
+    .skillBranch.mining .skillBranchHeader{ background:rgba(43,212,255,.10); border:1px solid rgba(43,212,255,.20); color:rgba(180,245,255,.95); }
+    .skillBranch.economy .skillBranchHeader{ background:rgba(255,204,102,.10); border:1px solid rgba(255,204,102,.20); color:rgba(255,245,200,.95); }
+    .skillBranch.exploration .skillBranchHeader{ background:rgba(255,90,50,.10); border:1px solid rgba(255,100,50,.20); color:rgba(255,210,180,.95); }
+
+    .skillConnector{
+      width:2px; height:10px; border-radius:999px;
+      background:rgba(255,255,255,.12); margin:0 auto;
+    }
+    .skillBranch.mining .skillConnector{ background:rgba(43,212,255,.25); }
+    .skillBranch.economy .skillConnector{ background:rgba(255,204,102,.22); }
+    .skillBranch.exploration .skillConnector{ background:rgba(255,100,50,.22); }
+
+    .skillNode{
+      padding:10px; border-radius:14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.16));
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+      transition: transform .08s, border-color .14s, box-shadow .14s, opacity .14s;
+      position:relative; overflow:hidden;
+    }
+    .skillNode:hover:not(.locked-node){ transform:translateY(-1px); }
+    .skillNode.owned{
+      background:linear-gradient(180deg, rgba(50,213,131,.09), rgba(0,0,0,.14));
+      border-color:rgba(50,213,131,.28);
+    }
+    .skillNode.locked-node{ opacity:.42; cursor:not-allowed; }
+    .skillNode.affordable{ border-color:rgba(50,213,131,.28); box-shadow:0 8px 22px rgba(50,213,131,.10); }
+
+    .skillBranch.mining .skillNode.affordable{ border-color:rgba(43,212,255,.35); box-shadow:0 8px 22px rgba(43,212,255,.12); }
+    .skillBranch.economy .skillNode.affordable{ border-color:rgba(255,204,102,.32); box-shadow:0 8px 22px rgba(255,204,102,.10); }
+    .skillBranch.exploration .skillNode.affordable{ border-color:rgba(255,100,50,.35); box-shadow:0 8px 22px rgba(255,100,50,.10); }
+
+    .skillNodeName{ font-weight:900; font-size:12px; margin-bottom:3px; }
+    .skillNodeDesc{ font-size:11px; color:var(--muted); line-height:1.35; }
+    .skillNodeCost{ display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
+    .skillCostChip{
+      font-size:10px; font-weight:800; padding:3px 7px; border-radius:999px;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); color:var(--muted);
+      display:inline-flex; align-items:center; gap:4px;
+    }
+    .skillCostChip.met{ border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.08); color:rgba(210,255,235,.9); }
+    .skillOwnedBadge{
+      position:absolute; top:6px; right:6px;
+      font-size:9px; font-weight:900; padding:2px 6px; border-radius:999px;
+      background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.25); color:var(--good);
+    }
+    /* ===== Planet Overview Cards ===== */
+    .planetCard{
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.09);
+      overflow:hidden;
+      position:relative;
+    }
+    .planetCard.active-card{
+      border-color:rgba(102,163,255,.35);
+      box-shadow:0 0 0 1px rgba(102,163,255,.12), 0 12px 32px rgba(102,163,255,.10);
+    }
+    .planetCard.vulcan-card{
+      border-color:rgba(255,100,40,.22);
+    }
+    .planetCard.vulcan-card.active-card{
+      border-color:rgba(255,130,60,.45);
+      box-shadow:0 0 0 1px rgba(255,90,40,.14), 0 12px 32px rgba(255,80,20,.12);
+    }
+    .planetCard.locked-card{
+      opacity:.72;
+    }
+    .planetCard.future-card{
+      opacity:.45;
+      border-style:dashed;
+    }
+
+    .planetCardBanner{
+      height:90px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      gap:16px;
+    }
+    .planetCardBanner.iron-banner{
+      background:linear-gradient(135deg,
+        rgba(30,50,100,.85) 0%,
+        rgba(20,35,80,.70) 50%,
+        rgba(10,20,55,.80) 100%);
+    }
+    .planetCardBanner.vulcan-banner{
+      background:linear-gradient(135deg,
+        rgba(120,30,10,.80) 0%,
+        rgba(80,20,5,.70) 40%,
+        rgba(40,10,3,.80) 100%);
+    }
+    .planetCardBanner.future-banner{
+      background:linear-gradient(135deg,
+        rgba(50,20,80,.70),
+        rgba(20,10,40,.80));
+    }
+
+    /* animated stars inside banner */
+    .planetCardBanner::before{
+      content:"";
+      position:absolute; inset:0;
+      background-image:
+        radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,.55), transparent),
+        radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.40), transparent),
+        radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,.35), transparent),
+        radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,.50), transparent),
+        radial-gradient(1px 1px at 25% 80%, rgba(255,255,255,.30), transparent);
+      pointer-events:none;
+    }
+
+    .planetOrb{
+      width:60px; height:60px; border-radius:50%; flex-shrink:0;
+      position:relative; z-index:1;
+      box-shadow:0 8px 24px rgba(0,0,0,.40);
+    }
+    .planetOrb.iron-orb{
+      background:radial-gradient(circle at 35% 30%,
+        #a8d4ff 0%, #4a7ac0 25%, #2a4a8a 55%, #0e1f55 85%, #050e2e 100%);
+      box-shadow:0 0 0 2px rgba(100,160,255,.20), 0 8px 24px rgba(0,0,0,.40), 0 0 30px rgba(60,120,255,.15);
+    }
+    .planetOrb.vulcan-orb{
+      background:radial-gradient(circle at 35% 30%,
+        #ff9060 0%, #c05028 25%, #7a2210 55%, #3a0e06 85%, #180602 100%);
+      box-shadow:0 0 0 2px rgba(255,100,40,.22), 0 8px 24px rgba(0,0,0,.40), 0 0 30px rgba(255,70,10,.18);
+    }
+    .planetOrb.future-orb{
+      background:radial-gradient(circle at 35% 30%,
+        rgba(180,130,255,.6), rgba(80,40,160,.5), rgba(20,10,60,.8));
+      box-shadow:0 0 0 2px rgba(150,100,255,.15), 0 8px 24px rgba(0,0,0,.50);
+    }
+    .planetOrb.iron-orb::after{
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.30) 0 18%, transparent 45%);
+    }
+    .planetOrb.vulcan-orb::after{
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,220,180,.25) 0 18%, transparent 45%),
+        radial-gradient(ellipse at 60% 65%, rgba(255,80,10,.18), transparent 55%);
+    }
+
+    .planetBannerInfo{ z-index:1; min-width:0; }
+    .planetBannerName{ font-size:18px; font-weight:950; letter-spacing:.2px; }
+    .planetBannerSub{ font-size:12px; color:rgba(255,255,255,.55); margin-top:2px; }
+
+    .planetBannerBadge{
+      margin-left:auto; z-index:1; flex-shrink:0;
+      font-size:11px; font-weight:900; padding:5px 10px; border-radius:999px;
+    }
+    .planetBannerBadge.current{ background:rgba(102,163,255,.20); border:1px solid rgba(102,163,255,.35); color:var(--acc); }
+    .planetBannerBadge.owned{ background:rgba(50,213,131,.14); border:1px solid rgba(50,213,131,.28); color:var(--good); }
+    .planetBannerBadge.locked{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--muted); }
+    .planetBannerBadge.unlockable{ background:rgba(255,204,102,.12); border:1px solid rgba(255,204,102,.28); color:var(--warn); }
+
+    .planetCardBody{
+      padding:14px 16px 16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
+      display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;
+    }
+
+    .planetStats{ display:flex; flex-wrap:wrap; gap:6px; }
+    .planetStat{
+      display:inline-flex; align-items:center; gap:5px;
+      padding:5px 9px; border-radius:999px; font-size:11px; font-weight:800;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
+      color:rgba(220,235,255,.85);
+    }
+    .planetStat.good{ border-color:rgba(50,213,131,.22); background:rgba(50,213,131,.08); color:rgba(210,255,235,.95); }
+    .planetStat.warn{ border-color:rgba(255,204,102,.22); background:rgba(255,204,102,.08); color:rgba(255,245,200,.95); }
+    .planetStat.ore{ border-color:rgba(255,160,60,.22); background:rgba(255,140,40,.08); color:rgba(255,230,180,.95); }
+
+    .planetOres{ margin-top:8px; display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+    .planetOreLabel{ font-size:10px; font-weight:800; color:var(--muted); }
+
+    .planetCardActions{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; justify-content:center; }
+    .planetBuyInfo{ font-size:11px; color:var(--muted); text-align:right; line-height:1.4; }
+    .planetBuyInfo.can-afford{ color:var(--good); }
+    .planetBuyInfo.locked-mr{ color:var(--danger); }
+
+    /* Active planet glow ring on orb */
+    .planetOrb.active-glow.iron-orb{ box-shadow:0 0 0 3px rgba(102,163,255,.45), 0 0 0 6px rgba(102,163,255,.12), 0 8px 24px rgba(0,0,0,.40); }
+    .planetOrb.active-glow.vulcan-orb{ box-shadow:0 0 0 3px rgba(255,120,50,.50), 0 0 0 6px rgba(255,90,20,.14), 0 8px 24px rgba(0,0,0,.40); }
+    /* ===== Mobile / Touch fixes ===== */
+
+    /* Prevent ALL double-tap zoom globally */
+    * { touch-action: manipulation; }
+
+    /* But allow scrolling inside modals */
+    .modalBackdrop, .roadmapScroll { touch-action: pan-y; }
+
+    /* Prevent text selection on rapid taps (asteroid, buttons) */
+    .asteroid, .btn, .tab, .planetBtn, .uBuy, .miniBtn {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 10px 10px 24px; }
+
+      /* Stack the two main cards vertically (they already do, but tighten gaps) */
+      .top { gap: 10px; }
+      .card { padding: 12px; }
+
+      /* Asteroid stage a bit smaller */
+      .stage { height: 210px; }
+      .asteroid { width: 118px; height: 118px; }
+
+      /* Planet bar wraps nicely */
+      .planetBar { flex-wrap: wrap; gap: 6px; }
+      .planetBar .btn { margin-left: 0 !important; width: 100%; justify-content: center; }
+
+      /* Quest strip text doesn't overflow */
+      .questStrip span { font-size: 11px; }
+
+      /* Shop tabs scrollable on tiny screens */
+      .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 2px; }
+      .tab  { flex-shrink: 0; }
+
+      /* Upgrade cards full width */
+      .upgradeList { grid-template-columns: 1fr; }
+
+      /* Modals full screen on mobile */
+      .modal {
+        width: 100% !important;
+        max-height: 92dvh;
+        border-radius: 20px 20px 0 0;
+        margin-top: auto;
+      }
+      .modalBackdrop {
+        align-items: flex-end;
+      }
+
+      /* Planet overview cards: orb + info side by side, actions below */
+      .planetCardBody {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .planetCardActions {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .planetCardBanner { height: 75px; }
+      .planetOrb { width: 48px; height: 48px; }
+      .planetBannerName { font-size: 15px; }
+
+      /* Skill tree: single column on mobile */
+      #skillTreeEl { grid-template-columns: 1fr !important; }
+
+      /* Bigger tap targets for the asteroid click area */
+      #clickArea { min-height: 210px; }
+
+      /* Grid buttons (Daily Quests / Reset) */
+      .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    }
+
+    @media (max-width: 380px) {
+      .stage { height: 185px; }
+      .asteroid { width: 105px; height: 105px; }
+      .big { font-size: 26px; }
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -1251,100 +1248,97 @@ body:before{
           </div>
         </div>
 
-```
-    <div class="panel">
-      <div class="row" style="justify-content:space-between;">
-        <div>
-          <div class="muted">Miner Rank</div>
-          <div style="font-weight:950;font-size:18px;">MR <span id="minerRank">1</span></div>
+        <div class="panel">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <div class="muted">Miner Rank</div>
+              <div style="font-weight:950;font-size:18px;">MR <span id="minerRank">1</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+              <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
+              <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP</div>
+            </div>
+          </div>
+          <div class="bar" style="margin-top:8px;"><div id="xpBar"></div></div>
+          <div class="muted" style="margin-top:8px;font-size:12px;" id="rankPerkText">Bonus: —</div>
+          <div class="muted" style="margin-top:6px;font-size:12px;" id="nextUnlockText">Next unlock: —</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
-          <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP</div>
+
+        <div class="clickArea" id="clickArea" role="button" aria-label="Fire mining laser">
+          <div class="scanlines"></div>
+
+          <div class="asteroidStage" id="stage">
+            <div class="orbitRing"></div>
+            <div class="orbitRing r2"></div>
+            <div class="orbitRing r3"></div>
+
+            <div id="droneLayer"></div>
+
+            <div class="asteroidWrap" id="asteroidWrap">
+              <div class="ring"></div>
+              <div class="asteroid" id="asteroid"><div class="cracks" id="cracks"></div></div>
+            </div>
+          </div>
+
+          <div class="laser" id="laser1"></div>
+          <div class="laser" id="laser2"></div>
+        </div>
+
+        <div class="grid">
+          <button class="btn good" id="openQuestsBtn">📋 Daily Quests</button>
+          <button class="btn secondary" id="reset">Reset</button>
+        </div>
+
+        <div class="planetBar">
+          <span style="font-size:12px;font-weight:800;color:var(--muted);flex:0 0 auto;">Zone:</span>
+          <button class="planetBtn active-iron" id="btnPlanetIron" data-planet="iron">
+            <span class="planetDot iron"></span>Iron Belt
+          </button>
+          <button class="planetBtn" id="btnPlanetVulcan" data-planet="vulcan">
+            <span class="planetDot vulcan"></span>Vulcan Core
+          </button>
+          <button class="btn secondary" id="openPlanetsBtn" style="margin-left:auto;padding:5px 10px;font-size:11px;border-radius:10px;flex-shrink:0;">🪐 Explore</button>
+        </div>
+
+        <!-- Daily Quest preview strip -->
+        <div id="questStrip" style="margin-top:10px;display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+
+      <div class="card shop">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <b>Dock Shop</b>
+            <div class="muted">Upgrades, Cargo Features, Trading.</div>
+          </div>
+        </div>
+
+        <div class="upgradeHeader">
+          <div>
+            <b>Modules</b>
+            <div class="muted">Drones werden per Upgrade gespawnt (Start: 0).</div>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Shop tabs">
+            <div class="tab active" id="tabCore" role="tab" aria-selected="true">Core</div>
+            <div class="tab" id="tabCargo" role="tab" aria-selected="false">Cargo/Trade</div>
+            <div class="tab" id="tabSkill" role="tab" aria-selected="false">⚡ Skills</div>
+            <div class="tab" id="tabCos" role="tab" aria-selected="false">Cosmetic</div>
+          </div>
+        </div>
+
+        <div id="upgradesList" class="upgradeList"></div>
+
+        <div class="panel" style="margin-top:12px;">
+          <div class="row" style="justify-content:space-between;">
+            <div>
+              <b>Offline Haul</b>
+              <div class="muted">Credits + Cargo werden offline simuliert.</div>
+            </div>
+            <button class="btn secondary" id="toggleOffline">Show</button>
+          </div>
+          <div class="muted" style="margin-top:8px;display:none;" id="offlineText"></div>
         </div>
       </div>
-      <div class="bar" style="margin-top:8px;"><div id="xpBar"></div></div>
-      <div class="muted" style="margin-top:8px;font-size:12px;" id="rankPerkText">Bonus: —</div>
-      <div class="muted" style="margin-top:6px;font-size:12px;" id="nextUnlockText">Next unlock: —</div>
     </div>
-
-    <div class="clickArea" id="clickArea" role="button" aria-label="Fire mining laser">
-      <div class="scanlines"></div>
-
-      <div class="asteroidStage" id="stage">
-        <div class="orbitRing"></div>
-        <div class="orbitRing r2"></div>
-        <div class="orbitRing r3"></div>
-
-        <div id="droneLayer"></div>
-
-        <div class="asteroidWrap" id="asteroidWrap">
-          <div class="ring"></div>
-          <div class="asteroid" id="asteroid"><div class="cracks" id="cracks"></div></div>
-        </div>
-      </div>
-
-      <div class="laser" id="laser1"></div>
-      <div class="laser" id="laser2"></div>
-    </div>
-
-    <div class="grid">
-      <button class="btn good" id="openQuestsBtn">📋 Daily Quests</button>
-      <button class="btn secondary" id="reset">Reset</button>
-    </div>
-
-    <div class="planetBar">
-      <span style="font-size:12px;font-weight:800;color:var(--muted);flex:0 0 auto;">Zone:</span>
-      <button class="planetBtn active-iron" id="btnPlanetIron" data-planet="iron">
-        <span class="planetDot iron"></span>Iron Belt
-      </button>
-      <button class="planetBtn" id="btnPlanetVulcan" data-planet="vulcan">
-        <span class="planetDot vulcan"></span>Vulcan Core
-      </button>
-      <button class="btn secondary" id="openPlanetsBtn" style="margin-left:auto;padding:5px 10px;font-size:11px;border-radius:10px;flex-shrink:0;">🪐 Explore</button>
-    </div>
-
-    <!-- Daily Quest preview strip -->
-    <div id="questStrip" style="margin-top:10px;display:flex;flex-direction:column;gap:5px;"></div>
-  </div>
-
-  <div class="card shop">
-    <div class="row" style="justify-content:space-between;">
-      <div>
-        <b>Dock Shop</b>
-        <div class="muted">Upgrades, Cargo Features, Trading.</div>
-      </div>
-    </div>
-
-    <div class="upgradeHeader">
-      <div>
-        <b>Modules</b>
-        <div class="muted">Drones werden per Upgrade gespawnt (Start: 0).</div>
-      </div>
-      <div class="tabs" role="tablist" aria-label="Shop tabs">
-        <div class="tab active" id="tabCore" role="tab" aria-selected="true">Core</div>
-        <div class="tab" id="tabCargo" role="tab" aria-selected="false">Cargo/Trade</div>
-        <div class="tab" id="tabSkill" role="tab" aria-selected="false">⚡ Skills</div>
-        <div class="tab" id="tabCos" role="tab" aria-selected="false">Cosmetic</div>
-      </div>
-    </div>
-
-    <div id="upgradesList" class="upgradeList"></div>
-
-    <div class="panel" style="margin-top:12px;">
-      <div class="row" style="justify-content:space-between;">
-        <div>
-          <b>Offline Haul</b>
-          <div class="muted">Credits + Cargo werden offline simuliert.</div>
-        </div>
-        <button class="btn secondary" id="toggleOffline">Show</button>
-      </div>
-      <div class="muted" style="margin-top:8px;display:none;" id="offlineText"></div>
-    </div>
-  </div>
-</div>
-```
-
   </div>
 
   <div class="toast" id="toast"></div>
@@ -1365,7 +1359,6 @@ body:before{
   </div>
 
   <!-- ===== Planet Overview Modal ===== -->
-
   <div class="modalBackdrop" id="planetsBackdrop" role="dialog" aria-modal="true" aria-label="Planet Overview">
     <div class="modal" style="width:min(700px,100%);">
       <div class="modalHeader">
@@ -1382,7 +1375,6 @@ body:before{
   </div>
 
   <!-- ===== Daily Quest Modal ===== -->
-
   <div class="modalBackdrop" id="questBackdrop" role="dialog" aria-modal="true" aria-label="Daily Quests">
     <div class="modal" style="width:min(560px,100%);">
       <div class="modalHeader">
@@ -1399,7 +1391,6 @@ body:before{
   </div>
 
   <!-- ===== Skill Tree Modal ===== -->
-
   <div class="modalBackdrop" id="skillBackdrop" role="dialog" aria-modal="true" aria-label="Skill Tree">
     <div class="modal" style="width:min(680px,100%);">
       <div class="modalHeader">
@@ -4210,6 +4201,5 @@ body:before{
 
 })();
 </script>
-
 </body>
 </html>
