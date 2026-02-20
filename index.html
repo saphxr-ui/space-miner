@@ -3124,18 +3124,35 @@
   }
 
   async function lbUpsert(username){
-    const mr     = state.minerRank;
+    const mr      = state.minerRank;
     const credits = Math.floor(state.credits);
+    const score   = mr * 100000 + credits;
     try {
-      const res = await fetch(
+      // First try insert
+      const resInsert = await fetch(
         `${SB_URL}/rest/v1/leaderboard`,
         {
           method: "POST",
-          headers: { ...sbHeaders, "Prefer": "resolution=merge-duplicates,return=minimal" },
-          body: JSON.stringify({ username, miner_rank: mr, credits })
+          headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
+          body: JSON.stringify({ username, miner_rank: mr, credits, score, updated_at: new Date().toISOString() })
         }
       );
-      if(!res.ok) throw new Error(await res.text());
+
+      // If insert was ignored (duplicate), do explicit update only if score improved
+      if(resInsert.status === 200 || resInsert.status === 201){
+        return true; // fresh insert worked
+      }
+
+      // Row exists — update via PATCH
+      const resUpdate = await fetch(
+        `${SB_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(username)}`,
+        {
+          method: "PATCH",
+          headers: { ...sbHeaders, "Prefer": "return=minimal" },
+          body: JSON.stringify({ miner_rank: mr, credits, score, updated_at: new Date().toISOString() })
+        }
+      );
+      if(!resUpdate.ok) throw new Error(await resUpdate.text());
       return true;
     } catch(e) {
       console.error("LB upsert error:", e);
