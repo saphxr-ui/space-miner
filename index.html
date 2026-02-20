@@ -1150,7 +1150,32 @@
     /* Active planet glow ring on orb */
     .planetOrb.active-glow.iron-orb{ box-shadow:0 0 0 3px rgba(102,163,255,.45), 0 0 0 6px rgba(102,163,255,.12), 0 8px 24px rgba(0,0,0,.40); }
     .planetOrb.active-glow.vulcan-orb{ box-shadow:0 0 0 3px rgba(255,120,50,.50), 0 0 0 6px rgba(255,90,20,.14), 0 8px 24px rgba(0,0,0,.40); }
-    /* ===== Mobile / Touch fixes ===== */
+    /* ===== Leaderboard ===== */
+    .lbRow{
+      display:grid;
+      grid-template-columns: 32px 1fr auto auto;
+      align-items:center; gap:10px;
+      padding:10px 12px; border-radius:14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.14));
+      border:1px solid rgba(255,255,255,.08);
+      transition: border-color .14s;
+    }
+    .lbRow.me{
+      background:linear-gradient(180deg, rgba(102,163,255,.10), rgba(0,0,0,.12));
+      border-color:rgba(102,163,255,.30);
+    }
+    .lbRow.top1{ border-color:rgba(255,204,102,.35); background:linear-gradient(180deg,rgba(255,204,102,.09),rgba(0,0,0,.14)); }
+    .lbRow.top2{ border-color:rgba(210,230,255,.25); background:linear-gradient(180deg,rgba(210,230,255,.07),rgba(0,0,0,.14)); }
+    .lbRow.top3{ border-color:rgba(255,140,60,.28); background:linear-gradient(180deg,rgba(255,140,60,.08),rgba(0,0,0,.14)); }
+    .lbRank{ font-size:14px; font-weight:950; text-align:center; color:var(--muted); }
+    .lbRank.gold{ color:rgba(255,204,102,.95); }
+    .lbRank.silver{ color:rgba(210,230,255,.90); }
+    .lbRank.bronze{ color:rgba(255,140,60,.90); }
+    .lbName{ font-weight:900; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lbMR{ font-size:11px; font-weight:800; color:var(--acc); white-space:nowrap; }
+    .lbScore{ font-size:11px; font-weight:800; color:var(--muted); white-space:nowrap; }
+    #lbUsernameInput::placeholder{ color:rgba(255,255,255,.28); }
+    #lbUsernameInput:focus{ border-color:rgba(102,163,255,.45); background:rgba(0,0,0,.35); }
 
     /* Prevent ALL double-tap zoom globally */
     * { touch-action: manipulation; }
@@ -1255,7 +1280,10 @@
               <div style="font-weight:950;font-size:18px;">MR <span id="minerRank">1</span></div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-              <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
+              <div style="display:flex;gap:6px;">
+                <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
+                <button class="btn secondary" id="openLeaderboardBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🏆 Board</button>
+              </div>
               <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP</div>
             </div>
           </div>
@@ -1354,6 +1382,39 @@
       </div>
       <div class="modalBody">
         <div class="codexGrid" id="codexGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Leaderboard Modal ===== -->
+  <div class="modalBackdrop" id="lbBackdrop" role="dialog" aria-modal="true" aria-label="Leaderboard">
+    <div class="modal" style="width:min(540px,100%);">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle">🏆 Leaderboard</div>
+          <div class="muted" style="font-size:12px;" id="lbSubLabel">Top Miners</div>
+        </div>
+        <button class="btn secondary" id="closeLb">Close</button>
+      </div>
+      <div class="modalBody" style="padding:10px 14px 16px;">
+
+        <!-- Submit score section -->
+        <div id="lbSubmitSection" style="margin-bottom:14px;padding:12px;border-radius:16px;background:rgba(102,163,255,.07);border:1px solid rgba(102,163,255,.18);">
+          <div style="font-weight:900;font-size:13px;margin-bottom:8px;">📡 Submit Your Score</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="lbUsernameInput" type="text" maxlength="20" placeholder="Your miner name…"
+              style="flex:1;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+              background:rgba(0,0,0,.25);color:var(--txt);font-size:13px;font-weight:800;outline:none;
+              -webkit-appearance:none;" />
+            <button class="btn good" id="lbSubmitBtn" style="padding:9px 16px;flex-shrink:0;">Submit</button>
+          </div>
+          <div id="lbSubmitStatus" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px;"></div>
+        </div>
+
+        <!-- Top list -->
+        <div id="lbList" style="display:flex;flex-direction:column;gap:6px;">
+          <div class="muted" style="text-align:center;padding:20px;">Loading…</div>
+        </div>
       </div>
     </div>
   </div>
@@ -3035,6 +3096,149 @@
   }
   function closePlanetOverview(){ planetsBackdrop.classList.remove("show"); }
 
+  /* ===== Leaderboard (Supabase) ===== */
+
+  const SB_URL = "https://gefdwzwrovsucpzyhndz.supabase.co";
+  const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlZmR3endyb3ZzdWNwenlobmR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2MjI3OTEsImV4cCI6MjA4NzE5ODc5MX0.ULOa8YDdHJNe--0WK3mi_jnzcwOiZJsJ5RFO5jCslDo";
+
+  const sbHeaders = {
+    "apikey": SB_KEY,
+    "Authorization": `Bearer ${SB_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
+  };
+
+  async function lbFetch(){
+    try {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/leaderboard?select=username,miner_rank,credits,score&order=score.desc&limit=25`,
+        { headers: sbHeaders }
+      );
+      if(!res.ok) throw new Error(await res.text());
+      return await res.json();
+    } catch(e) {
+      console.error("LB fetch error:", e);
+      return null;
+    }
+  }
+
+  async function lbUpsert(username){
+    const mr     = state.minerRank;
+    const credits = Math.floor(state.credits);
+    try {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/leaderboard`,
+        {
+          method: "POST",
+          headers: { ...sbHeaders, "Prefer": "resolution=merge-duplicates,return=minimal" },
+          body: JSON.stringify({ username, miner_rank: mr, credits })
+        }
+      );
+      if(!res.ok) throw new Error(await res.text());
+      return true;
+    } catch(e) {
+      console.error("LB upsert error:", e);
+      return false;
+    }
+  }
+
+  function lbRankIcon(i){
+    if(i===0) return `<span class="lbRank gold">🥇</span>`;
+    if(i===1) return `<span class="lbRank silver">🥈</span>`;
+    if(i===2) return `<span class="lbRank bronze">🥉</span>`;
+    return `<span class="lbRank">${i+1}</span>`;
+  }
+
+  function renderLbList(rows, myName){
+    const el2 = el("lbList");
+    if(!rows || rows.length === 0){
+      el2.innerHTML = `<div class="muted" style="text-align:center;padding:20px;">Keine Einträge yet — sei der Erste!</div>`;
+      return;
+    }
+    el("lbSubLabel").textContent = `Top ${rows.length} Miners · Live`;
+    el2.innerHTML = rows.map((row, i) => {
+      const isMe = myName && row.username.toLowerCase() === myName.toLowerCase();
+      let rowCls = "lbRow";
+      if(isMe) rowCls += " me";
+      if(i===0) rowCls += " top1";
+      else if(i===1) rowCls += " top2";
+      else if(i===2) rowCls += " top3";
+      return `
+        <div class="${rowCls}">
+          ${lbRankIcon(i)}
+          <div class="lbName">${escapeHtml(row.username)}${isMe ? " <span style='font-size:10px;color:var(--acc);'>(you)</span>" : ""}</div>
+          <div class="lbMR">MR ${row.miner_rank}</div>
+          <div class="lbScore">${fmt(row.credits)}c</div>
+        </div>`;
+    }).join("");
+  }
+
+  async function openLeaderboard(){
+    el("lbBackdrop").classList.add("show");
+    el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">Loading…</div>`;
+
+    // Restore saved username if any
+    const saved = localStorage.getItem("spaceminer_username") || "";
+    el("lbUsernameInput").value = saved;
+
+    const rows = await lbFetch();
+    if(rows === null){
+      el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">⚠️ Could not load leaderboard.</div>`;
+    } else {
+      renderLbList(rows, saved);
+    }
+  }
+
+  function closeLeaderboard(){ el("lbBackdrop").classList.remove("show"); }
+
+  // Submit handler
+  el("lbSubmitBtn").addEventListener("click", async () => {
+    const username = el("lbUsernameInput").value.trim();
+    const statusEl = el("lbSubmitStatus");
+
+    if(!username){
+      statusEl.textContent = "⚠️ Please enter a name.";
+      statusEl.style.color = "var(--danger)";
+      return;
+    }
+    if(username.length < 2){
+      statusEl.textContent = "⚠️ Name must be at least 2 characters.";
+      statusEl.style.color = "var(--danger)";
+      return;
+    }
+
+    el("lbSubmitBtn").disabled = true;
+    el("lbSubmitBtn").textContent = "…";
+    statusEl.style.color = "var(--muted)";
+    statusEl.textContent = "Submitting…";
+
+    const ok = await lbUpsert(username);
+
+    el("lbSubmitBtn").disabled = false;
+    el("lbSubmitBtn").textContent = "Submit";
+
+    if(ok){
+      localStorage.setItem("spaceminer_username", username);
+      statusEl.textContent = `✓ Score submitted! MR ${state.minerRank} · ${fmt(state.credits)}c`;
+      statusEl.style.color = "var(--good)";
+      // Reload list
+      const rows = await lbFetch();
+      renderLbList(rows, username);
+    } else {
+      statusEl.textContent = "⚠️ Submit failed — check connection.";
+      statusEl.style.color = "var(--danger)";
+    }
+  });
+
+  // Allow Enter key in username input
+  el("lbUsernameInput").addEventListener("keydown", (e) => {
+    if(e.key === "Enter") el("lbSubmitBtn").click();
+  });
+
+  el("openLeaderboardBtn").addEventListener("click", openLeaderboard);
+  el("closeLb").addEventListener("click", closeLeaderboard);
+  el("lbBackdrop").addEventListener("click", (e) => { if(e.target === el("lbBackdrop")) closeLeaderboard(); });
+
   function openQuests(){
     renderQuestModal();
     questBackdrop.classList.add("show");
@@ -4165,6 +4369,7 @@
       if(questBackdrop.classList.contains("show")) closeQuests();
       if(planetsBackdrop.classList.contains("show")) closePlanetOverview();
       if(el("skillBackdrop").classList.contains("show")) el("skillBackdrop").classList.remove("show");
+      if(el("lbBackdrop").classList.contains("show")) closeLeaderboard();
     }
   });
 
