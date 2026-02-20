@@ -1402,13 +1402,17 @@
         <div id="lbSubmitSection" style="margin-bottom:14px;padding:12px;border-radius:16px;background:rgba(102,163,255,.07);border:1px solid rgba(102,163,255,.18);">
           <div style="font-weight:900;font-size:13px;margin-bottom:8px;">📡 Submit Your Score</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input id="lbUsernameInput" type="text" maxlength="20" placeholder="Your miner name…"
+            <input id="lbUsernameInput" type="text" maxlength="20" placeholder="Miner name…"
               style="flex:1;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+              background:rgba(0,0,0,.25);color:var(--txt);font-size:13px;font-weight:800;outline:none;
+              -webkit-appearance:none;" />
+            <input id="lbPinInput" type="password" maxlength="20" placeholder="PIN…"
+              style="width:80px;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
               background:rgba(0,0,0,.25);color:var(--txt);font-size:13px;font-weight:800;outline:none;
               -webkit-appearance:none;" />
             <button class="btn good" id="lbSubmitBtn" style="padding:9px 16px;flex-shrink:0;">Submit</button>
           </div>
-          <div id="lbSubmitStatus" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px;"></div>
+          <div id="lbSubmitStatus" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px;">Erster Submit = PIN wird registriert · danach schützt er deinen Namen</div>
         </div>
 
         <!-- Top list -->
@@ -3123,41 +3127,42 @@
     }
   }
 
-  async function lbUpsert(username){
-    const mr      = state.minerRank;
-    const credits = Math.floor(state.credits);
-    const score   = mr * 100000 + credits;
+  async function lbUpsert(username, pin){
+    const mr       = state.minerRank;
+    const credits  = Math.floor(state.credits);
+    const score    = mr * 100000 + credits;
+    const pin_hash = await hashPin(pin);
     try {
-      // First try insert
-      const resInsert = await fetch(
-        `${SB_URL}/rest/v1/leaderboard`,
-        {
-          method: "POST",
-          headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
-          body: JSON.stringify({ username, miner_rank: mr, credits, score, updated_at: new Date().toISOString() })
-        }
-      );
-
-      // If insert was ignored (duplicate), do explicit update only if score improved
-      if(resInsert.status === 200 || resInsert.status === 201){
-        return true; // fresh insert worked
+      const resInsert = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
+        method: "POST",
+        headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify({ username, miner_rank: mr, credits, score, pin_hash, updated_at: new Date().toISOString() })
+      });
+      if(resInsert.status === 201 || resInsert.status === 200){
+        return { ok:true, msg:"new" };
       }
-
-      // Row exists — update via PATCH
+      // Username exists — PATCH only if PIN matches
       const resUpdate = await fetch(
-        `${SB_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(username)}`,
+        `${SB_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
         {
           method: "PATCH",
-          headers: { ...sbHeaders, "Prefer": "return=minimal" },
+          headers: { ...sbHeaders, "Prefer": "return=representation" },
           body: JSON.stringify({ miner_rank: mr, credits, score, updated_at: new Date().toISOString() })
         }
       );
       if(!resUpdate.ok) throw new Error(await resUpdate.text());
-      return true;
-    } catch(e) {
+      const updated = await resUpdate.json();
+      if(!updated.length) return { ok:false, msg:"wrong_pin" };
+      return { ok:true, msg:"updated" };
+    } catch(e){
       console.error("LB upsert error:", e);
-      return false;
+      return { ok:false, msg:"error" };
     }
+  }
+
+  async function hashPin(pin){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
   }
 
   function lbRankIcon(i){
@@ -3184,7 +3189,7 @@
       return `
         <div class="${rowCls}">
           ${lbRankIcon(i)}
-          <div class="lbName">${escapeHtml(row.username)}${isMe ? " <span style='font-size:10px;color:var(--acc);'>(you)</span>" : ""}</div>
+          <div class="lbName">${escapeHtml(row.username)}${isMe?" <span style=\'font-size:10px;color:var(--acc);\'>(you)</span>":""}</div>
           <div class="lbMR">MR ${row.miner_rank}</div>
           <div class="lbScore">${fmt(row.credits)}c</div>
         </div>`;
@@ -3194,86 +3199,71 @@
   async function openLeaderboard(){
     el("lbBackdrop").classList.add("show");
     el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">Loading…</div>`;
-
-    // Restore saved username and show current score
-    const saved = localStorage.getItem("spaceminer_username") || "";
-    el("lbUsernameInput").value = saved;
+    const savedUser = localStorage.getItem("spaceminer_username") || "";
+    const savedPin  = localStorage.getItem("spaceminer_pin") || "";
+    el("lbUsernameInput").value = savedUser;
+    el("lbPinInput").value = savedPin ? "••••" : "";
     el("lbSubmitStatus").style.color = "var(--muted)";
     el("lbSubmitStatus").textContent = `Current score: MR ${state.minerRank} · ${fmt(state.credits)}c`;
-
     const rows = await lbFetch();
     if(rows === null){
       el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">⚠️ Could not load leaderboard.</div>`;
     } else {
-      renderLbList(rows, saved);
+      renderLbList(rows, savedUser);
     }
   }
 
   function closeLeaderboard(){ el("lbBackdrop").classList.remove("show"); }
 
-  // Submit handler
   el("lbSubmitBtn").addEventListener("click", async () => {
     const username = el("lbUsernameInput").value.trim();
+    const pinRaw   = el("lbPinInput").value.trim();
     const statusEl = el("lbSubmitStatus");
-
-    if(!username){
-      statusEl.textContent = "⚠️ Please enter a name.";
-      statusEl.style.color = "var(--danger)";
-      return;
-    }
-    if(username.length < 2){
-      statusEl.textContent = "⚠️ Name must be at least 2 characters.";
-      statusEl.style.color = "var(--danger)";
-      return;
-    }
-
+    if(!username){ statusEl.textContent="⚠️ Bitte Namen eingeben."; statusEl.style.color="var(--danger)"; return; }
+    if(username.length < 2){ statusEl.textContent="⚠️ Name mind. 2 Zeichen."; statusEl.style.color="var(--danger)"; return; }
+    const storedPin = localStorage.getItem("spaceminer_pin") || "";
+    const pin = (pinRaw === "••••" && storedPin) ? storedPin : pinRaw;
+    if(!pin || pin.length < 4){ statusEl.textContent="⚠️ PIN mind. 4 Zeichen."; statusEl.style.color="var(--danger)"; return; }
     el("lbSubmitBtn").disabled = true;
     el("lbSubmitBtn").textContent = "…";
     statusEl.style.color = "var(--muted)";
     statusEl.textContent = "Submitting…";
-
-    const ok = await lbUpsert(username);
-
+    const result = await lbUpsert(username, pin);
     el("lbSubmitBtn").disabled = false;
     el("lbSubmitBtn").textContent = "Submit";
-
-    if(ok){
+    if(result.ok){
       localStorage.setItem("spaceminer_username", username);
-      statusEl.textContent = `✓ Score submitted! MR ${state.minerRank} · ${fmt(state.credits)}c`;
+      localStorage.setItem("spaceminer_pin", pin);
+      statusEl.textContent = result.msg==="new" ? `✓ Registriert! MR ${state.minerRank} · ${fmt(state.credits)}c` : `✓ Score updated! MR ${state.minerRank} · ${fmt(state.credits)}c`;
       statusEl.style.color = "var(--good)";
-      // Reload list
       const rows = await lbFetch();
       renderLbList(rows, username);
+    } else if(result.msg==="wrong_pin"){
+      statusEl.textContent = "⚠️ Falscher PIN für diesen Namen.";
+      statusEl.style.color = "var(--danger)";
     } else {
-      statusEl.textContent = "⚠️ Submit failed — check connection.";
+      statusEl.textContent = "⚠️ Fehler — Verbindung prüfen.";
       statusEl.style.color = "var(--danger)";
     }
   });
 
-  // Allow Enter key in username input
-  el("lbUsernameInput").addEventListener("keydown", (e) => {
-    if(e.key === "Enter") el("lbSubmitBtn").click();
-  });
+  el("lbUsernameInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") el("lbPinInput").focus(); });
+  el("lbPinInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") el("lbSubmitBtn").click(); });
+  el("lbPinInput").addEventListener("focus", ()=>{ if(el("lbPinInput").value==="••••") el("lbPinInput").value=""; });
 
   el("openLeaderboardBtn").addEventListener("click", openLeaderboard);
   el("closeLb").addEventListener("click", closeLeaderboard);
-  el("lbBackdrop").addEventListener("click", (e) => { if(e.target === el("lbBackdrop")) closeLeaderboard(); });
+  el("lbBackdrop").addEventListener("click", (e)=>{ if(e.target===el("lbBackdrop")) closeLeaderboard(); });
 
-  // Silent background sync — only if user already has a saved username
   async function lbSilentSync(){
     const username = localStorage.getItem("spaceminer_username");
-    if(!username) return;
-    await lbUpsert(username);
+    const pin      = localStorage.getItem("spaceminer_pin");
+    if(!username || !pin) return;
+    await lbUpsert(username, pin);
   }
 
-  // Auto-sync every 3 minutes
   setInterval(lbSilentSync, 3 * 60 * 1000);
-
-  // Sync on tab hide/close (best-effort)
-  document.addEventListener("visibilitychange", () => {
-    if(document.visibilityState === "hidden") lbSilentSync();
-  });
-
+  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") lbSilentSync(); });
   function openQuests(){
     renderQuestModal();
     questBackdrop.classList.add("show");
