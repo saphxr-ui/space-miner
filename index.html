@@ -1255,6 +1255,61 @@
       .asteroidWrap { width: 105px; height: 105px; }
       .big { font-size: 26px; }
     }
+
+    /* ===== Void Expanse Planet ===== */
+    .planetDot.void{
+      background:radial-gradient(circle, #c084fc, #7c3aed);
+      box-shadow:0 0 6px rgba(192,132,252,.6);
+    }
+    .planetBtn.active-void{
+      background:rgba(124,58,237,.18);
+      border-color:rgba(192,132,252,.35);
+      color:#e9d5ff;
+    }
+    .clickArea.planet-void{
+      background:
+        radial-gradient(200px 160px at 50% 44%, rgba(124,58,237,.32), rgba(88,28,135,.06)),
+        radial-gradient(360px 200px at 75% 8%, rgba(168,85,247,.18), transparent 60%);
+      border-color: rgba(167,139,250,.22);
+    }
+    .clickArea.planet-void::after{
+      background:repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(167,139,250,.025) 3px, rgba(167,139,250,.025) 4px
+      );
+    }
+    .asteroid.planet-void{
+      background:radial-gradient(circle at 38% 32%,
+        #e9d5ff 0%, #a855f7 18%, #6d28d9 42%, #3b0764 72%, #1a0533 100%);
+      box-shadow:0 0 0 2px rgba(167,139,250,.18),
+                 0 8px 32px rgba(0,0,0,.55),
+                 0 0 50px rgba(124,58,237,.28),
+                 inset 0 0 30px rgba(88,28,135,.35);
+    }
+    .void-banner{
+      background:linear-gradient(135deg,
+        rgba(60,20,100,.85) 0%,
+        rgba(40,10,80,.70) 40%,
+        rgba(15,5,40,.85) 100%);
+    }
+    .planetOrb.void-orb{
+      background:radial-gradient(circle at 35% 30%,
+        #e9d5ff 0%, #a855f7 20%, #6d28d9 50%, #2e1065 80%, #0f0520 100%);
+      box-shadow:0 0 0 2px rgba(167,139,250,.25),
+                 0 8px 24px rgba(0,0,0,.45),
+                 0 0 35px rgba(124,58,237,.30);
+      animation: voidOrbPulse 3s ease-in-out infinite;
+    }
+    @keyframes voidOrbPulse{
+      0%,100%{ box-shadow:0 0 0 2px rgba(167,139,250,.25),0 8px 24px rgba(0,0,0,.45),0 0 35px rgba(124,58,237,.30); }
+      50%{     box-shadow:0 0 0 3px rgba(167,139,250,.45),0 8px 24px rgba(0,0,0,.45),0 0 60px rgba(124,58,237,.55); }
+    }
+    @keyframes voidSurgeAnim{
+      0%{   filter:brightness(1)   drop-shadow(0 0 0px rgba(192,132,252,0)); }
+      25%{  filter:brightness(1.4) drop-shadow(0 0 22px rgba(192,132,252,.9)); }
+      100%{ filter:brightness(1)   drop-shadow(0 0 0px rgba(192,132,252,0)); }
+    }
+    .asteroid.void-surge{ animation: voidSurgeAnim 0.55s ease-out forwards; }
   </style>
 </head>
 <body>
