@@ -5883,16 +5883,19 @@
           // Merge loaded state
           state = r.state;
           applyStats(state);
+          // Run offline progression for time since the save was made
+          const offSummary = simulateOffline();
           save();
           localStorage.setItem("spaceminer_username", username);
           localStorage.setItem("spaceminer_pin", pin);
-          setStatus(`✓ Stand geladen (gespeichert: ${loadedAt})`, "var(--good)");
+          const offMsg = offSummary ? ` · ${offSummary}` : "";
+          setStatus(`✓ Stand geladen (gespeichert: ${loadedAt})${offMsg}`, "var(--good)");
           // Refresh UI
           setTab(state.shopTab || "core");
           updateHUD();
           buildTab(state.shopTab || "core");
           renderProfileCard();
-          toast(`☁️ Cloud Save geladen! MR ${state.minerRank}`);
+          toast(`☁️ Cloud Save geladen! MR ${state.minerRank}${offSummary ? " · Offline-Haul berechnet!" : ""}`);
         } else if(r.msg === "wrong_pin"){
           setStatus("⚠️ Falscher PIN oder Username nicht gefunden.", "var(--danger)");
         } else {
