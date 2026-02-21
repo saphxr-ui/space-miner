@@ -682,7 +682,7 @@
       background:rgba(0,0,0,.18);
     }
     .modalTitle{font-weight:950; letter-spacing:.2px;}
-    .modalBody{padding:12px 14px;}
+    .modalBody{padding:12px 14px; overflow-y:auto; max-height:65vh;}
     .codexGrid{display:grid; gap:10px;}
     .codexItem{
       padding:10px 12px;border-radius:16px;
@@ -1367,6 +1367,52 @@
       font-size:12px; color:var(--muted);
       text-align:right; font-variant-numeric:tabular-nums;
     }
+
+    /* ── Achievements ─────────────────────────────────────── */
+    .codexTabBtn.active{ background:rgba(102,163,255,.18); border-color:rgba(102,163,255,.35); color:#a5d4ff; }
+    .achCatHeader{ font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:12px 4px 4px; }
+    .achItem{ display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.03); margin-bottom:5px; }
+    .achItem.unlocked{ border-color:rgba(50,213,131,.25); background:rgba(50,213,131,.05); }
+    .achIcon{ font-size:22px; width:30px; text-align:center; flex-shrink:0; }
+    .achInfo{ flex:1; min-width:0; }
+    .achName{ font-size:13px; font-weight:900; }
+    .achDesc{ font-size:11px; color:var(--muted); margin-top:2px; }
+    .achReward{ font-size:11px; color:#c084fc; flex-shrink:0; font-weight:700; }
+    /* ── Void skill branch ──────────────────────────────────── */
+    .skillBranch.void .skillBranchHeader{ background:rgba(192,132,252,.12); color:#c084fc; border-color:rgba(192,132,252,.2); }
+
+    /* ── Miner/Station ──────────────────────────────────── */
+    .cargoOreRow{ display:flex; align-items:center; gap:8px; padding:7px 4px; border-bottom:1px solid rgba(255,255,255,.05); }
+    .cargoOreRow:last-child{ border-bottom:none; }
+    .cargoModeSelect, .cargoKeepInput{ color:var(--fg); }
+    /* Combo bar pulse */
+    @keyframes comboPulse{ 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.15)} }
+    #comboBar{ animation:comboPulse .4s ease infinite; }
+
+    /* ── Accordion (cargo tab) ─────────────────────────── */
+    .uCard.collapsible .uTop{ cursor:pointer; user-select:none; }
+    .uCard.collapsible .uTop::after{
+      content:"▾";
+      font-size:14px; color:var(--muted);
+      margin-left:6px; transition:transform .2s;
+      flex-shrink:0;
+    }
+    .uCard.collapsible.collapsed .uTop::after{ transform:rotate(-90deg); }
+    .uCard.collapsible .body{
+      overflow:hidden;
+      max-height:2000px;
+      transition:max-height .35s ease, opacity .25s ease, margin-top .25s ease;
+      opacity:1;
+    }
+    .uCard.collapsible.collapsed .body{
+      max-height:0 !important;
+      opacity:0;
+      margin-top:0;
+      pointer-events:none;
+    }
+
+    #profileNameInput::placeholder{ color:rgba(255,255,255,.25); }
+    #profileNameInput:focus{ border-bottom-color:rgba(102,163,255,.6); }
   </style>
 </head>
 <body>
@@ -1397,8 +1443,10 @@
                 <button class="btn secondary" id="openLeaderboardBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🏆 Board</button>
                 <button class="btn secondary" id="openPrestigeBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">✨ Prestige</button>
                 <button class="btn secondary" id="openSettingsBtn" style="padding:6px 10px;font-size:14px;border-radius:10px;" title="Settings">⚙️</button>
+                <button class="btn secondary" id="openProfileBtn" style="padding:6px 10px;font-size:14px;border-radius:10px;" title="Profile">👤</button>
               </div>
               <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP · ✨ <span id="stellarDustHud">0</span></div>
+              <div style="display:flex;gap:10px;font-size:11px;margin-top:2px;"><span id="minerHud" style="color:var(--muted);">⛏ No miners</span><span id="cargoHud" style="color:var(--muted);">📦 0/120</span></div>
             </div>
           </div>
           <div class="bar" style="margin-top:8px;"><div id="xpBar"></div></div>
@@ -1427,7 +1475,7 @@
         </div>
 
         <div class="grid">
-          <button class="btn good" id="openQuestsBtn">📋 Daily Quests</button>
+          <button class="btn good" id="openQuestsBtn" style="position:relative;">📋 Daily Quests</button>
           <button class="btn secondary" id="reset">Reset</button>
         </div>
 
@@ -1460,11 +1508,10 @@
         <div class="upgradeHeader">
           <div>
             <b>Modules</b>
-            <div class="muted">Drones werden per Upgrade gespawnt (Start: 0).</div>
           </div>
           <div class="tabs" role="tablist" aria-label="Shop tabs">
             <div class="tab active" id="tabCore" role="tab" aria-selected="true">Core</div>
-            <div class="tab" id="tabCargo" role="tab" aria-selected="false">Cargo/Trade</div>
+            <div class="tab" id="tabCargo" role="tab" aria-selected="false">🛰 Station</div>
             <div class="tab" id="tabSkill" role="tab" aria-selected="false">⚡ Skills</div>
             <div class="tab" id="tabCos" role="tab" aria-selected="false">Cosmetic</div>
           </div>
@@ -1492,7 +1539,7 @@
     <div class="modal">
       <div class="modalHeader">
         <div>
-          <div class="modalTitle">Ore Codex</div>
+          <div class="modalTitle">⛏ Ore Codex</div>
           <div class="muted" style="font-size:12px;" id="codexSub">—</div>
         </div>
         <button class="btn secondary" id="closeCodex">Close</button>
@@ -1500,6 +1547,49 @@
       <div class="modalBody">
         <div class="codexGrid" id="codexGrid"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== Profile Modal ===== -->
+  <div class="modalBackdrop" id="profileBackdrop" role="dialog" aria-modal="true" aria-label="Profile">
+    <div class="modal" style="width:min(500px,100%);">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle">👤 Profile</div>
+          <div class="muted" style="font-size:12px;" id="profileSub">Your miner profile</div>
+        </div>
+        <button class="btn secondary" id="closeProfileBtn">Close</button>
+      </div>
+
+      <!-- Profile card -->
+      <div id="profileCard" style="margin:0 14px 0;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,rgba(102,163,255,.10),rgba(192,132,252,.08));border:1px solid rgba(102,163,255,.2);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="profileAvatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">⛏</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input id="profileNameInput" maxlength="20" placeholder="Enter name…"
+                style="font-size:16px;font-weight:900;background:none;border:none;border-bottom:1px solid rgba(255,255,255,.2);color:var(--fg);outline:none;width:160px;padding:2px 0;">
+              <span style="font-size:10px;color:var(--muted);">✎</span>
+            </div>
+            <div id="profileTitle" style="font-size:12px;color:#a5d4ff;margin-top:4px;font-weight:700;"></div>
+            <div id="profileMeta" style="font-size:11px;color:var(--muted);margin-top:3px;"></div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div id="profileRankBadge" style="font-size:22px;font-weight:900;"></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Miner Rank</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:6px;padding:10px 14px 0;">
+        <button class="btn secondary codexTabBtn active" id="profileTabAch"   style="font-size:12px;padding:5px 12px;border-radius:10px;">🏅 Achievements</button>
+        <button class="btn secondary codexTabBtn"        id="profileTabStats" style="font-size:12px;padding:5px 12px;border-radius:10px;">📊 Stats</button>
+        <button class="btn secondary codexTabBtn"        id="profileTabRanks" style="font-size:12px;padding:5px 12px;border-radius:10px;">⭐ Rank History</button>
+      </div>
+      <div class="modalBody" id="profileAchPanel"><div id="profileAchGrid"></div></div>
+      <div class="modalBody" id="profileStatsPanel" style="display:none;"><div id="profileStatsGrid"></div></div>
+      <div class="modalBody" id="profileRanksPanel" style="display:none;"><div id="profileRanksGrid"></div></div>
     </div>
   </div>
 
@@ -1580,8 +1670,16 @@
         </div>
         <button class="btn secondary" id="closeQuests">Close</button>
       </div>
-      <div class="modalBody">
+      <div id="questStreakBanner" style="margin:0 14px 8px;padding:8px 14px;border-radius:12px;background:rgba(255,180,0,.08);border:1px solid rgba(255,180,0,.18);font-size:12px;font-weight:700;color:#fbbf24;"></div>
+      <div style="display:flex;gap:6px;padding:0 14px 10px;">
+        <button class="btn secondary codexTabBtn active" id="questTabDaily" style="font-size:12px;padding:5px 14px;border-radius:10px;">📅 Daily</button>
+        <button class="btn secondary codexTabBtn" id="questTabWeekly" style="font-size:12px;padding:5px 14px;border-radius:10px;">📆 Weekly</button>
+      </div>
+      <div class="modalBody" id="questDailyPanel">
         <div id="questList" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+      <div class="modalBody" id="questWeeklyPanel" style="display:none;">
+        <div id="questWeeklyList" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
     </div>
   </div>
@@ -1936,6 +2034,7 @@
   }
 
   function defaultPlanetState(planetId){
+    const tier = planetId==="void" ? 3 : planetId==="vulcan" ? 2 : 1;
     return {
       laserLvl: 0,
       dronesLvl: 0,
@@ -1947,6 +2046,11 @@
       costDroneAI:  planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
       prospectLvl:  0,
       costProspect: planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
+      // Miner system
+      minersDeployed: 0,
+      maxMiners: 2,             // base slots
+      costMiner: Math.floor(200 * Math.pow(3, tier-1)),  // 200 / 600 / 1800
+      minerSpeed: 1.0,          // ore/min base, upgraded by station
     };
   }
 
@@ -1999,11 +2103,18 @@
       currentPlanet: "iron",
 
       // Daily quests
-      quests: { date:"", list:[] },
+      quests: { date:"", list:[], weeklyDate:"", weeklyList:[], streak:0, lastStreakDate:"" },
 
       // Skill tree: owned node ids
       skills: [],
 
+      // Profile
+      playerName: "",
+      joinDate: Date.now(),
+      rankHistory: [],  // [{mr, ts}]
+      // Station modules
+      station: { hangar:0, reactor:0, smelter:0, tradeDock:0 },
+      smeltInv: {},  // processed alloys
       // Prestige
       stellarDust: 0,
       prestigeUpgrades: [],        // owned prestige upgrade ids
@@ -2066,8 +2177,22 @@
       }
 
       // migrate quests & skills
-      s.quests = s.quests || { date:"", list:[] };
+      { const qb={date:'',list:[],weeklyDate:'',weeklyList:[],streak:0,lastStreakDate:''}; s.quests={...qb,...(s.quests||{})}; if(!Array.isArray(s.quests.list))s.quests.list=[]; if(!Array.isArray(s.quests.weeklyList))s.quests.weeklyList=[]; if(typeof s.quests.streak!=='number')s.quests.streak=0; }
       s.skills = Array.isArray(s.skills) ? s.skills : [];
+      if(!s._stats) s._stats={};
+      if(!s.unlockedAch) s.unlockedAch=[];
+      if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
+      if(s.playerName===undefined) s.playerName="";
+      if(!s.joinDate) s.joinDate=Date.now();
+      if(!s.rankHistory) s.rankHistory=[];
+      if(!s.smeltInv) s.smeltInv={};
+      for(const pid of Object.keys(PLANETS)){
+        const pp=s.planets?.[pid]; if(!pp) continue;
+        if(pp.minersDeployed===undefined) pp.minersDeployed=0;
+        if(pp.maxMiners===undefined) pp.maxMiners=2;
+        if(pp.costMiner===undefined) pp.costMiner=200;
+        if(pp.minerSpeed===undefined) pp.minerSpeed=1.0;
+      }
       // migrate prestige
       s.stellarDust = s.stellarDust || 0;
       s.prestigeUpgrades = Array.isArray(s.prestigeUpgrades) ? s.prestigeUpgrades : [];
@@ -2185,6 +2310,7 @@
       state.credits -= planet.unlockCredits;
       state.planetsBought = state.planetsBought || {};
       state.planetsBought[planetId] = true;
+      checkAchievements();
       toast(`${planet.name} unlocked for ${fmt(planet.unlockCredits)}c!`);
       spawnParticles(20);
     }
@@ -2222,14 +2348,14 @@
 
   function currentPlanetDef(){ return PLANETS[state.currentPlanet] || PLANETS.iron; }
   function planetCreditMult(planetId){ return PLANETS[planetId || state.currentPlanet]?.creditMult || 1; }
-  function planetXpMult(){ return currentPlanetDef().xpMult || 1; }
+  function planetXpMult(pid){ return currentPlanetDef().xpMult || 1; }
 
-  function oreUnlocked(id){
+  function oreUnlocked(id, planetCtx){
     const o = ORES.find(x=>x.id===id);
     if(!o) return false;
     if(state.minerRank < o.unlockMR) return false;
-    // Vulcan ores only available on Vulcan planet
-    if(o.planet && o.planet !== "iron" && state.currentPlanet !== o.planet) return false;
+    const ctx = planetCtx || state.currentPlanet;
+    if(o.planet && o.planet !== "iron" && ctx !== o.planet) return false;
     return true;
   }
   function oreValue(id){ const o = ORES.find(x=>x.id===id); return o ? o.value : 0; }
@@ -2253,6 +2379,8 @@
     const speed = dronePulsesPerSecondFor(p);
     const cpp   = droneCreditsPerPulseFor(p, pid);
     p.rps = Math.round(((p.dronesLvl||0) * speed * cpp) * 10)/10;
+    // Miner speed gets allDropChance skill bonus as speed multiplier
+    p.minerSpeed = 1.0 * (1 + skillBonusFlat("allDropChance", s));
   }
 
   function applyStats(s){
@@ -2279,6 +2407,7 @@
   const upgradesListEl = el("upgradesList");
   const tabCore = el("tabCore");
   const tabCargo = el("tabCargo");
+  const tabSkill = el("tabSkill");
   const tabCos = el("tabCos");
   const offlineTextEl = el("offlineText");
   const toggleOfflineBtn = el("toggleOffline");
@@ -2534,6 +2663,9 @@
       state.miningXP -= state.miningNeed;
       state.minerRank += 1;
       state.miningNeed = miningNeedFor(state.minerRank);
+      if(!state.rankHistory) state.rankHistory=[];
+      state.rankHistory.push({mr:state.minerRank, ts:Date.now()});
+      checkAchievements();
 
       toast(`Miner Rank Up! (MR ${state.minerRank})`);
       spawnPop(`MR ${state.minerRank}!`, true, 50, 45, miniIconWrap(ICONS.prospect, 20));
@@ -2705,29 +2837,48 @@
     const gain = Math.round(amount * boostMult() * (1 + skillBonus("globalCreditMult")));
     state.credits += gain;
     questProgressUpdate("earn", gain);
+    if(state._stats){state._stats.totalEarned=(state._stats.totalEarned||0)+gain;state._stats._cc=(state._stats._cc||0)+1;if(state._stats._cc%50===0)checkAchievements();}
     return gain;
   }
 
 
   function doShot(clientX, clientY){
     questProgressUpdate("shots", 1);
+    if(state._stats) state._stats.shots=(state._stats.shots||0)+1;
 
     const crit = Math.random() < (0.05 * (1 + skillBonus("critMult")));
+    if(crit&&state._stats) state._stats.crits=(state._stats.crits||0)+1;
+
+    // Combo multiplier
+    const now2 = Date.now();
+    if(now2 - lastComboTime > 2000) comboCount = 0;
+    comboCount = Math.min(comboCount + 1, 20);
+    lastComboTime = now2;
+    if(state._stats) state._stats.maxCombo=Math.max(state._stats.maxCombo||0,comboCount);
+    const comboMult = 1 + Math.floor(comboCount / 5) * 0.5; // x1 → x1.5 → x2 → x2.5 at 5/10/15/20
+
     const baseRegolith = crit ? P().laserPower*4 : P().laserPower;
-    const regolith = Math.round(baseRegolith * planetCreditMult() * (1 + skillBonus("laserCreditMult")) * (1 + skillBonus("globalCreditMult")));
+    const regolith = Math.round(baseRegolith * comboMult * planetCreditMult()
+      * (1 + skillBonus("laserCreditMult"))
+      * (1 + skillBonus("globalCreditMult")));
 
     fireLaserFX(crit, clientX, clientY);
     const gained = addCredits(regolith);
-    spawnPop(`+${fmt(gained)}`, crit, 50, 52, miniIconWrap(ICONS.coin, 20));
+
+    // Combo indicator
+    const comboTier = Math.floor(comboCount / 5);
+    const comboLabel = comboTier > 0 ? ` ×${(1 + comboTier*0.5).toFixed(1)}` : "";
+    spawnPop(`+${fmt(gained)}${comboLabel}`, crit || comboTier > 0, 50, 52, miniIconWrap(ICONS.coin, 20));
 
     addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")));
 
-    const dropBonus = skillBonus("clickDropChance") + skillBonus("allDropChance");
     // Void Surge — only on void planet
     if(state.currentPlanet === "void"){
       const surgeChance = (PLANETS.void.voidSurgeChance||0.08) * (1 + skillBonus("rareDropMult")*0.5);
       if(Math.random() < surgeChance){
-        const surgeGain = addCredits(regolith * 9); // 10x total (already got 1x above)
+        const surgeGain = addCredits(regolith * 9);
+        if(state._stats) state._stats.voidSurges=(state._stats.voidSurges||0)+1;
+        questProgressUpdate('void_surge',1);
         spawnPop(`VOID SURGE! +${fmt(surgeGain)}`, true, 50, 38, null);
         asteroid.classList.remove("void-surge");
         void asteroid.offsetWidth;
@@ -2736,21 +2887,9 @@
         spawnParticles(28);
       }
     }
-
-    const drop = tryCargoDrop(dropBonus);
-    if(drop){
-      const took = addOreWithMode(drop.id, 1);
-      if(took){
-        questProgressUpdate("mine_ore", 1, drop.id);
-        const mode = state.oreSettings[drop.id]?.autoSellMode || "off";
-        const ico = oreIconHTML(drop.id, 20);
-        if(mode === "drop") spawnPop(`+${fmt(oreValue(drop.id))}c`, true, 50, 60, ico);
-        else spawnPop(`+1 ${drop.name}`, true, 50, 60, ico);
-        addMiningXP(10 * planetXpMult() * (1 + skillBonus("xpMult")));
-      }
-    }
     updateHUD();
   }
+
 
   /* ===== Drones render + charge loop ===== */
   let droneEls = [];
@@ -2761,6 +2900,7 @@
   // Per-planet background charge/cooldown state
   const bgDroneCharge   = {};  // { iron: [...], vulcan: [...] }
   const bgDroneCooldown = {};
+  const minerAccum      = {};  // fractional ore accumulator per planet
 
   function seededRand(seed){
     const x = Math.sin(seed) * 10000;
@@ -2877,27 +3017,32 @@
 
           addMiningXP((0.65 + pp.droneAI*0.06) * planetXpMult());
 
-          const dropChance = 0.09 * rareBoostMult();
-          if(Math.random() < dropChance){
-            const savedPlanet = state.currentPlanet;
-            if(!isActive) state.currentPlanet = pid;
-            const d = tryCargoDrop(skillBonus("allDropChance"));
-            if(!isActive) state.currentPlanet = savedPlanet;
+          // Drones give credits only — no ore drops (miners handle that)
+        }
+      }
 
-            if(d){
-              const mode = state.oreSettings[d.id]?.autoSellMode || "off";
-              const took = addOreWithMode(d.id, 1);
-              if(took){
-                if(isActive) questProgressUpdate("mine_ore", 1, d.id);
-                if(isActive && droneEl){
-                  const icon = oreIconHTML(d.id, 14);
-                  if(mode === "drop") spawnDronePop(droneEl, `+${fmt(oreValue(d.id))}c · ${d.name}`, "rare", icon);
-                  else spawnDronePop(droneEl, `+1 ${d.name}`, (d.id==="platinum"||d.id==="gold"||d.id==="obsidian") ? "rare" : "ore", icon);
-                  animateDroneMining(droneEl, true);
-                }
-                addMiningXP(2.5 * (1 + skillBonus("xpMult")));
-              }
-            }
+      // ── Miner tick ───────────────────────────────────────────────────
+      const minersActive = pp.minersDeployed||0;
+      if(minersActive > 0 && freeSpace() > 0){
+        if(!minerAccum[pid]) minerAccum[pid]=0;
+        const reactorBonus = 1 + (state.station?.reactor||0)*0.25;
+        const orePerSec = (pp.minerSpeed||1) * reactorBonus * minersActive / 60;
+        minerAccum[pid] += orePerSec * dt;
+        while(minerAccum[pid] >= 1 && freeSpace() > 0){
+          minerAccum[pid] -= 1;
+          // pick ore valid for this planet
+          const candidates = ORES.filter(o=>{
+            if(state.minerRank < o.unlockMR) return false;
+            if(o.planet && o.planet !== pid) return false;
+            return true;
+          });
+          if(candidates.length){
+            let total=0; for(const o of candidates) total+=o.rarity;
+            let roll=Math.random()*total, picked=candidates[0];
+            for(const o of candidates){ roll-=o.rarity; if(roll<=0){picked=o;break;} }
+            addCargo(picked.id,1);
+            if(isActive) questProgressUpdate("mine_ore",1,picked.id);
+            if(state._stats) state._stats.minerOres=(state._stats.minerOres||0)+1;
           }
         }
       }
@@ -2919,39 +3064,63 @@
     mining: {
       label:"⛏ Mining", branch:"mining",
       nodes:[
-        { id:"m1", name:"Sharp Edge",       desc:"+10% laser credits per shot",         cost:{ credits:150 },                effect:{ laserCreditMult:0.10 } },
-        { id:"m2", name:"Deep Scan I",      desc:"+15% ore drop chance on clicks",      cost:{ credits:400, iron:20 },       effect:{ clickDropChance:0.15 } },
-        { id:"m3", name:"Crystal Focus",    desc:"+20% crit chance multiplier",         cost:{ credits:900, nickel:15 },     effect:{ critMult:0.20 } },
-        { id:"m4", name:"Deep Scan II",     desc:"+25% ore drop chance (all sources)",  cost:{ credits:2200, cobalt:10 },    effect:{ allDropChance:0.25 } },
-        { id:"m5", name:"Resonance Core",   desc:"+40% mining XP gain globally",        cost:{ credits:5000, gold:5 },       effect:{ xpMult:0.40 } },
+        { id:"m1", name:"Sharp Edge",        desc:"+10% laser credits/shot",             cost:{ credits:200 },                          effect:{ laserCreditMult:0.10 } },
+        { id:"m2", name:"Miner Efficiency I",  desc:"+20% Miner ore output",              cost:{ credits:600,   iron:30 },               effect:{ allDropChance:0.20 } },
+        { id:"m3", name:"Crystal Focus",      desc:"+20% crit damage mult",              cost:{ credits:1500,  nickel:20 },             effect:{ critMult:0.20 } },
+        { id:"m4", name:"Miner Efficiency II", desc:"+30% Miner ore output",              cost:{ credits:4000,  cobalt:15 },             effect:{ allDropChance:0.30 } },
+        { id:"m5", name:"Resonance Core",     desc:"+40% mining XP gain",                cost:{ credits:9000,  gold:8 },                effect:{ xpMult:0.40 } },
+        { id:"m6", name:"Laser Lens",         desc:"+15% laser credits/shot",            cost:{ credits:22000, platinum:5 },            effect:{ laserCreditMult:0.15 } },
+        { id:"m7", name:"Seismic Array",      desc:"+20% Miner speed + cargo capacity",  cost:{ credits:55000, platinum:8, cobalt:25 }, effect:{ allDropChance:0.20 } },
+        { id:"m8", name:"Overclock Synergy",  desc:"+60% XP while Overclock active",     cost:{ credits:130000,gold:20, platinum:10 },  effect:{ xpMult:0.60 } },
+        { id:"m9", name:"Void Attunement",    desc:"+25% credits on Void planet",        cost:{ credits:300000,obsidian:15 },           effect:{ voidCreditMult:0.25 }, unlockMR:15 },
       ]
     },
     economy: {
       label:"💰 Economy", branch:"economy",
       nodes:[
-        { id:"e1", name:"Bulk Trader",      desc:"+10% credits from all sales",         cost:{ credits:200 },                effect:{ sellMult:0.10 } },
-        { id:"e2", name:"Cargo Liner I",    desc:"+20 cargo capacity",                  cost:{ credits:500, iron:30 },       effect:{ cargoCap:20 } },
-        { id:"e3", name:"Market Insight",   desc:"+15% drone credit yield",             cost:{ credits:1200, nickel:20 },    effect:{ droneCreditMult:0.15 } },
-        { id:"e4", name:"Cargo Liner II",   desc:"+40 cargo capacity",                  cost:{ credits:3000, cobalt:15 },    effect:{ cargoCap:40 } },
-        { id:"e5", name:"Compound Interest",desc:"+25% all credit gains",               cost:{ credits:7000, platinum:3 },   effect:{ globalCreditMult:0.25 } },
+        { id:"e1", name:"Bulk Trader",        desc:"+10% credits from sales",            cost:{ credits:250 },                          effect:{ sellMult:0.10 } },
+        { id:"e2", name:"Cargo Liner I",      desc:"+25 cargo capacity",                 cost:{ credits:700,   iron:40 },               effect:{ cargoCap:25 } },
+        { id:"e3", name:"Market Insight",     desc:"+15% drone credit yield",            cost:{ credits:1800,  nickel:25 },             effect:{ droneCreditMult:0.15 } },
+        { id:"e4", name:"Cargo Liner II",     desc:"+50 cargo capacity",                 cost:{ credits:5000,  cobalt:20 },             effect:{ cargoCap:50 } },
+        { id:"e5", name:"Compound Interest",  desc:"+20% all credit gains",              cost:{ credits:12000, gold:10 },               effect:{ globalCreditMult:0.20 } },
+        { id:"e6", name:"Trade Expert",       desc:"+25% cargo sell value",              cost:{ credits:30000, platinum:6 },            effect:{ sellMult:0.25 } },
+        { id:"e7", name:"Cargo Liner III",    desc:"+100 cargo capacity",                cost:{ credits:75000, gold:15, cobalt:30 },    effect:{ cargoCap:100 } },
+        { id:"e8", name:"Market Mastery",     desc:"+30% all credit gains",              cost:{ credits:190000,platinum:12 },           effect:{ globalCreditMult:0.30 } },
+        { id:"e9", name:"Stellar Economy",    desc:"+15% Stellar Dust from prestige",    cost:{ credits:420000,obsidian:20 },           effect:{ dustMult:0.15 }, unlockMR:10 },
       ]
     },
     exploration: {
       label:"🚀 Exploration", branch:"exploration",
       nodes:[
-        { id:"x1", name:"Warp Prep",        desc:"+10% offline income",                 cost:{ credits:180 },                effect:{ offlineMult:0.10 } },
-        { id:"x2", name:"Drone Overclock",  desc:"+15% drone pulse speed globally",     cost:{ credits:450, iron:25 },       effect:{ dronePulseMult:0.15 } },
-        { id:"x3", name:"Rare Prospector",  desc:"+20% rare drop rate globally",        cost:{ credits:1100, cobalt:8 },     effect:{ rareDropMult:0.20 } },
-        { id:"x4", name:"Orbital Survey",   desc:"+30% drone pulse speed globally",     cost:{ credits:2800, gold:8 },       effect:{ dronePulseMult:0.30 } },
-        { id:"x5", name:"Void Cartographer",desc:"Unlock: 50% discount on next planet", cost:{ credits:6000, platinum:5 },   effect:{ planetDiscount:0.50 } },
+        { id:"x1", name:"Warp Prep",          desc:"+10% offline income",                cost:{ credits:200 },                          effect:{ offlineMult:0.10 } },
+        { id:"x2", name:"Drone Overclock",    desc:"+15% drone pulse speed",             cost:{ credits:600,   iron:30 },               effect:{ dronePulseMult:0.15 } },
+        { id:"x3", name:"Rare Prospector",    desc:"+20% rare drop rate",                cost:{ credits:1500,  cobalt:12 },             effect:{ rareDropMult:0.20 } },
+        { id:"x4", name:"Orbital Survey",     desc:"+25% drone pulse speed",             cost:{ credits:4500,  gold:8 },                effect:{ dronePulseMult:0.25 } },
+        { id:"x5", name:"Void Cartographer",  desc:"+10% planet unlock discount",        cost:{ credits:10000, platinum:5 },            effect:{ planetDiscount:0.10 } },
+        { id:"x6", name:"Deep Warp",          desc:"+20% offline income",                cost:{ credits:26000, gold:12 },               effect:{ offlineMult:0.20 } },
+        { id:"x7", name:"Pulse Amplifier",    desc:"+35% drone pulse speed",             cost:{ credits:68000, platinum:8, nickel:40 }, effect:{ dronePulseMult:0.35 } },
+        { id:"x8", name:"Exotic Finder",      desc:"+40% rare drop rate",                cost:{ credits:160000,platinum:15 },           effect:{ rareDropMult:0.40 } },
+        { id:"x9", name:"Void Navigator",     desc:"+30% offline income on Void",        cost:{ credits:380000,obsidian:10 },           effect:{ offlineMult:0.30 }, unlockMR:16 },
       ]
-    }
+    },
+    void: {
+      label:"🌌 Void Mastery", branch:"void",
+      nodes:[
+        { id:"v1", name:"Void Sense",         desc:"+2% Void Surge chance",              cost:{ credits:50000,  obsidian:5 },           effect:{ rareDropMult:0.02 }, unlockMR:15 },
+        { id:"v2", name:"Dark Resonance",     desc:"+20% all credits on Void",           cost:{ credits:120000, obsidian:15 },          effect:{ voidCreditMult:0.20 }, unlockMR:15 },
+        { id:"v3", name:"Surge Amplifier",    desc:"+60% XP on Void planet",             cost:{ credits:280000, obsidian:25 },          effect:{ xpMult:0.60 }, unlockMR:16 },
+        { id:"v4", name:"Void Drones",        desc:"+30% drone yield on Void",           cost:{ credits:500000, obsidian:40 },          effect:{ droneCreditMult:0.30 }, unlockMR:17 },
+        { id:"v5", name:"Singularity Core",   desc:"+50% ALL credits on Void planet",    cost:{ credits:1200000,obsidian:80 },          effect:{ voidCreditMult:0.50 }, unlockMR:20 },
+      ]
+    },
   };
 
   function skillOwned(id, s){ return (s || state).skills.includes(id); }
   function skillNodeUnlocked(branchId, nodeIdx){
-    if(nodeIdx === 0) return true;
     const branch = SKILL_TREE[branchId];
+    const node = branch.nodes[nodeIdx];
+    if(node.unlockMR && state.minerRank < node.unlockMR) return false;
+    if(nodeIdx === 0) return true;
     return skillOwned(branch.nodes[nodeIdx-1].id);
   }
 
@@ -2999,6 +3168,7 @@
     }
     state.skills.push(node.id);
     applyStats(state);
+    checkAchievements();
     toast(`Skill unlocked: ${node.name}`);
     renderSkillTree();
     updateHUD();
@@ -3006,57 +3176,48 @@
   }
 
   function renderSkillTree(){
-    const el2 = el("skillTreeEl");
-    if(!el2) return;
-    el2.innerHTML = "";
-
+    const wrapper = el("skillTreeEl");
+    if(!wrapper) return;
+    wrapper.innerHTML = "";
+    wrapper.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px;";
     const owned = state.skills.length;
     const total = Object.values(SKILL_TREE).reduce((a,b)=>a+b.nodes.length,0);
-    el("skillSubLabel").textContent = `${owned}/${total} skills owned · Global bonuses stack across all planets`;
+    el("skillSubLabel").textContent = `${owned}/${total} skills owned`;
 
     for(const [branchId, branch] of Object.entries(SKILL_TREE)){
       const col = document.createElement("div");
       col.className = `skillBranch ${branch.branch}`;
+      const voidLocked = branchId==="void" && state.minerRank<15;
+      col.innerHTML = `<div class="skillBranchHeader">${branch.label}${voidLocked?' <span style="font-size:9px;opacity:.6">(MR15)</span>':""}</div>`;
 
-      col.innerHTML = `<div class="skillBranchHeader">${branch.label}</div>`;
+      branch.nodes.forEach((node, nodeIdx) => {
+        const owned  = skillOwned(node.id);
+        const mrOK   = !node.unlockMR || state.minerRank >= node.unlockMR;
+        const prevOK = nodeIdx===0 || skillOwned(branch.nodes[nodeIdx-1].id);
+        const unlocked = mrOK && prevOK;
 
-      branch.nodes.forEach((node, idx) => {
-        const owned2 = skillOwned(node.id);
-        const unlocked = skillNodeUnlocked(branchId, idx);
-        const affordable = unlocked && !owned2 && canAffordSkill(node);
+        if(nodeIdx>0){ const conn=document.createElement("div"); conn.className="skillConnector"; col.appendChild(conn); }
 
-        if(idx > 0){
-          const conn = document.createElement("div");
-          conn.className = "skillConnector";
-          col.appendChild(conn);
-        }
-
-        const costChips = Object.entries(node.cost).map(([k,v]) => {
-          const have = k === "credits" ? state.credits : (state.cargo[k]||0);
-          const met = have >= v;
-          const label = k === "credits" ? `${fmt(v)}c` : `${v} ${k}`;
-          return `<span class="skillCostChip ${met?"met":""}">${label}</span>`;
+        const costChips = Object.entries(node.cost).map(([k,v])=>{
+          const have = k==="credits" ? state.credits : (state.cargo[k]||0);
+          return `<span class="skillCostChip ${have>=v?"met":""}">${k==="credits"?fmt(v)+"c":v+" "+k}</span>`;
         }).join("");
 
         const nodeEl = document.createElement("div");
-        nodeEl.className = `skillNode${owned2?" owned":""}${!unlocked?" locked-node":""}${affordable?" affordable":""}`;
+        nodeEl.className = `skillNode${owned?" owned":""}${!unlocked?" locked-node":""}${unlocked&&!owned&&canAffordSkill(node)?" affordable":""}`;
         nodeEl.innerHTML = `
-          ${owned2 ? `<div class="skillOwnedBadge">✓ Owned</div>` : ""}
+          ${owned?'<div class="skillOwnedBadge">✓</div>':""}
           <div class="skillNodeName">${escapeHtml(node.name)}</div>
           <div class="skillNodeDesc">${escapeHtml(node.desc)}</div>
-          ${!owned2 ? `<div class="skillNodeCost">${costChips}</div>` : ""}
+          ${node.unlockMR&&!mrOK?`<div style="font-size:10px;color:#c084fc;margin-top:3px;">🔒 MR${node.unlockMR}</div>`:""}
+          ${!owned&&mrOK?`<div class="skillNodeCost">${costChips}</div>`:""}
         `;
-        if(!owned2 && unlocked){
-          nodeEl.addEventListener("click", ()=>buySkill(branchId, idx));
-        }
+        if(!owned && unlocked) nodeEl.addEventListener("click",()=>buySkill(branchId,nodeIdx));
         col.appendChild(nodeEl);
       });
-
-      el2.appendChild(col);
+      wrapper.appendChild(col);
     }
   }
-
-  /* ===== Prestige System ===== */
 
   function prestigeUpgradeOwned(id){ return (state.prestigeUpgrades||[]).includes(id); }
 
@@ -3089,6 +3250,7 @@
 
     state.credits -= cost;
     state.stellarDust = (state.stellarDust || 0) + dust;
+    checkAchievements();
     state.prestigeCount = state.prestigeCount || {};
     state.prestigeCount[planetId] = (state.prestigeCount[planetId] || 0) + 1;
 
@@ -3206,88 +3368,94 @@
     return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   }
 
-  function generateQuests(){
-    const planet = state.currentPlanet;
-    const mr = state.minerRank;
-    const pool = [];
+  function weekDateStr(){
+    const d=new Date(), day=d.getDay();
+    const mon=new Date(d); mon.setDate(d.getDate()-((day+6)%7));
+    return mon.toISOString().slice(0,10);
+  }
 
-    // Shot-based quests
-    pool.push({ id:"shots_easy",   diff:"easy",   type:"shots",   target:30,  desc:"Fire 30 laser shots",           reward:{ credits:80,  xp:15 } });
-    pool.push({ id:"shots_med",    diff:"medium",  type:"shots",   target:80,  desc:"Fire 80 laser shots",           reward:{ credits:200, xp:35 } });
-    pool.push({ id:"shots_hard",   diff:"hard",    type:"shots",   target:200, desc:"Fire 200 laser shots",          reward:{ credits:500, xp:80 } });
+  function generateQuests(isWeekly=false){
+    const mr=state.minerRank, scale=isWeekly?8:1;
+    const pool=[];
 
-    // Credit earn quests — scale with mr
-    const base = Math.max(100, mr * 60);
-    pool.push({ id:"earn_easy",    diff:"easy",   type:"earn",    target:base,    desc:`Earn ${fmt(base)} credits`,           reward:{ credits:100, xp:20 } });
-    pool.push({ id:"earn_med",     diff:"medium",  type:"earn",    target:base*3,  desc:`Earn ${fmt(base*3)} credits`,         reward:{ credits:280, xp:50 } });
-    pool.push({ id:"earn_hard",    diff:"hard",    type:"earn",    target:base*8,  desc:`Earn ${fmt(base*8)} credits`,         reward:{ credits:700, xp:100 } });
+    const st=[isWeekly?400:40, isWeekly?1200:120, isWeekly?4000:400];
+    pool.push({id:"s0",diff:"easy",  type:"shots",target:st[0],desc:`Fire ${st[0]} laser shots`,  reward:{credits:Math.floor((200+mr*60)*scale), xp:30*scale, dust:isWeekly?1:0}});
+    pool.push({id:"s1",diff:"medium",type:"shots",target:st[1],desc:`Fire ${st[1]} laser shots`,  reward:{credits:Math.floor((500+mr*150)*scale),xp:70*scale, dust:isWeekly?2:0}});
+    pool.push({id:"s2",diff:"hard",  type:"shots",target:st[2],desc:`Fire ${st[2]} laser shots`,  reward:{credits:Math.floor((1200+mr*300)*scale),xp:160*scale,dust:isWeekly?4:0}});
 
-    // Ore quests — based on available ores
-    const available = ORES.filter(o => state.minerRank >= o.unlockMR && o.planet === (planet === "vulcan" ? "vulcan" : "iron") || (o.planet === "iron" && state.minerRank >= o.unlockMR));
-    if(available.length >= 1){
-      const ore = available[Math.floor(Math.random()*available.length)];
-      pool.push({ id:`ore_easy_${ore.id}`,  diff:"easy",   type:"mine_ore", oreId:ore.id, target:5,  desc:`Mine 5 ${ore.name}`,  reward:{ credits:120, xp:25 } });
-      pool.push({ id:`ore_med_${ore.id}`,   diff:"medium",  type:"mine_ore", oreId:ore.id, target:12, desc:`Mine 12 ${ore.name}`, reward:{ credits:320, xp:60 } });
-      pool.push({ id:`ore_hard_${ore.id}`,  diff:"hard",    type:"mine_ore", oreId:ore.id, target:25, desc:`Mine 25 ${ore.name}`, reward:{ credits:800, xp:120 } });
+    const base=Math.max(500,mr*300);
+    pool.push({id:"e0",diff:"easy",  type:"earn",target:base*scale,      desc:`Earn ${fmt(base*scale)}c`,      reward:{credits:Math.floor(base*.3),  xp:40*scale, dust:isWeekly?1:0}});
+    pool.push({id:"e1",diff:"medium",type:"earn",target:base*3*scale,    desc:`Earn ${fmt(base*3*scale)}c`,    reward:{credits:Math.floor(base*.8),  xp:90*scale, dust:isWeekly?2:0}});
+    pool.push({id:"e2",diff:"hard",  type:"earn",target:base*8*scale,    desc:`Earn ${fmt(base*8*scale)}c`,    reward:{credits:Math.floor(base*2),   xp:200*scale,dust:isWeekly?5:0}});
+
+    const avail=ORES.filter(o=>mr>=o.unlockMR);
+    if(avail.length){
+      const ore=avail[Math.floor(Math.random()*avail.length)];
+      const t=isWeekly?[30,80,200]:[5,15,35];
+      pool.push({id:"o0",diff:"easy",  type:"mine_ore",oreId:ore.id,target:t[0],desc:`Mine ${t[0]} ${ore.name}`,reward:{credits:Math.floor(ore.value*t[0]*.8),xp:35*scale, dust:isWeekly?1:0}});
+      pool.push({id:"o1",diff:"medium",type:"mine_ore",oreId:ore.id,target:t[1],desc:`Mine ${t[1]} ${ore.name}`,reward:{credits:Math.floor(ore.value*t[1]*.8),xp:80*scale, dust:isWeekly?2:0}});
+      pool.push({id:"o2",diff:"hard",  type:"mine_ore",oreId:ore.id,target:t[2],desc:`Mine ${t[2]} ${ore.name}`,reward:{credits:Math.floor(ore.value*t[2]*.8),xp:180*scale,dust:isWeekly?4:0}});
     }
 
-    // Planet-specific bonus quest
-    if(planet === "vulcan" && mr >= 10){
-      pool.push({ id:"vulcan_special", diff:"hard", type:"earn", target:2000, desc:"Earn 2.000 credits on Vulcan Core", reward:{ credits:1200, xp:150 }, planet:"vulcan" });
-    }
+    if(mr>=15) pool.push({id:"vs",diff:"hard",type:"void_surge",target:isWeekly?10:3,desc:`Trigger ${isWeekly?10:3} Void Surges`,reward:{credits:8000*scale,xp:300*scale,dust:isWeekly?6:2}});
+    if(isWeekly&&mr>=5) pool.push({id:"wp",diff:"hard",type:"prestige_any",target:1,desc:"Prestige any planet",reward:{credits:50000,xp:800,dust:10}});
 
-    // Pick one of each difficulty
-    const pick = (diff) => {
-      const candidates = pool.filter(q=>q.diff===diff);
-      return candidates[Math.floor(Math.random()*candidates.length)];
-    };
-
-    return [
-      { ...pick("easy"),   progress:0, claimed:false },
-      { ...pick("medium"), progress:0, claimed:false },
-      { ...pick("hard"),   progress:0, claimed:false },
-    ].filter(Boolean);
+    const pick=d=>{const a=pool.filter(q=>q.diff===d);return a[Math.floor(Math.random()*a.length)]||null;};
+    return ["easy","medium","hard"].map(d=>pick(d)).filter(Boolean).map(q=>({...q,progress:0,claimed:false}));
   }
 
   function ensureQuests(){
-    const today = todayDateStr();
-    if(state.quests.date !== today || !state.quests.list.length){
-      state.quests = { date:today, list:generateQuests() };
-      save();
+    const today=todayDateStr(), week=weekDateStr();
+    if(!state.quests||!state.quests.list) state.quests={date:"",list:[],weeklyDate:"",weeklyList:[],streak:0,lastStreakDate:""};
+    const q=state.quests;
+    if(!q.weeklyList) q.weeklyList=[];
+    if(typeof q.streak!=="number") q.streak=0;
+
+    if(q.date!==today||!q.list.length){
+      if(q.lastStreakDate){
+        const prev=new Date(); prev.setDate(prev.getDate()-1);
+        q.streak=(q.lastStreakDate===prev.toISOString().slice(0,10))?(q.streak+1):0;
+      }
+      q.lastStreakDate=today; q.date=today; q.list=generateQuests(false); save();
+    }
+    if(q.weeklyDate!==week||!q.weeklyList.length){
+      q.weeklyDate=week; q.weeklyList=generateQuests(true); save();
     }
   }
 
   function questProgressUpdate(type, amount, oreId=null){
-    if(!state.quests?.list) return;
-    let dirty = false;
-    for(const q of state.quests.list){
-      if(q.claimed) continue;
-      if(q.type === type){
-        if(type === "mine_ore" && q.oreId !== oreId) continue;
-        q.progress = Math.min(q.target, (q.progress||0) + amount);
-        dirty = true;
+    let dirty=false;
+    for(const list of [state.quests?.list||[], state.quests?.weeklyList||[]]){
+      for(const q of list){
+        if(q.claimed) continue;
+        let match=false;
+        if(q.type===type){ match=(type==="mine_ore")?(oreId&&oreId===q.oreId):true; }
+        if(match){q.progress=(q.progress||0)+amount; dirty=true;}
       }
     }
-    if(dirty){
-      renderQuestStrip();
-      if(el("questBackdrop")?.classList.contains("show")) renderQuestModal();
-    }
+    if(dirty) renderQuestStrip();
   }
 
-  function claimQuest(idx){
-    const q = state.quests.list[idx];
-    if(!q || q.claimed) return;
-    if((q.progress||0) < q.target) return toast("Quest not complete yet.");
-    q.claimed = true;
-    state.credits += q.reward.credits||0;
-    addMiningXP((q.reward.xp||0) * (1 + skillBonus("xpMult")));
-    toast(`Quest complete! +${fmt(q.reward.credits)}c +${q.reward.xp} XP`);
-    spawnPop(`+${fmt(q.reward.credits)}c`, true, 50, 45, miniIconWrap(ICONS.coin, 20));
+  function claimQuest(idx, isWeekly=false){
+    const list=isWeekly?state.quests.weeklyList:state.quests.list;
+    const q=list?.[idx];
+    if(!q||q.claimed) return;
+    if((q.progress||0)<q.target) return toast("Quest not complete yet.");
+    q.claimed=true;
+    const streak=state.quests.streak||0;
+    const sm=(!isWeekly&&streak>0)?Math.min(2,1+streak*0.1):1;
+    const credits=Math.floor((q.reward.credits||0)*sm);
+    const dust=q.reward.dust||0;
+    state.credits+=credits;
+    addMiningXP((q.reward.xp||0)*(1+skillBonus("xpMult")));
+    if(dust){state.stellarDust=(state.stellarDust||0)+dust;}
+    const sm2=sm>1?` (×${sm.toFixed(1)} streak)`:"";
+    toast(`Quest complete! +${fmt(credits)}c${dust?" +"+dust+"✨":""}${sm2}`);
+    spawnPop(`+${fmt(credits)}c`,true,50,45,miniIconWrap(ICONS.coin,20));
     spawnParticles(14);
-    save();
-    renderQuestStrip();
+    checkAchievements();
+    save(); renderQuestStrip(); updateHUD();
     if(el("questBackdrop")?.classList.contains("show")) renderQuestModal();
-    updateHUD();
   }
 
   function renderQuestStrip(){
@@ -3312,23 +3480,42 @@
   }
 
   function renderQuestModal(){
-    const list = el("questList");
-    if(!list) return;
     ensureQuests();
+    // Streak banner
+    const streak=state.quests.streak||0;
+    const banner=document.getElementById("questStreakBanner");
+    if(banner){
+      if(streak>=2){
+        banner.textContent=`🔥 ${streak}-day streak! Daily rewards ×${Math.min(2,1+streak*0.1).toFixed(1)}`;
+        banner.style.background="rgba(255,180,0,.12)"; banner.style.borderColor="rgba(255,180,0,.3)";
+      } else {
+        banner.textContent=`🔥 Streak: ${streak} day${streak===1?"":"s"} — complete all daily quests to build your streak!`;
+        banner.style.background="rgba(255,255,255,.04)"; banner.style.borderColor="rgba(255,255,255,.1)";
+      }
+    }
+    // Reset timer
+    const mid=new Date(); mid.setHours(24,0,0,0);
+    const ms=mid-Date.now(),hh=Math.floor(ms/3600000),mm=Math.floor((ms%3600000)/60000);
+    const rl=el("questResetLabel"); if(rl) rl.textContent=`Daily resets in ${hh}h ${mm}m`;
+    // Render both lists
+    renderQuestList("daily");
+    renderQuestList("weekly");
+  }
 
-    const midnight = new Date(); midnight.setHours(24,0,0,0);
-    const ms = midnight - Date.now();
-    const hh = Math.floor(ms/3600000), mm = Math.floor((ms%3600000)/60000);
-    el("questResetLabel").textContent = `Resets in ${hh}h ${mm}m`;
-
-    list.innerHTML = "";
-    state.quests.list.forEach((q, idx) => {
-      const done = (q.progress||0) >= q.target;
-      const pct = Math.min(100, ((q.progress||0)/q.target)*100);
-
-      const card = document.createElement("div");
-      card.className = `questCard${q.claimed?" claimed":done?" complete":""}`;
-      card.innerHTML = `
+  function renderQuestList(tab){
+    const weekly=tab==="weekly";
+    const qlist=weekly?(state.quests.weeklyList||[]):(state.quests.list||[]);
+    const cont=document.getElementById(weekly?"questWeeklyList":"questList");
+    if(!cont) return;
+    cont.innerHTML="";
+    const streak=state.quests.streak||0;
+    qlist.forEach((q,idx)=>{
+      const done=(q.progress||0)>=q.target;
+      const pct=Math.min(100,((q.progress||0)/q.target)*100);
+      const sm=(!weekly&&streak>0)?Math.min(2,1+streak*0.1):1;
+      const card=document.createElement("div");
+      card.className=`questCard${q.claimed?" claimed":done?" complete":""}`;
+      card.innerHTML=`
         <div class="questTop">
           <div class="questLeft">
             <div class="questTitle">${escapeHtml(q.desc)}</div>
@@ -3337,68 +3524,19 @@
           <span class="questDiff ${q.diff}">${q.diff}</span>
         </div>
         <div class="questRewards">
-          <span class="questReward">${miniIconWrap(ICONS.coin,12)} +${fmt(q.reward.credits)}c</span>
-          <span class="questReward">+${q.reward.xp} XP</span>
+          <span class="questReward good">+${fmt(Math.floor((q.reward.credits||0)*sm))}c${sm>1?` <span style="color:#fbbf24;font-size:10px">×${sm.toFixed(1)}</span>`:""}</span>
+          <span class="questReward warn">+${q.reward.xp} XP</span>
+          ${(q.reward.dust||0)>0?`<span class="questReward" style="color:#c084fc">+${q.reward.dust} ✨</span>`:""}
         </div>
-        ${!q.claimed ? `<div class="questProgressBar"><div class="questProgressFill" style="width:${pct.toFixed(1)}%"></div></div>
-        <div class="questProgressLabel">${Math.floor(pct)}% complete</div>` : ""}
-        ${done && !q.claimed ? `<button class="btn good" style="margin-top:10px;width:100%;padding:10px;" data-claim="${idx}">Claim Reward</button>` : ""}
+        <div class="questProg"><div class="questProgFill" style="width:${pct}%"></div></div>
+        ${done&&!q.claimed?`<button class="btn good" style="margin-top:8px;width:100%;padding:8px;font-size:13px" data-qi="${idx}" data-weekly="${weekly}">Claim Reward</button>`:""}
       `;
-      list.appendChild(card);
+      cont.appendChild(card);
     });
-
-    list.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-claim]");
-      if(btn) claimQuest(parseInt(btn.dataset.claim));
-    }, { once:true });
+    cont.querySelectorAll("[data-qi]").forEach(btn=>{
+      btn.addEventListener("click",()=>claimQuest(+btn.dataset.qi, btn.dataset.weekly==="true"));
+    });
   }
-
-  const questBackdrop = el("questBackdrop");
-  /* ===== Planet Overview ===== */
-
-  // Extended planet display data (beyond the PLANETS game config)
-  const PLANET_DISPLAY = {
-    iron: {
-      orb:"iron-orb", banner:"iron-banner",
-      subtitle:"The starting zone — reliable yields, steady income.",
-      ores: ORES.filter(o=>!o.planet || o.planet==="iron").map(o=>o.id),
-      stats:[
-        { label:"Credits ×1.0",  kind:"" },
-        { label:"XP ×1.0",       kind:"" },
-        { label:"Standard ores", kind:"" },
-      ]
-    },
-    vulcan: {
-      orb:"vulcan-orb", banner:"vulcan-banner",
-      subtitle:"A volcanic world with molten veins and rare ore formations.",
-      ores:["pyrolusite","obsidian"],
-      stats:[
-        { label:"Credits ×2.5",   kind:"good" },
-        { label:"XP ×1.5",        kind:"good" },
-        { label:"Exclusive ores",  kind:"ore" },
-      ]
-    },
-    void: {
-      orb:"void-orb", banner:"void-banner",
-      subtitle:"A deep-space void rich in dark matter. Unstable but incredibly lucrative.",
-      ores:["voidShard","darkMatter"],
-      stats:[
-        { label:"Credits ×5.0",    kind:"good" },
-        { label:"XP ×2.0",         kind:"good" },
-        { label:"Void Surge: 8%",  kind:"warn" },
-        { label:"Exclusive ores",  kind:"ore" },
-      ]
-    },
-    future: {
-      orb:"future-orb", banner:"future-banner",
-      subtitle:"Signal detected — location unknown. Further exploration required.",
-      ores:[],
-      stats:[
-        { label:"???",  kind:"warn" },
-        { label:"???",  kind:"warn" },
-      ]
-    }
-  };
 
   function renderPlanetOverview(){
     const el2 = el("planetCardsEl");
@@ -3777,6 +3915,7 @@
   }
 
   function sellSelected(){
+    if(state._stats) state._stats.cargoSells=(state._stats.cargoSells||0)+1;
     let total = 0;
     for(const o of ORES){
       if(!oreUnlocked(o.id)) continue;
@@ -3821,36 +3960,68 @@
     state.lastSeen = now();
     if(dt < 10) return "";
 
-    const capped = Math.min(dt, 12*3600);
+    const capped = Math.min(dt, 12*3600);  // cap at 12h
+
+    // Offline efficiency: base 25%, up to +55% from Exploration skills, max 80%
+    const efficiencyBase = 0.25;
+    const skillBoost = skillBonus("offlineMult");
+    const efficiency = Math.min(0.80, efficiencyBase + skillBoost);
+    const effPct = Math.round(efficiency * 100);
+
     let totalCredits = 0;
-    const gained = {};
-    for(const o of ORES) gained[o.id]=0;
+    let totalXP = 0;
+    const minerGained = {};
+    for(const o of ORES) minerGained[o.id] = 0;
 
     for(const pid of Object.keys(PLANETS)){
       const pp = state.planets[pid];
       if(!pp) continue;
-      const mult = PLANETS[pid]?.creditMult || 1;
-      const planetCredits = (pp.rps || 0) * capped * boostMult();
-      totalCredits += planetCredits;
+      const pXpMult = planetXpMult(pid);
 
-      const drones = pp.dronesLvl || 0;
-      const pulses = drones * dronePulsesPerSecondFor(pp) * capped;
-      const dropCount = Math.floor(pulses * 0.09 * rareBoostMult());
+      // Drone credits (always run, efficiency applies)
+      const droneCredits = (pp.rps || 0) * capped * efficiency;
+      totalCredits += droneCredits;
+      totalXP += (pp.dronesLvl||0) * (0.65 + (pp.droneAI||0)*0.06) * pXpMult * capped * efficiency;
 
-      const savedPlanet = state.currentPlanet;
-      state.currentPlanet = pid;
-      for(let i=0;i<dropCount;i++){
-        const d = tryCargoDrop();
-        if(d){ const took = addOreWithMode(d.id, 1); if(took) gained[d.id]+=1; }
+      // Miner ores into cargo (pauses when full, efficiency applies)
+      const minersActive = pp.minersDeployed || 0;
+      if(minersActive > 0 && freeSpace() > 0){
+        const reactorBonus = 1 + (state.station?.reactor||0)*0.25;
+        const orePerSec = (pp.minerSpeed||1) * reactorBonus * minersActive / 60;
+        const totalOres = Math.floor(orePerSec * capped * efficiency);
+        const actualOres = Math.min(totalOres, freeSpace());
+
+        const candidates = ORES.filter(o=>{
+          if(state.minerRank < o.unlockMR) return false;
+          if(o.planet && o.planet !== pid) return false;
+          return true;
+        });
+        if(candidates.length > 0){
+          let total = 0;
+          for(const o of candidates) total += o.rarity;
+          for(let i = 0; i < actualOres && freeSpace() > 0; i++){
+            let roll = Math.random()*total, picked = candidates[0];
+            for(const o of candidates){ roll -= o.rarity; if(roll<=0){picked=o;break;} }
+            addCargo(picked.id, 1);
+            minerGained[picked.id] = (minerGained[picked.id]||0) + 1;
+          }
+        }
       }
-      state.currentPlanet = savedPlanet;
     }
 
     addCredits(totalCredits);
-    addMiningXP((capped/60) * 1.2);
+    const xpGained = totalXP + (capped/60) * 0.5 * efficiency;
+    addMiningXP(xpGained);
 
-    const cargoSummary = Object.entries(gained).filter(([_,v])=>v>0).map(([k,v])=>`${k}×${v}`).join(", ");
-    return `Offline: ${Math.floor(capped/60)}m — Credits +${fmt(totalCredits)}${cargoSummary?` — Loot ${cargoSummary}`:""}`;
+    const timeStr = capped >= 3600
+      ? `${Math.floor(capped/3600)}h ${Math.floor((capped%3600)/60)}m`
+      : `${Math.floor(capped/60)}m`;
+    const minerSummary = Object.entries(minerGained).filter(([,v])=>v>0)
+      .map(([k,v])=>`${k}×${v}`).join(", ");
+
+    return `Offline ${timeStr} (${effPct}% eff.) · +${fmt(Math.round(totalCredits))}c`
+      + (xpGained >= 1 ? ` · +${fmt(Math.round(xpGained))} XP` : "")
+      + (minerSummary ? ` · Mined: ${minerSummary}` : "");
   }
 
   const upgradeNodes = new Map();
@@ -3963,7 +4134,7 @@
 
   const dirty = { cargo:true, recipe:true, trade:true, codex:true };
   function setCargoDirty(which){ dirty[which]=true; }
-  function setCargoDirtyAll(){ dirty.cargo=true; dirty.recipe=true; dirty.trade=true; dirty.codex=true; }
+  function setCargoDirtyAll(){ dirty.cargo=true; dirty.recipe=true; dirty.station=true; dirty.trade=true; dirty.codex=true; }
 
   function modeLabel(m){
     if(m==="off") return "Off";
@@ -3992,104 +4163,299 @@
     return "off";
   }
 
+  /* ═══ Station Modules ═══ */
+  const STATION_MODULES = [
+    {
+      id: "hangar",
+      name: "Hangar Bay",
+      icon: "🛸",
+      desc: "Increases max Miners per planet by 1.",
+      effect: s => {
+        const lvl = s.station?.hangar||0;
+        for(const pid of Object.keys(PLANETS)){
+          if(s.planets[pid]) s.planets[pid].maxMiners = 2 + lvl;
+        }
+      },
+      maxLvl: 8,
+      cost: lvl => Math.floor(800 * Math.pow(2.2, lvl)),
+      costLabel: lvl => `${fmt(Math.floor(800*Math.pow(2.2,lvl)))}c`,
+      statLabel: s => `Max miners/planet: ${2+(s.station?.hangar||0)}`,
+    },
+    {
+      id: "reactor",
+      name: "Fusion Reactor",
+      icon: "⚡",
+      desc: "Boosts all Miner ore output by +25% per level.",
+      effect: ()=>{}, // applied in miner tick via state.station.reactor
+      maxLvl: 8,
+      cost: lvl => Math.floor(1200 * Math.pow(2.4, lvl)),
+      costLabel: lvl => `${fmt(Math.floor(1200*Math.pow(2.4,lvl)))}c`,
+      statLabel: s => `Miner output: ×${(1+(s.station?.reactor||0)*0.25).toFixed(2)}`,
+    },
+    {
+      id: "smelter",
+      name: "Ore Smelter",
+      icon: "🔥",
+      desc: "Unlocks Smelting recipes. Each level adds more recipes.",
+      effect: ()=>{},
+      maxLvl: 5,
+      cost: lvl => Math.floor(3000 * Math.pow(3, lvl)),
+      costLabel: lvl => `${fmt(Math.floor(3000*Math.pow(3,lvl)))}c`,
+      statLabel: s => {
+        const lvl=s.station?.smelter||0;
+        return lvl===0 ? "Locked — buy to unlock" : `Recipes unlocked: ${Math.min(SMELT_RECIPES.filter(r=>r.unlockSmelter<=lvl).length, SMELT_RECIPES.length)}`;
+      },
+    },
+    {
+      id: "tradeDock",
+      name: "Trade Dock",
+      icon: "🤝",
+      desc: "More & better trade offers per rotation. Req. MR 6.",
+      effect: ()=>{},
+      maxLvl: 5,
+      cost: lvl => Math.floor(2000 * Math.pow(2.8, lvl)),
+      costLabel: lvl => `${fmt(Math.floor(2000*Math.pow(2.8,lvl)))}c`,
+      statLabel: s => {
+        const lvl=s.station?.tradeDock||0;
+        return `Trade offers: ${3+lvl} · Bonus: +${lvl*10}% value`;
+      },
+    },
+  ];
+
+  /* ═══ Smelting Recipes ═══ */
+  const SMELT_RECIPES = [
+    { id:"steel",     name:"Steel Alloy",    icon:"🔩", unlockSmelter:1,
+      inputs:{iron:8, nickel:4},  output:{id:"steel",    count:1, value:120},
+      desc:"8 Iron + 4 Nickel → Steel (120c)" },
+    { id:"cobalteel", name:"Cobalt Steel",   icon:"💙", unlockSmelter:1,
+      inputs:{iron:6, cobalt:3},  output:{id:"cobalteel",count:1, value:280},
+      desc:"6 Iron + 3 Cobalt → Cobalt Steel (280c)" },
+    { id:"aurite",    name:"Aurite Bar",     icon:"🏅", unlockSmelter:2,
+      inputs:{gold:3, nickel:8},  output:{id:"aurite",   count:1, value:600},
+      desc:"3 Gold + 8 Nickel → Aurite Bar (600c)" },
+    { id:"platalloy", name:"Platinum Alloy", icon:"⚪", unlockSmelter:2,
+      inputs:{platinum:2, cobalt:6}, output:{id:"platalloy",count:1,value:1400},
+      desc:"2 Platinum + 6 Cobalt → Platinum Alloy (1,400c)" },
+    { id:"voidcore",  name:"Void Core",      icon:"🌌", unlockSmelter:3,
+      inputs:{obsidian:4, gold:2, platinum:1}, output:{id:"voidcore",count:1,value:4000},
+      desc:"4 Obsidian + 2 Gold + 1 Platinum → Void Core (4,000c)" },
+    { id:"stardust",  name:"Compressed Stardust", icon:"✨", unlockSmelter:4,
+      inputs:{obsidian:8, platalloy:2}, output:{id:"stardust_bar",count:1,value:12000},
+      desc:"8 Obsidian + 2 Platinum Alloy → Stardust Bar (12,000c)" },
+  ];
+
+  /* Smelt inventory: holds processed alloys (separate from ore cargo) */
+  function smeltInventory(s){ return s.smeltInv = s.smeltInv || {}; }
+
+  function canSmelt(recipe, s){
+    for(const [oreId, need] of Object.entries(recipe.inputs)){
+      if((s.cargo[oreId]||0) < need) return false;
+    }
+    return true;
+  }
+
+  function doSmelt(recipe){
+    if(!canSmelt(recipe, state)) return toast("Not enough ores to smelt.");
+    for(const [oreId, need] of Object.entries(recipe.inputs)){
+      state.cargo[oreId] = (state.cargo[oreId]||0) - need;
+    }
+    const inv = smeltInventory(state);
+    inv[recipe.id] = (inv[recipe.id]||0) + recipe.output.count;
+    if(state._stats) state._stats.smeltCount=(state._stats.smeltCount||0)+1;
+    toast(`Smelted: ${recipe.output.count}× ${recipe.name}!`);
+    setCargoDirtyAll();
+    updateHUD();
+    checkAchievements();
+  }
+
+  function sellAlloys(){
+    const inv = smeltInventory(state);
+    let total = 0;
+    for(const recipe of SMELT_RECIPES){
+      const have = inv[recipe.id]||0;
+      if(have > 0){
+        total += have * recipe.output.value;
+        inv[recipe.id] = 0;
+      }
+    }
+    if(total <= 0) return toast("No alloys to sell.");
+    const gained = Math.round(total * (1 + skillBonus("sellMult")));
+    state.credits += gained;
+    toast(`Sold alloys for +${fmt(gained)}c`);
+    setCargoDirtyAll();
+    updateHUD();
+  }
+
+  function buyStationModule(moduleId){
+    const mod = STATION_MODULES.find(m=>m.id===moduleId);
+    if(!mod) return;
+    const lvl = state.station[moduleId]||0;
+    if(lvl >= mod.maxLvl) return toast(`${mod.name} already maxed.`);
+    const cost = mod.cost(lvl);
+    if(state.credits < cost) return toast("Not enough credits.");
+    state.credits -= cost;
+    state.station[moduleId] = lvl + 1;
+    mod.effect(state);
+    applyStats(state);
+    toast(`${mod.name} upgraded to level ${lvl+1}!`);
+    if(state._stats) state._stats.stationUpgrades=(state._stats.stationUpgrades||0)+1;
+    checkAchievements();
+    setCargoDirtyAll();
+    updateHUD();
+    buildTab("cargo");
+  }
+
+  function buyMiner(planetId){
+    const pid = planetId || state.currentPlanet;
+    const pp = state.planets[pid];
+    if(!pp) return;
+    if((pp.minersDeployed||0) >= (pp.maxMiners||2)) return toast("Max miners deployed. Upgrade Hangar Bay.");
+    const cost = pp.costMiner || 200;
+    if(state.credits < cost) return toast("Not enough credits.");
+    state.credits -= cost;
+    pp.minersDeployed = (pp.minersDeployed||0)+1;
+    pp.costMiner = Math.floor(cost * 2.5 + 300);
+    if(state._stats) state._stats.minersDeployed=(state._stats.minersDeployed||0)+1;
+    checkAchievements();
+    toast(`Miner deployed on ${PLANETS[pid]?.name||pid}! (${pp.minersDeployed}/${pp.maxMiners})`);
+    applyStats(state);
+    setCargoDirtyAll();
+    buildTab("cargo");
+    updateHUD();
+  }
+
+
   const UPGRADE_DEFS = [
-    { id:"laser", tab:"core", name:"Laser Power", icon:ICONS.laser, desc:"More Regolith/shot (Credits). Scales perfectly with Overclock.",
+    { id:"laser", tab:"core", name:"Laser Power", icon:ICONS.laser,
+      desc:"More credits/shot. Crits and Void Surges scale with this.",
       hideBuy:false,
       costText:()=>`${fmt(P().costLaser)} credits`,
       canBuy:()=>state.credits >= P().costLaser,
-      chips:()=>[{text:`Level: ${P().laserLvl}`},{text:`+1 / shot`, kind:"good"}],
+      chips:()=>[{text:`Level: ${P().laserLvl}`},{text:`+1 / shot`,kind:"good"}],
       current:()=>`Laser: ${P().laserPower}`,
       next:()=>`Next: Laser ${P().laserPower+1}`,
       buy:buyLaser
     },
     { id:"drones", tab:"core", name:"Deploy Mining Drone", icon:ICONS.drones,
-      desc:"Spawns 1 Drone on this planet. Drones on other planets keep running independently.",
+      desc:"Drones pulse credits passively — they never stop, even when cargo is full.",
       hideBuy:false,
       costText:()=>`${fmt(P().costDrones)} credits`,
       canBuy:()=>state.credits >= P().costDrones,
       chips:()=>[
-        {text:`Drones: ${P().dronesLvl}`, kind: P().dronesLvl>0 ? "good" : ""},
-        {text:`Pulse/s: ${dronePulsesPerSecondFor(P()).toFixed(2)}`, kind:"warn"},
-        {text:`Per pulse: ${droneCreditsPerPulseFor(P(), state.currentPlanet)}c`, kind:"good"}
+        {text:`Drones: ${P().dronesLvl}`,kind:P().dronesLvl>0?"good":""},
+        {text:`${dronePulsesPerSecondFor(P()).toFixed(2)} pulses/s`,kind:"warn"},
+        {text:`${droneCreditsPerPulseFor(P(),state.currentPlanet)}c/pulse`,kind:"good"}
       ],
-      current:()=>`Regolith/s: ${(P().rps * boostMult()).toFixed(1)}`,
+      current:()=>`${(P().rps*boostMult()).toFixed(1)} credits/s`,
       next:()=>`Next: +${(dronePulsesPerSecondFor(P())*droneCreditsPerPulseFor(P(),state.currentPlanet)).toFixed(1)}/s`,
       buy:buyDrone
     },
     { id:"droneAI", tab:"core", name:"Drone AI Uplink", icon:ICONS.ai,
-      desc:"Improves Drone speed + yield on this planet.",
+      desc:"Faster, more productive drones on this planet.",
       hideBuy:false,
       costText:()=>`${fmt(P().costDroneAI)} credits`,
       canBuy:()=>state.credits >= P().costDroneAI,
       chips:()=>[
         {text:`AI Level: ${P().droneAI}`},
-        {text:`Pulse/s: ${dronePulsesPerSecondFor(P()).toFixed(2)}`, kind:"warn"},
-        {text:`Per pulse: ${droneCreditsPerPulseFor(P(), state.currentPlanet)}c`, kind:"good"}
+        {text:`${dronePulsesPerSecondFor(P()).toFixed(2)} pulses/s`,kind:"warn"},
+        {text:`${droneCreditsPerPulseFor(P(),state.currentPlanet)}c/pulse`,kind:"good"}
       ],
-      current:()=>`More frequent drone cycles`,
-      next:()=>`Next: faster + stronger`,
+      current:()=>`Drone speed + yield`,
+      next:()=>`Faster & stronger`,
       buy:buyDroneAI
     },
     { id:"prospect", tab:"core", name:"Prospecting Array", icon:ICONS.prospect,
-      desc:"Boosts rare drop rates (Clicks + Drones) on this planet.",
+      desc:"Boosts rare drop rates from Miners on this planet.",
       hideBuy:false,
       costText:()=>`${fmt(P().costProspect)} credits`,
       canBuy:()=>state.credits >= P().costProspect,
       chips:()=>[
         {text:`Level: ${P().prospectLvl}`},
-        {text:`Rare ×${rareBoostMult().toFixed(2)}`, kind:"good"}
+        {text:`Rare ×${rareBoostMult().toFixed(2)}`,kind:"good"}
       ],
-      current:()=>`Boosts rare drops`,
-      next:()=>`Next: +6% rare mult`,
+      current:()=>`Boosts Miner rare ore chance`,
+      next:()=>`+6% rare multiplier`,
       buy:buyProspect
     },
 
-    { id:"cargoPanel", tab:"cargo", name:"Cargo Bay", icon:ICONS.cargo, desc:"Per-ore modes: Off · Drop (instant) · Overflow (auto-sell above Keep).",
+    // ── Cargo tab: Ore inventory ───────────────────────────────────────────
+    { id:"cargoPanel", tab:"cargo", name:"Ore Cargo", icon:ICONS.cargo,
+      desc:"Ores mined by your Miners. Sell or smelt them.",
       hideBuy:true, costText:()=>`—`, canBuy:()=>true,
       chips:()=>[
-        {text:`Tier: Mk${state.cargoTier}`},
-        {text:`Cap: ${state.cargoCap}`, kind:"warn"},
-        {text: state.autoSellOnFull ? "Auto-sell on full: ON" : "Auto-sell on full: OFF", kind: state.autoSellOnFull ? "good" : "bad"}
+        {text:`${totalCargoUnits()}/${state.cargoCap} units`,kind:totalCargoUnits()>=state.cargoCap?"bad":"good"},
+        {text:state.autoSellOnFull?"Auto-sell: ON":"Auto-sell: OFF",kind:state.autoSellOnFull?"good":""}
       ],
-      current:()=>`Stored: ${totalCargoUnits()}/${state.cargoCap}`,
-      next:()=>`Set per-ore behavior`,
+      current:()=>`Miners fill this`,
+      next:()=>`Sell or smelt to free space`,
       buy:()=>{}
     },
-    { id:"recipePanel", tab:"cargo", name:"Cargo Crafting", icon:ICONS.cargo, desc:"Capacity upgrades via ore recipes (stash mats with Keep).",
+    // ── Cargo tab: Miners ─────────────────────────────────────────────────
+    { id:"minerPanel", tab:"cargo", name:"Planet Miners", icon:"⛏",
+      desc:"Deploy Miners on planets. They collect ores passively into Cargo.",
       hideBuy:true, costText:()=>`—`, canBuy:()=>true,
-      chips:()=>[{text:`Recipe: ${currentRecipe().name}`}],
-      current:()=>`Cap: ${state.cargoCap}`,
-      next:()=>`Next: +50 cap`,
+      chips:()=>{
+        const total=Object.values(state.planets).reduce((t,p)=>t+(p.minersDeployed||0),0);
+        const maxT=Object.values(state.planets).reduce((t,p)=>t+(p.maxMiners||2),0);
+        return [{text:`${total} miners deployed`,kind:total>0?"good":""},{text:`${freeSpace()>0?"Mining":"CARGO FULL"}`,kind:freeSpace()>0?"warn":"bad"}];
+      },
+      current:()=>`Ore/min: ${Object.entries(state.planets).reduce((t,[pid,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*(1+(state.station?.reactor||0)*0.25),0).toFixed(2)}`,
+      next:()=>`Upgrade Hangar for more slots`,
       buy:()=>{}
     },
-    { id:"tradePanel", tab:"cargo", name:"Trade Terminal", icon:ICONS.trade, desc:"Rotates every 6 hours. Each offer is 1× per rotation. Unlock MR 6.",
+    // ── Cargo tab: Station Modules ────────────────────────────────────────
+    { id:"stationPanel", tab:"cargo", name:"Station Modules", icon:"🛰",
+      desc:"Upgrade your station to enhance miners, unlock smelting and more.",
       hideBuy:true, costText:()=>`—`, canBuy:()=>true,
-      chips:()=>[{text:`Unlock: MR 6`},{text:`1× per offer / rotation`, kind:"warn"}],
-      current:()=> state.minerRank>=6 ? `Online` : `Locked`,
-      next:()=>`Refresh on rotation`,
+      chips:()=>[
+        {text:`Hangar Lv${state.station?.hangar||0}`,kind:(state.station?.hangar||0)>0?"good":""},
+        {text:`Reactor Lv${state.station?.reactor||0}`,kind:(state.station?.reactor||0)>0?"warn":""},
+        {text:`Smelter Lv${state.station?.smelter||0}`,kind:(state.station?.smelter||0)>0?"good":""},
+      ],
+      current:()=>`Core infrastructure`,
+      next:()=>`Expand capabilities`,
+      buy:()=>{}
+    },
+    // ── Cargo tab: Smelter ────────────────────────────────────────────────
+    { id:"smelterPanel", tab:"cargo", name:"Ore Smelter", icon:"🔥",
+      desc:"Convert raw ores into valuable alloys worth far more than raw sales.",
+      hideBuy:true, costText:()=>`—`, canBuy:()=>true,
+      chips:()=>[
+        {text:`Smelter Lv${state.station?.smelter||0}`,kind:(state.station?.smelter||0)>0?"good":"bad"},
+        {text:`${SMELT_RECIPES.filter(r=>r.unlockSmelter<=(state.station?.smelter||0)).length} recipes`,kind:"warn"}
+      ],
+      current:()=>`Alloys sell for 3-10× more`,
+      next:()=>`Upgrade smelter for more recipes`,
+      buy:()=>{}
+    },
+    // ── Cargo tab: Trade Terminal ─────────────────────────────────────────
+    { id:"tradePanel", tab:"cargo", name:"Trade Terminal", icon:ICONS.trade,
+      desc:"Rotates every 6 hours. Trade Dock station module adds more offers.",
+      hideBuy:true, costText:()=>`—`, canBuy:()=>true,
+      chips:()=>[{text:`MR 6 required`},{text:`${3+(state.station?.tradeDock||0)} offers/rotation`,kind:"warn"}],
+      current:()=> state.minerRank>=6 ? `Online` : `Locked — MR 6`,
+      next:()=>`Upgrade Trade Dock for better deals`,
       buy:()=>{}
     },
 
-    /* Cosmetic tab: ONLY drone skins */
+    /* Cosmetic tab */
     ...DRONE_SKINS.filter(s=>s.id!=="default").map(skin => ({
-      id:`skin_${skin.id}`,
-      tab:"cos",
-      name: skin.name,
-      icon: ICONS.skin,
-      desc: skin.desc + " (Drones only)",
+      id:`skin_${skin.id}`, tab:"cos", name:skin.name, icon:ICONS.skin,
+      desc:skin.desc+" (Drones only)",
       hideBuy:false,
       costText:()=> state.cosmetics.owned[skin.id] ? "Owned" : `${fmt(skin.cost)} credits`,
       canBuy:()=> state.cosmetics.owned[skin.id] ? true : (state.credits >= skin.cost),
       chips:()=>[
-        {text: state.cosmetics.owned[skin.id] ? "Owned" : "Not owned", kind: state.cosmetics.owned[skin.id] ? "good" : "bad"},
-        {text: (state.cosmetics.droneSkin===skin.id) ? "Equipped" : "—", kind: (state.cosmetics.droneSkin===skin.id) ? "good" : ""}
+        {text:state.cosmetics.owned[skin.id]?"Owned":"Not owned",kind:state.cosmetics.owned[skin.id]?"good":"bad"},
+        {text:(state.cosmetics.droneSkin===skin.id)?"Equipped":"—",kind:(state.cosmetics.droneSkin===skin.id)?"good":""}
       ],
-      current:()=> (state.cosmetics.droneSkin===skin.id) ? "Active drone look" : "Not equipped",
-      next:()=> state.cosmetics.owned[skin.id] ? "Equip anytime" : "Unlock + equip",
+      current:()=>(state.cosmetics.droneSkin===skin.id)?"Active drone look":"Not equipped",
+      next:()=>state.cosmetics.owned[skin.id]?"Equip anytime":"Unlock + equip",
       buy:()=>buyOrEquipDroneSkin(skin.id),
-      buttonText:()=> state.cosmetics.owned[skin.id] ? ((state.cosmetics.droneSkin===skin.id) ? "Equipped" : "Equip") : "Buy"
+      buttonText:()=>state.cosmetics.owned[skin.id]?((state.cosmetics.droneSkin===skin.id)?"Equipped":"Equip"):"Buy"
     }))
   ];
+;
 
   function buildTab(tab){
     upgradesListEl.innerHTML = "";
@@ -4142,6 +4508,20 @@
         const body = document.createElement("div");
         body.className = "body";
         card.appendChild(body);
+
+        // Accordion — collapsed by default
+        card.classList.add("collapsible", "collapsed");
+        card.querySelector(".uTop").addEventListener("click", (e) => {
+          // Don't toggle when clicking a button inside uTop
+          if(e.target.closest("button, input, select")) return;
+          const wasCollapsed = card.classList.contains("collapsed");
+          card.classList.toggle("collapsed");
+          // If expanding, force a re-render of the body content
+          if(wasCollapsed){
+            setCargoDirtyAll();
+            renderCargoPanelsIfDirty(true);
+          }
+        });
       }
 
       upgradesListEl.appendChild(card);
@@ -4397,137 +4777,211 @@
   }
 
   function cargoPanelHTML(){
-    const used = totalCargoUnits();
-    const cap = state.cargoCap;
-    const pct = cap ? Math.min(100, used/cap*100) : 0;
-    const onFullCls = state.autoSellOnFull ? "toggle on" : "toggle off";
+    const units = totalCargoUnits();
+    const cap   = state.cargoCap;
+    const pct   = Math.min(100, Math.round(units/cap*100));
+    const cargoColor = pct>=100 ? "#ef4444" : pct>=80 ? "#f59e0b" : "#32d583";
 
-    const rows = ORES
-      .filter(o => oreUnlocked(o.id))
-      .map(o => {
-        const have = Math.floor(state.cargo[o.id]||0);
-        const plan = Math.floor(state.sellPlan[o.id]||0);
-        const set = state.oreSettings[o.id] || {locked:false, keep:0, autoSellMode:"off"};
-        const keep = Math.floor(set.keep||0);
-        const sellable = Math.max(0, have - keep);
+    let oreRows = "";
+    for(const o of ORES){
+      if(!oreUnlocked(o.id)) continue;
+      const have = state.cargo[o.id]||0;
+      const set  = state.oreSettings[o.id]||{locked:false,keep:0,autoSellMode:"off"};
+      const mode = set.autoSellMode||"off";
+      const modeLabel = mode==="drop"?"Auto-sell":mode==="overflow"?"Overflow":"Hold";
+      const modeColor = mode==="drop"?"#32d583":mode==="overflow"?"#fbbf24":"var(--muted)";
+      const maxSell = Math.max(0, (have)-(set.keep||0));
+      const sellAmt = Math.min(state.sellPlan[o.id]||0, maxSell);
 
-        const lockCls = set.locked ? "miniBtn good" : "miniBtn";
-        const kind = modeChipKind(set.autoSellMode);
-        const modeCls = "miniBtn " + (kind||"");
-        const title = modeExplain(set.autoSellMode);
+      oreRows += `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.05);">
+        ${oreIconHTML(o.id,18)}
+        <span style="font-size:13px;font-weight:700;flex:1;">${o.name}</span>
+        <span style="font-size:12px;color:var(--muted);min-width:28px;text-align:right;">${have}</span>
+        <button class="btn secondary" style="padding:3px 8px;font-size:10px;color:${modeColor};" data-act="cycleMode" data-ore="${o.id}">${modeLabel}</button>
+        <span style="font-size:10px;color:var(--muted);">Keep</span>
+        <input type="number" min="0" max="${cap}" value="${set.keep||0}"
+          data-act="keepInput" data-ore="${o.id}"
+          style="width:40px;font-size:11px;padding:2px 4px;border-radius:6px;background:var(--card);border:1px solid rgba(255,255,255,.12);color:var(--fg);">
+        <button class="btn secondary" style="padding:3px 6px;font-size:11px;" data-act="minus" data-ore="${o.id}">−</button>
+        <span style="font-size:12px;min-width:20px;text-align:center;">${sellAmt}</span>
+        <button class="btn secondary" style="padding:3px 6px;font-size:11px;" data-act="plus" data-ore="${o.id}">+</button>
+      </div>`;
+    }
 
-        const badges = [];
-        if(set.locked) badges.push(`<span class="badge good">Locked</span>`);
-        if(keep > 0) badges.push(`<span class="badge warn">Keep</span>`);
-        if(set.autoSellMode === "drop") badges.push(`<span class="badge good">Drop</span>`);
-        if(set.autoSellMode === "overflow") badges.push(`<span class="badge warn">Overflow</span>`);
-
-        const unlockCls = isRecentlyUnlocked(o.id) ? "cargoRow newUnlock" : "cargoRow";
-
-        return `
-          <div class="${unlockCls}" data-ore-row="${o.id}">
-            <div>
-              <div class="oreHead">
-                <div class="oreIcon">${oreIconHTML(o.id, 22)}</div>
-                <div style="min-width:0">
-                  <div class="oreName">
-                    ${o.name} <span style="opacity:.75">(${o.value}c)</span>
-                    ${badges.join(" ")}
-                  </div>
-                  <div class="oreMeta">
-                    Owned: <b>${have}</b> · Sellable: <b>${sellable}</b> · Keep: <b>${keep}</b>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div class="miniControls">
-                <button class="${lockCls}" data-act="toggleLock" data-ore="${o.id}">${set.locked ? "Locked" : "Lock"}</button>
-
-                <button class="${modeCls}" data-act="cycleMode" data-ore="${o.id}" title="${escapeHtml(title)}">
-                  ${escapeHtml(modeButtonText(set.autoSellMode))}
-                </button>
-
-                <span class="chip">Keep</span>
-                <input data-act="keepInput" data-ore="${o.id}" value="${keep}" inputmode="numeric"
-                      style="width:62px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);color:var(--txt);text-align:center;font-weight:950;" />
-              </div>
-
-              <div class="modeHint">
-                <b>${escapeHtml(modeLabel(set.autoSellMode))}:</b> ${escapeHtml(modeExplain(set.autoSellMode))}
-              </div>
-            </div>
-
-            <div style="text-align:right;">
-              <div class="muted">Sell selection</div>
-              <div class="stepper" data-ore="${o.id}">
-                <button data-act="minus" data-ore="${o.id}">−</button>
-                <input data-act="sellInput" data-ore="${o.id}" value="${plan}" inputmode="numeric" />
-                <button data-act="plus" data-ore="${o.id}">+</button>
-              </div>
-              <div style="margin-top:6px;font-weight:950;">${fmt(plan*o.value)}c</div>
-            </div>
-          </div>
-        `;
-      }).join("");
+    const totalSellValue = ORES.filter(o=>oreUnlocked(o.id)).reduce((t,o)=>{
+      const have=state.cargo[o.id]||0, keep=state.oreSettings[o.id]?.keep||0;
+      const sell=clamp(state.sellPlan[o.id]||0,0,Math.max(0,have-keep));
+      return t+sell*oreValue(o.id);
+    },0);
 
     return `
-      <div class="cargoTop">
-        <div class="chip"><strong>Capacity:</strong> ${used}/${cap} (${Math.round(pct)}%)</div>
-        <div class="row" style="gap:8px;">
-          <button class="btn secondary" data-act="openCodex" style="padding:10px 12px;border-radius:14px;">Ore Codex</button>
-          <div class="${onFullCls}" data-act="toggleAutoFull">
-            Auto-sell on full: <b>${state.autoSellOnFull ? "ON" : "OFF"}</b>
-          </div>
-        </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${cargoColor};border-radius:4px;transition:width .3s;"></div>
       </div>
-
-      <div style="margin-top:10px;">
-        <div class="bar"><div style="width:${pct}%;"></div></div>
-      </div>
-
-      <div class="row" style="margin-top:10px;">
-        <button class="btn good" data-act="sellSelected" style="flex:1;min-width:170px;">Sell Selected</button>
-      </div>
-
-      <div class="selectRow">
-        <button class="btn secondary" data-act="sel25" style="flex:1;min-width:120px;">Select 25%</button>
-        <button class="btn secondary" data-act="sel50" style="flex:1;min-width:120px;">Select 50%</button>
-        <button class="btn secondary" data-act="sel100" style="flex:1;min-width:120px;">Select 100%</button>
-      </div>
-
-      <div class="muted" style="margin-top:10px;font-size:12px;">
-        <b>Tip:</b> <span class="chip warn">Overflow</span> + <span class="chip">Keep</span> = autosell only overflow.
-        <span class="chip good">Drop</span> = instant credits.
-      </div>
-
-      <div style="margin-top:10px;">
-        ${rows || `<div class="muted">No cargo yet. Rare drops land here.</div>`}
-      </div>
-    `;
+      <span style="font-weight:900;color:${cargoColor};font-size:13px;">${units}/${cap}</span>
+      ${pct>=100?`<span style="font-size:10px;color:#ef4444;font-weight:700;">FULL — Miners paused</span>`:
+        pct>=80?`<span style="font-size:10px;color:#f59e0b;">Almost full</span>`:""}
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px;display:flex;gap:8px;">
+      <span>Mode cycles: Hold → Auto-sell → Overflow</span>
+      <span>· Keep = don't sell below</span>
+    </div>
+    <div style="margin-bottom:12px;">${oreRows}</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn secondary" style="flex:1;font-size:11px;padding:6px;" data-act="sel25">25%</button>
+      <button class="btn secondary" style="flex:1;font-size:11px;padding:6px;" data-act="sel50">50%</button>
+      <button class="btn secondary" style="flex:1;font-size:11px;padding:6px;" data-act="sel100">100%</button>
+      <button class="btn ${totalSellValue>0?"good":"secondary"}" style="flex:2;font-size:12px;padding:6px;" data-act="sellSelected">
+        Sell · +${fmt(totalSellValue)}c
+      </button>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;color:var(--muted);">
+      <input type="checkbox" ${state.autoSellOnFull?"checked":""} data-act="toggleAutoFull">
+      Auto-sell cheapest when cargo full
+    </label>`;
   }
+
+
+  function stationPanelHTML(){
+    let html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+    for(const mod of STATION_MODULES){
+      const lvl = state.station?.[mod.id]||0;
+      const maxed = lvl >= mod.maxLvl;
+      const cost = mod.cost(lvl);
+      const canAfford = state.credits >= cost;
+      const locked = mod.id==="tradeDock" && state.minerRank<6;
+      html += `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+        <div style="font-size:26px;width:36px;text-align:center;">${mod.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:900;">${mod.name}
+            <span style="font-size:10px;color:var(--muted);font-weight:400;"> Lv ${lvl}/${mod.maxLvl}</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${mod.desc}</div>
+          <div style="font-size:11px;color:#a5d4ff;margin-top:3px;">${mod.statLabel(state)}</div>
+        </div>
+        <button class="btn ${maxed||locked?"secondary":canAfford?"good":""}"
+          style="padding:6px 12px;font-size:12px;white-space:nowrap;min-width:70px;"
+          ${maxed||locked?"disabled":""} data-act="buyStation" data-module="${mod.id}">
+          ${locked?"MR 6":maxed?"Max ✓":mod.costLabel(lvl)}
+        </button>
+      </div>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+
+  function minerPanelHTML(){
+    let html = '';
+    for(const [pid, planet] of Object.entries(PLANETS)){
+      if(!state.planets[pid]) continue;
+      if(pid==="void" && state.minerRank<15) continue;
+      const pp = state.planets[pid];
+      const deployed = pp.minersDeployed||0;
+      const maxM = pp.maxMiners||2;
+      const reactorBonus = 1+(state.station?.reactor||0)*0.25;
+      const orePerMin = ((pp.minerSpeed||1)*reactorBonus*deployed).toFixed(2);
+      const full = freeSpace()<=0;
+      html += `
+      <div style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:18px;">${planet.icon||"🪐"}</span>
+          <span style="font-size:13px;font-weight:900;">${planet.name}</span>
+          <span style="font-size:11px;color:var(--muted);">${deployed}/${maxM} miners · ${orePerMin} ore/min</span>
+          ${full?'<span style="font-size:10px;color:#ef4444;font-weight:700;margin-left:auto;">FULL</span>':""}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;gap:4px;flex:1;">
+            ${Array.from({length:maxM},(_,i)=>`
+            <div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.15);
+              background:${i<deployed?"#32d583":"rgba(255,255,255,.05)"};
+              display:flex;align-items:center;justify-content:center;font-size:12px;">
+              ${i<deployed?"⛏":""}
+            </div>`).join("")}
+          </div>
+          ${deployed<maxM
+            ? `<button class="btn good" style="padding:6px 14px;font-size:12px;"
+                data-act="buyMiner" data-planet="${pid}">
+                Deploy · ${fmt(pp.costMiner||200)}c
+              </button>`
+            : `<span style="font-size:11px;color:#32d583;">All slots filled</span>`}
+        </div>
+      </div>`;
+    }
+    return html || `<div style="color:var(--muted);text-align:center;padding:20px;font-size:12px;">No planets unlocked yet.</div>`;
+  }
+
+
+  function smelterPanelHTML(){
+    const smelterLvl = state.station?.smelter||0;
+    if(smelterLvl===0){
+      return `<div style="text-align:center;padding:20px;color:var(--muted);">
+        <div style="font-size:32px;margin-bottom:8px;">🔥</div>
+        <div style="font-size:13px;font-weight:700;">Ore Smelter not installed</div>
+        <div style="font-size:12px;margin-top:6px;">Upgrade the Ore Smelter in Station Modules to unlock recipes.</div>
+      </div>`;
+    }
+    const inv = smeltInventory(state);
+    const available = SMELT_RECIPES.filter(r=>r.unlockSmelter<=smelterLvl);
+    const totalAlloysValue = SMELT_RECIPES.reduce((t,r)=>t+(inv[r.id]||0)*r.output.value,0);
+    let html = "";
+
+    // Alloy inventory
+    if(totalAlloysValue>0){
+      const invRows = SMELT_RECIPES.filter(r=>(inv[r.id]||0)>0).map(r=>
+        `<div style="display:flex;gap:8px;align-items:center;padding:3px 8px;font-size:12px;">
+          <span>${r.icon}</span><span style="flex:1;">${r.name}</span>
+          <span style="color:#32d583;font-weight:700;">×${inv[r.id]||0}</span>
+          <span style="color:var(--muted);">${fmt((inv[r.id]||0)*r.output.value)}c</span>
+        </div>`).join("");
+      html += `<div style="border-radius:12px;background:rgba(50,213,131,.06);border:1px solid rgba(50,213,131,.18);margin-bottom:12px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(50,213,131,.12);">
+          <span style="font-size:12px;font-weight:700;color:#32d583;">Alloy Inventory · ${fmt(totalAlloysValue)}c</span>
+          <button class="btn good" style="padding:5px 14px;font-size:12px;" data-act="sellAlloys">Sell All</button>
+        </div>
+        ${invRows}
+      </div>`;
+    }
+
+    // Recipes
+    html += `<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;">Recipes (Smelter Lv ${smelterLvl})</div>`;
+    for(const r of available){
+      const can = canSmelt(r, state);
+      const inputChips = Object.entries(r.inputs).map(([oreId,need])=>{
+        const have=state.cargo[oreId]||0, ok=have>=need;
+        return `<span style="font-size:11px;padding:2px 7px;border-radius:6px;
+          background:${ok?"rgba(50,213,131,.12)":"rgba(239,68,68,.12)"};
+          color:${ok?"#32d583":"#ef4444"};border:1px solid ${ok?"rgba(50,213,131,.2)":"rgba(239,68,68,.2)"};">
+          ${oreId}: ${have}/${need}
+        </span>`;
+      }).join(" ");
+      html += `
+      <div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:20px;">${r.icon}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:900;">${r.name}</div>
+            <div style="font-size:11px;color:#a5d4ff;">${fmt(r.output.value)}c per alloy · ${r.desc}</div>
+          </div>
+          <button class="btn ${can?"good":"secondary"}" style="padding:6px 14px;font-size:12px;"
+            ${can?"":"disabled"} data-act="smelt" data-recipe="${r.id}">
+            Smelt ${can?"":"🔒"}
+          </button>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">${inputChips}</div>
+      </div>`;
+    }
+    return html;
+  }
+
 
   function recipePanelHTML(){
-    const r = currentRecipe();
-    if(!r.req) return `<div class="muted">Cargo Bay is maxed.</div>`;
-    const parts = Object.entries(r.req).map(([id,amt])=>{
-      const have = Math.floor(state.cargo[id]||0);
-      return `${oreIconHTML(id, 16)} ${id} ${have}/${amt}`;
-    }).join(" · ");
-    const can = hasRecipeReq(r.req);
-    return `
-      <div class="chip"><strong>${r.name}</strong></div>
-      <div class="muted" style="margin-top:6px;">Requires: ${parts}</div>
-      <div class="muted" style="margin-top:6px;">Effect: ${r.effect}</div>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn ${can?"good":"secondary"}" data-act="craftCargo" ${can?"":"disabled"} style="flex:1;">Craft</button>
-      </div>
-      <div class="muted" style="margin-top:8px;font-size:12px;">Use Keep reserves to stockpile crafting mats.</div>
-    `;
+    // Legacy redirect - no longer used standalone
+    return smelterPanelHTML();
   }
-
-  let tradeTimerEl = null;
 
   function tradeItemLabel(it){
     if(it.id==="credits"){
@@ -4572,6 +5026,7 @@
   }
   function updateTradeTimerTextOnly(){
     if(state.shopTab !== "cargo") return;
+    const tradeTimerEl = document.getElementById("tradeTimer");
     if(!tradeTimerEl) return;
     const ms = Math.max(0, state.trades.nextReroll - now());
     const mins = Math.floor(ms/60000);
@@ -4582,26 +5037,95 @@
   function renderCargoPanelsIfDirty(force=false){
     if(state.shopTab !== "cargo") return;
 
-    const cargoNode = upgradeNodes.get("cargoPanel");
-    const recipeNode = upgradeNodes.get("recipePanel");
-    const tradeNode  = upgradeNodes.get("tradePanel");
-    if(!cargoNode || !recipeNode || !tradeNode) return;
+    const cargoNode   = upgradeNodes.get("cargoPanel");
+    const minerNode   = upgradeNodes.get("minerPanel");
+    const stationNode = upgradeNodes.get("stationPanel");
+    const smelterNode = upgradeNodes.get("smelterPanel");
+    const recipeNode  = upgradeNodes.get("recipePanel");
+    const tradeNode   = upgradeNodes.get("tradePanel");
 
-    if(force || dirty.cargo){ cargoNode.bodyEl.innerHTML = cargoPanelHTML(); dirty.cargo = false; }
-    if(force || dirty.recipe){ recipeNode.bodyEl.innerHTML = recipePanelHTML(); dirty.recipe = false; }
-    if(force || dirty.trade){
-      tradeNode.bodyEl.innerHTML = tradePanelHTML();
-      tradeTimerEl = tradeNode.bodyEl.querySelector("#tradeTimer");
-      dirty.trade = false;
-      updateTradeTimerTextOnly();
+    const isOpen = node => node && !node.card.classList.contains("collapsed");
+
+    if(force || dirty.cargo){
+      if(cargoNode   && (force || isOpen(cargoNode)))   cargoNode.bodyEl.innerHTML   = cargoPanelHTML();
+      if(minerNode   && (force || isOpen(minerNode)))   minerNode.bodyEl.innerHTML   = minerPanelHTML();
+      if(stationNode && (force || isOpen(stationNode))) stationNode.bodyEl.innerHTML = stationPanelHTML();
+      if(smelterNode && (force || isOpen(smelterNode))) smelterNode.bodyEl.innerHTML = smelterPanelHTML();
+      if(recipeNode  && (force || isOpen(recipeNode)))  recipeNode.bodyEl.innerHTML  = smelterPanelHTML();
+      dirty.cargo = false;
+      // Event delegation via mountCargoDelegationOnce handles all interactions
     }
-
-    updateUpgradeTexts();
-    updateHUD();
-    updateUpgradeAffordability();
+    if(force || dirty.trade){
+      if(tradeNode) tradeNode.bodyEl.innerHTML = state.minerRank>=6 ? tradePanelHTML() : `<div style="color:var(--muted);text-align:center;padding:20px;">Unlocks at MR 6.</div>`;
+      dirty.trade = false;
+      wireTrade(tradeNode?.bodyEl);
+    }
   }
 
-  let cargoDelegationMounted = false;
+  function wireTrade(el2){
+    // Trade interactions handled by mountCargoDelegationOnce delegation
+    // Timer updates handled by updateTradeTimerTextOnly via tick
+  }
+
+  function wireCargoPanel(el2){
+    if(!el2) return;
+    el2.querySelectorAll(".cargoModeSelect").forEach(sel=>{
+      sel.addEventListener("change",()=>{
+        const oid=sel.dataset.ore;
+        if(!state.oreSettings[oid]) state.oreSettings[oid]={locked:false,keep:0,autoSellMode:"off"};
+        state.oreSettings[oid].autoSellMode=sel.value;
+        save(); setCargoDirtyAll();
+      });
+    });
+    el2.querySelectorAll(".cargoKeepInput").forEach(inp=>{
+      inp.addEventListener("change",()=>{
+        const oid=inp.dataset.ore;
+        if(!state.oreSettings[oid]) state.oreSettings[oid]={locked:false,keep:0,autoSellMode:"off"};
+        state.oreSettings[oid].keep=Math.max(0,parseInt(inp.value)||0);
+        save();
+      });
+    });
+    el2.querySelectorAll(".cargoSellSlider").forEach(sl=>{
+      sl.addEventListener("input",()=>{
+        state.sellPlan[sl.dataset.ore]=parseInt(sl.value)||0;
+        const amt=el2.querySelector(`.cargoSellAmt[data-ore="${sl.dataset.ore}"]`);
+        if(amt) amt.textContent=sl.value;
+        setCargoDirtyAll();
+      });
+    });
+    const sellBtn=el2.querySelector("#btnSellSelected");
+    if(sellBtn) sellBtn.addEventListener("click",sellSelected);
+    const autoCheck=el2.querySelector("#autoSellCheck");
+    if(autoCheck) autoCheck.addEventListener("change",()=>{ state.autoSellOnFull=autoCheck.checked; save(); });
+  }
+
+  function wireMinerPanel(el2){
+    if(!el2) return;
+    el2.querySelectorAll("[data-buy-miner]").forEach(btn=>{
+      btn.addEventListener("click",()=>buyMiner(btn.dataset.buyMiner));
+    });
+  }
+
+  function wireStationPanel(el2){
+    if(!el2) return;
+    el2.querySelectorAll("[data-station]").forEach(btn=>{
+      btn.addEventListener("click",()=>buyStationModule(btn.dataset.station));
+    });
+  }
+
+  function wireSmelterPanel(el2){
+    if(!el2) return;
+    el2.querySelectorAll("[data-smelt]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const r=SMELT_RECIPES.find(r=>r.id===btn.dataset.smelt);
+        if(r) doSmelt(r);
+        setCargoDirtyAll();
+      });
+    });
+    const sellAllBtn=el2?.querySelector("#btnSellAlloys");
+    if(sellAllBtn) sellAllBtn.addEventListener("click",sellAlloys);
+  }
+
   function mountCargoDelegationOnce(){
     if(cargoDelegationMounted) return;
     cargoDelegationMounted = true;
@@ -4672,6 +5196,32 @@
         return;
       }
 
+      if(act === "buyStation"){
+        const moduleId = t.getAttribute("data-module");
+        if(moduleId) buyStationModule(moduleId);
+        return;
+      }
+
+      if(act === "buyMiner"){
+        const planetId = t.getAttribute("data-planet");
+        buyMiner(planetId);
+        return;
+      }
+
+      if(act === "smelt"){
+        const recipeId = t.getAttribute("data-recipe");
+        const recipe = SMELT_RECIPES.find(r=>r.id===recipeId);
+        if(recipe){ doSmelt(recipe); setCargoDirtyAll(); renderCargoPanelsIfDirty(true); }
+        return;
+      }
+
+      if(act === "sellAlloys"){
+        sellAlloys();
+        setCargoDirtyAll();
+        renderCargoPanelsIfDirty(true);
+        return;
+      }
+
       if(act === "trade"){
         const idx = parseInt(t.getAttribute("data-trade")||"-1",10);
         const offer = state.trades.offers[idx];
@@ -4683,6 +5233,8 @@
         payTrade(offer.give);
         receiveTrade(offer.get);
         offer.used = true;
+        if(state._stats) state._stats.tradeDeals=(state._stats.tradeDeals||0)+1;
+        checkAchievements();
 
         toast("Trade completed.");
         setCargoDirtyAll();
@@ -4739,7 +5291,261 @@
 
     const active = now() < state.boostUntil;
 
+    // Combo bar
+    const comboBar = document.getElementById("comboBar");
+    if(comboBar){
+      const tier = Math.floor(comboCount/5);
+      if(tier>0){
+        comboBar.style.opacity="1";
+        comboBar.textContent=`COMBO ×${(1+tier*0.5).toFixed(1)}`;
+        comboBar.style.color=["#fbbf24","#f97316","#ef4444","#a855f7"][Math.min(tier-1,3)];
+      } else {
+        comboBar.style.opacity="0";
+      }
+    }
+
+    // Miner status in HUD
+    const totalMiners=Object.values(state.planets).reduce((t,p)=>t+(p.minersDeployed||0),0);
+    const reactorBonus=1+(state.station?.reactor||0)*0.25;
+    const orePerMin=Object.entries(state.planets).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*reactorBonus,0);
+    const minerHud=document.getElementById("minerHud");
+    if(minerHud) minerHud.textContent=totalMiners>0?`⛏ ${orePerMin.toFixed(1)} ore/min`:"⛏ No miners";
+
+    // Cargo fill indicator
+    const cargoHud=document.getElementById("cargoHud");
+    if(cargoHud){
+      const u=totalCargoUnits(), cap=state.cargoCap, pct=Math.round(u/cap*100);
+      cargoHud.textContent=`📦 ${u}/${cap}`;
+      cargoHud.style.color=pct>=100?"#ef4444":pct>=80?"#f59e0b":"var(--muted)";
+    }
+
     applyPlanetVisuals();
+  }
+
+  function renderStats(){
+    const grid = document.getElementById("profileStatsGrid");
+    if(!grid||!state) return;
+    const st = state._stats||{};
+
+    const section = (icon, label, rows) =>
+      `<div style="margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:4px 0 6px;">${icon} ${label}</div>
+        ${rows.map(([l,v,col])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="font-size:12px;color:var(--muted);">${l}</span>
+          <span style="font-size:13px;font-weight:900;color:${col||"var(--fg)"};">${v}</span>
+        </div>`).join("")}
+      </div>`;
+
+    const totalMiners = Object.values(state.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0);
+    const reactorBonus = 1+(state.station?.reactor||0)*0.25;
+    const orePerMin = Object.entries(state.planets||{}).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*reactorBonus,0);
+
+    grid.innerHTML =
+      section("⚡","Laser Activity",[
+        ["Shots Fired",          fmt(st.shots||0),       "#a5d4ff"],
+        ["Critical Hits",        fmt(st.crits||0),       "#fbbf24"],
+        ["Max Combo Hits",       `${st.maxCombo||0}`,    "#f97316"],
+        ["Void Surges",          fmt(st.voidSurges||0),  "#c084fc"],
+      ])+
+      section("⛏","Mining",[
+        ["Ores Collected",       fmt(st.minerOres||0),   "#34d399"],
+        ["Miners Deployed",      `${totalMiners}`,       "#34d399"],
+        ["Current Ore/min",      orePerMin.toFixed(2),  "#34d399"],
+        ["Alloys Smelted",       fmt(st.smeltCount||0),  "#f97316"],
+      ])+
+      section("💰","Economy",[
+        ["Total Credits Earned", fmt(st.totalEarned||0)+"c","#fbbf24"],
+        ["Cargo Hauls Sold",     fmt(st.cargoSells||0),  "#a5d4ff"],
+        ["Trade Deals",          fmt(st.tradeDeals||0),  "#a5d4ff"],
+        ["Station Upgrades",     fmt(st.stationUpgrades||0),"#c084fc"],
+      ])+
+      section("🚀","Progression",[
+        ["Miner Rank",           `MR ${state.minerRank}`,       "#a5d4ff"],
+        ["Planets Unlocked",     `${Object.keys(state.planetsBought||{}).length} / 2`,"#34d399"],
+        ["Skills Owned",         `${(state.skills||[]).length} / ${Object.values(SKILL_TREE).reduce((a,b)=>a+b.nodes.length,0)}`,"#c084fc"],
+        ["Stellar Dust",         `${fmt(state.stellarDust||0)} ✨`,"#c084fc"],
+        ["Achievements",         `${(state.unlockedAch||[]).length} / ${ACHIEVEMENTS.length}`,"#fbbf24"],
+        ["Quest Streak",         `${state.quests?.streak||0} days`,"#f97316"],
+      ]);
+  }
+
+  function checkAchievements(){
+    if(!state||!state._stats) return;
+    if(!state.unlockedAch) state.unlockedAch=[];
+    const newOnes=[];
+    for(const a of ACHIEVEMENTS){
+      if(state.unlockedAch.includes(a.id)) continue;
+      try{ if(a.check(state)){state.unlockedAch.push(a.id); newOnes.push(a);} }catch(e){}
+    }
+    if(newOnes.length){
+      const dust=newOnes.reduce((t,a)=>t+(a.reward||0),0);
+      if(dust){state.stellarDust=(state.stellarDust||0)+dust; updateHUD();}
+      newOnes.forEach((a,i)=>setTimeout(()=>toast(`🏅 ${a.name}!${a.reward?` +${a.reward}✨`:""}`),i*1500));
+      save();
+    }
+  }
+
+
+  function playerTitle(s){
+    const mr = s.minerRank||1;
+    const dust = s.stellarDust||0;
+    const smelt = s._stats?.smeltCount||0;
+    const voidSurges = s._stats?.voidSurges||0;
+    const miners = Object.values(s.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0);
+    if(mr>=30)  return "🌌 Void Sovereign";
+    if(dust>=500) return "✨ Stellar Legend";
+    if(voidSurges>=100) return "🔮 Surge Master";
+    if(smelt>=50) return "⚗️ Master Smelter";
+    if(mr>=20)  return "👑 Transcendent Miner";
+    if(mr>=15)  return "🌌 Void Pioneer";
+    if(miners>=10) return "🏗 Mining Tycoon";
+    if(mr>=10)  return "🎖 Veteran Miner";
+    if(dust>0)  return "⭐ Prestige Seeker";
+    if(mr>=5)   return "🪖 Rookie Miner";
+    return "⛏ Asteroid Rookie";
+  }
+
+  function profileAvatarEmoji(s){
+    const mr = s.minerRank||1;
+    if(mr>=20) return "🌌";
+    if(mr>=15) return "🔮";
+    if(mr>=10) return "🚀";
+    if(mr>=5)  return "⚡";
+    return "⛏";
+  }
+
+  function renderProfileCard(){
+    const nameInput = document.getElementById("profileNameInput");
+    if(nameInput) nameInput.value = state.playerName||"";
+    const titleEl = document.getElementById("profileTitle");
+    if(titleEl) titleEl.textContent = playerTitle(state);
+    const metaEl = document.getElementById("profileMeta");
+    if(metaEl){
+      const days = Math.floor((Date.now()-(state.joinDate||Date.now()))/(1000*60*60*24));
+      const ach = (state.unlockedAch||[]).length;
+      metaEl.textContent = `Miner for ${days===0?"<1":days} day${days===1?"":"s"} · ${ach} achievements`;
+    }
+    const badgeEl = document.getElementById("profileRankBadge");
+    if(badgeEl) badgeEl.textContent = `MR ${state.minerRank}`;
+    const avatarEl = document.getElementById("profileAvatar");
+    if(avatarEl) avatarEl.textContent = profileAvatarEmoji(state);
+  }
+
+  function renderRankHistory(){
+    const grid = document.getElementById("profileRanksGrid");
+    if(!grid||!state) return;
+    const history = state.rankHistory||[];
+    const mr = state.minerRank||1;
+
+    let html = `<div style="margin-bottom:12px;">`;
+    // Current rank highlight
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(102,163,255,.12),rgba(192,132,252,.08));border:1px solid rgba(102,163,255,.25);margin-bottom:12px;">
+      <div style="font-size:28px;font-weight:900;color:#a5d4ff;">MR ${mr}</div>
+      <div>
+        <div style="font-size:13px;font-weight:900;">${playerTitle(state)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${history.length>0?"Current rank":"Starting rank"}</div>
+      </div>
+    </div>`;
+
+    if(history.length===0){
+      html += `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;">Rank-up history will appear here as you progress.</div>`;
+    } else {
+      html += `<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;">Rank History</div>`;
+      // Show most recent first
+      const sorted = [...history].reverse();
+      for(const entry of sorted){
+        const d = new Date(entry.ts);
+        const dateStr = d.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+        const timeStr = d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+        const rankColor = entry.mr>=20?"#c084fc":entry.mr>=15?"#818cf8":entry.mr>=10?"#38bdf8":entry.mr>=5?"#34d399":"var(--muted)";
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.05);">
+          <div style="font-size:14px;font-weight:900;color:${rankColor};min-width:48px;">MR ${entry.mr}</div>
+          <div style="flex:1;font-size:12px;color:var(--muted);">${dateStr} at ${timeStr}</div>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+    grid.innerHTML = html;
+  }
+
+  var ACHIEVEMENTS = [
+    {id:"a_shot1", cat:"mining",  icon:"🔫", name:"First Shot",       desc:"Fire your first laser shot",            reward:2,  check:s=>(s._stats?.shots||0)>=1},
+    {id:"a_shot2", cat:"mining",  icon:"🎯", name:"Trigger Happy",    desc:"Fire 500 laser shots",                  reward:3,  check:s=>(s._stats?.shots||0)>=500},
+    {id:"a_shot3", cat:"mining",  icon:"⚡", name:"Sharpshooter",     desc:"Fire 5,000 laser shots",                reward:5,  check:s=>(s._stats?.shots||0)>=5000},
+    {id:"a_shot4", cat:"mining",  icon:"💥", name:"Void Sniper",      desc:"Fire 50,000 laser shots",               reward:12, check:s=>(s._stats?.shots||0)>=50000},
+    {id:"a_crit1", cat:"mining",  icon:"✨", name:"Critical Mass",    desc:"Land 100 critical hits",                reward:3,  check:s=>(s._stats?.crits||0)>=100},
+    {id:"a_crit2", cat:"mining",  icon:"💫", name:"Crit Machine",     desc:"Land 2,500 critical hits",              reward:8,  check:s=>(s._stats?.crits||0)>=2500},
+    {id:"a_srg1",  cat:"mining",  icon:"🌌", name:"Void Awakening",   desc:"Trigger your first Void Surge",         reward:5,  check:s=>(s._stats?.voidSurges||0)>=1},
+    {id:"a_srg2",  cat:"mining",  icon:"🔮", name:"Surge Master",     desc:"Trigger 100 Void Surges",               reward:15, check:s=>(s._stats?.voidSurges||0)>=100},
+    {id:"a_ern1",  cat:"economy", icon:"💵", name:"First Earnings",   desc:"Earn 10,000 credits total",             reward:2,  check:s=>(s._stats?.totalEarned||0)>=10000},
+    {id:"a_ern2",  cat:"economy", icon:"💰", name:"Rolling In It",    desc:"Earn 1,000,000 credits total",          reward:5,  check:s=>(s._stats?.totalEarned||0)>=1e6},
+    {id:"a_ern3",  cat:"economy", icon:"🏦", name:"Credit Baron",     desc:"Earn 1,000,000,000 credits total",      reward:20, check:s=>(s._stats?.totalEarned||0)>=1e9},
+    {id:"a_sel1",  cat:"economy", icon:"📦", name:"First Haul",       desc:"Sell your cargo for the first time",    reward:2,  check:s=>(s._stats?.cargoSells||0)>=1},
+    {id:"a_sel2",  cat:"economy", icon:"🚚", name:"Trade Mogul",      desc:"Sell cargo 50 times",                   reward:6,  check:s=>(s._stats?.cargoSells||0)>=50},
+    {id:"a_trd1",  cat:"economy", icon:"🤝", name:"Market Player",    desc:"Complete 5 trade deals",                reward:3,  check:s=>(s._stats?.tradeDeals||0)>=5},
+    {id:"a_trd2",  cat:"economy", icon:"📈", name:"Commodities King", desc:"Complete 25 trade deals",               reward:8,  check:s=>(s._stats?.tradeDeals||0)>=25},
+    {id:"a_vul",   cat:"explore", icon:"🌋", name:"Colonist",         desc:"Unlock Vulcan Core",                    reward:8,  check:s=>!!(s.planetsBought?.vulcan)},
+    {id:"a_void",  cat:"explore", icon:"🌌", name:"Into the Void",    desc:"Unlock Void Expanse",                   reward:15, check:s=>!!(s.planetsBought?.void)},
+    {id:"a_prs1",  cat:"explore", icon:"⭐", name:"Rebirth",          desc:"Prestige any planet once",              reward:8,  check:s=>Object.values(s.prestigeCount||{}).some(n=>n>=1)},
+    {id:"a_prs2",  cat:"explore", icon:"🌟", name:"Stellar Miner",    desc:"Prestige every planet at least once",   reward:25, check:s=>["iron","vulcan","void"].every(p=>(s.prestigeCount?.[p]||0)>=1)},
+    {id:"a_dst1",  cat:"explore", icon:"✨", name:"Dust Collector",   desc:"Own 10 Prestige upgrades",              reward:10, check:s=>(s.prestigeUpgrades||[]).length>=10},
+    {id:"a_mr5",   cat:"ranks",   icon:"🪖", name:"Rookie",           desc:"Reach Miner Rank 5",                    reward:2,  check:s=>s.minerRank>=5},
+    {id:"a_mr10",  cat:"ranks",   icon:"🎖", name:"Veteran",          desc:"Reach Miner Rank 10",                   reward:5,  check:s=>s.minerRank>=10},
+    {id:"a_mr15",  cat:"ranks",   icon:"🏅", name:"Elite",            desc:"Reach Miner Rank 15",                   reward:8,  check:s=>s.minerRank>=15},
+    {id:"a_mr20",  cat:"ranks",   icon:"🥇", name:"Legend",           desc:"Reach Miner Rank 20",                   reward:15, check:s=>s.minerRank>=20},
+    {id:"a_mr30",  cat:"ranks",   icon:"👑", name:"Transcendent",     desc:"Reach Miner Rank 30",                   reward:30, check:s=>s.minerRank>=30},
+    {id:"a_drn1",  cat:"fleet",   icon:"🛸", name:"First Drone",      desc:"Deploy your first mining drone",        reward:2,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=1)},
+    {id:"a_drn2",  cat:"fleet",   icon:"🚀", name:"Drone Commander",  desc:"Have 5 drones on a single planet",      reward:5,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=5)},
+    {id:"a_drn3",  cat:"fleet",   icon:"🌠", name:"Drone Armada",     desc:"15 drones across all planets",          reward:10, check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.dronesLvl||0),0)>=15},
+    {id:"a_skl1",  cat:"fleet",   icon:"🧠", name:"Skill Seeker",     desc:"Buy your first skill",                  reward:2,  check:s=>(s.skills||[]).length>=1},
+    {id:"a_skl2",  cat:"fleet",   icon:"🎓", name:"Skill Master",     desc:"Buy 20 skills",                         reward:20, check:s=>(s.skills||[]).length>=20},
+    {id:"a_mnr1",  cat:"station", icon:"⛏", name:"First Miner",      desc:"Deploy your first Miner",               reward:3,  check:s=>(s._stats?.minersDeployed||0)>=1},
+    {id:"a_mnr2",  cat:"station", icon:"🏗", name:"Mining Operation", desc:"Have 5 Miners deployed across planets",  reward:8,  check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0)>=5},
+    {id:"a_smlt1", cat:"station", icon:"🔥", name:"Alchemist",        desc:"Smelt your first alloy",                 reward:5,  check:s=>(s._stats?.smeltCount||0)>=1},
+    {id:"a_smlt2", cat:"station", icon:"⚗️", name:"Master Smelter",   desc:"Smelt 50 alloys",                        reward:15, check:s=>(s._stats?.smeltCount||0)>=50},
+    {id:"a_sta1",  cat:"station", icon:"🛰", name:"Station Commander",desc:"Upgrade any station module",             reward:5,  check:s=>(s._stats?.stationUpgrades||0)>=1},
+    {id:"a_sta2",  cat:"station", icon:"🌌", name:"Starbase",         desc:"Max out any station module",             reward:20, check:s=>STATION_MODULES.some(m=>(s.station?.[m.id]||0)>=m.maxLvl)},
+    {id:"a_cmb1",  cat:"mining",  icon:"🔥", name:"On Fire",          desc:"Reach a ×2.5 combo multiplier",          reward:5,  check:s=>(s._stats?.maxCombo||0)>=10},
+  ];
+  var ACH_CATS = {mining:"⛏ Mining",economy:"💰 Economy",explore:"🚀 Exploration",ranks:"⭐ Ranks",fleet:"🛸 Fleet",station:"🛰 Station"};
+
+  function checkAchievements(){
+    if(!state||!state._stats) return;
+    if(!state.unlockedAch) state.unlockedAch=[];
+    const newOnes=[];
+    for(const a of ACHIEVEMENTS){
+      if(state.unlockedAch.includes(a.id)) continue;
+      try{ if(a.check(state)){state.unlockedAch.push(a.id); newOnes.push(a);} }catch(e){}
+    }
+    if(newOnes.length){
+      const dust=newOnes.reduce((t,a)=>t+(a.reward||0),0);
+      if(dust){state.stellarDust=(state.stellarDust||0)+dust; updateHUD();}
+      newOnes.forEach((a,i)=>setTimeout(()=>toast(`🏅 ${a.name}!${a.reward?` +${a.reward}✨`:""}`),i*1500));
+      save();
+    }
+  }
+
+  function renderAchievements(){
+    const grid=document.getElementById("profileAchGrid");
+    if(!grid||!state) return;
+    const unlocked=state.unlockedAch||[];
+    const dust=ACHIEVEMENTS.filter(a=>unlocked.includes(a.id)).reduce((t,a)=>t+(a.reward||0),0);
+    const sub=document.getElementById("profileSub");
+    if(sub) sub.textContent=`${unlocked.length}/${ACHIEVEMENTS.length} unlocked · ${dust}✨ earned`;
+    let html="";
+    for(const [catId,catLabel] of Object.entries(ACH_CATS)){
+      html+=`<div class="achCatHeader">${catLabel}</div>`;
+      for(const a of ACHIEVEMENTS.filter(x=>x.cat===catId)){
+        const done=unlocked.includes(a.id);
+        html+=`<div class="achItem${done?" unlocked":""}">
+          <div class="achIcon" style="${done?"":"filter:grayscale(1) opacity(.25)"}">${a.icon}</div>
+          <div class="achInfo"><div class="achName">${a.name}</div><div class="achDesc">${a.desc}</div></div>
+          ${a.reward?`<div class="achReward">+${a.reward}✨</div>`:""}
+        </div>`;
+      }
+    }
+    grid.innerHTML=html;
   }
 
   function setTab(tab){
@@ -4766,6 +5572,9 @@
 
   let lastTick = now();
   let lastSecond = -1;
+  let comboCount = 0;
+  let lastComboTime = 0;
+  let cargoDelegationMounted = false;
 
   function tick(){
     const t = now();
@@ -4783,6 +5592,7 @@
       const sec = Math.floor(t/1000);
       if(sec !== lastSecond){
         lastSecond = sec;
+        state.lastSeen = t;  // update every second so offline gap is accurate
         autoSellOverflowSweep();
         updateTradeTimerTextOnly();
         renderCargoPanelsIfDirty(false);
@@ -4826,8 +5636,6 @@
     location.reload();
   });
 
-  const tabSkill  = el("tabSkill");
-
   tabCore.addEventListener("click",  ()=>setTab("core"));
   tabCargo.addEventListener("click", ()=>setTab("cargo"));
   tabSkill.addEventListener("click", ()=>setTab("skill"));
@@ -4853,6 +5661,7 @@
       if(el("skillBackdrop").classList.contains("show")) el("skillBackdrop").classList.remove("show");
       if(el("lbBackdrop").classList.contains("show")) closeLeaderboard();
       if(el("prestigeBackdrop").classList.contains("show")) closePrestige();
+      if(document.getElementById("profileBackdrop")?.classList.contains("show")) document.getElementById("profileBackdrop").classList.remove("show");
     }
   });
 
@@ -5219,6 +6028,76 @@
       Audio.sfxClick();
     }
   }, { capture: true });
+
+  // ── Quest tab wiring ────────────────────────────────────────────────────
+  (function(){
+    const daily  = document.getElementById("questTabDaily");
+    const weekly = document.getElementById("questTabWeekly");
+    const dp     = document.getElementById("questDailyPanel");
+    const wp     = document.getElementById("questWeeklyPanel");
+    if(daily&&weekly&&dp&&wp){
+      daily.addEventListener("click",()=>{
+        dp.style.display=""; wp.style.display="none";
+        daily.classList.add("active"); weekly.classList.remove("active");
+        renderQuestList("daily");
+      });
+      weekly.addEventListener("click",()=>{
+        dp.style.display="none"; wp.style.display="";
+        daily.classList.remove("active"); weekly.classList.add("active");
+        renderQuestList("weekly");
+      });
+    }
+  })();
+
+  // ── Profile Modal wiring ─────────────────────────────────────────────────
+  (function(){
+    const tAch   = document.getElementById("profileTabAch");
+    const tStats = document.getElementById("profileTabStats");
+    const tRanks = document.getElementById("profileTabRanks");
+    const pAch   = document.getElementById("profileAchPanel");
+    const pStats = document.getElementById("profileStatsPanel");
+    const pRanks = document.getElementById("profileRanksPanel");
+
+    function showProfileTab(which){
+      pAch.style.display   = which==="ach"   ? "" : "none";
+      pStats.style.display = which==="stats" ? "" : "none";
+      pRanks.style.display = which==="ranks" ? "" : "none";
+      tAch.classList.toggle("active",   which==="ach");
+      tStats.classList.toggle("active", which==="stats");
+      tRanks.classList.toggle("active", which==="ranks");
+      renderProfileCard();
+      if(which==="ach")   renderAchievements();
+      if(which==="stats") renderStats();
+      if(which==="ranks") renderRankHistory();
+    }
+
+    if(tAch)   tAch.addEventListener("click",   ()=>showProfileTab("ach"));
+    if(tStats) tStats.addEventListener("click", ()=>showProfileTab("stats"));
+    if(tRanks) tRanks.addEventListener("click", ()=>showProfileTab("ranks"));
+
+    document.getElementById("openProfileBtn").addEventListener("click", ()=>{
+      showProfileTab("ach");
+      document.getElementById("profileBackdrop").classList.add("show");
+    });
+    document.getElementById("closeProfileBtn").addEventListener("click", ()=>{
+      document.getElementById("profileBackdrop").classList.remove("show");
+    });
+    document.getElementById("profileBackdrop").addEventListener("click", e=>{
+      if(e.target===document.getElementById("profileBackdrop"))
+        document.getElementById("profileBackdrop").classList.remove("show");
+    });
+
+    // Name input — live save
+    const nameInput = document.getElementById("profileNameInput");
+    if(nameInput){
+      nameInput.addEventListener("input", ()=>{ state.playerName=nameInput.value; save(); });
+      nameInput.addEventListener("keydown", e=>{ if(e.key==="Enter") nameInput.blur(); });
+    }
+  })()
+
+  // ── checkAchievements on startup ─────────────────────────────────────────
+  checkAchievements();
+
 
 })();
 </script>
