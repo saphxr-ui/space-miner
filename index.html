@@ -2758,7 +2758,7 @@
     }
     // Add prestige bonuses (always use global state — prestige upgrades never reset)
     for(const u of PRESTIGE_UPGRADES){
-      if((state.prestigeUpgrades||[]).includes(u.id) && u.effect[effectKey] !== undefined){
+      if((src.prestigeUpgrades||[]).includes(u.id) && u.effect[effectKey] !== undefined){
         total += u.effect[effectKey];
       }
     }
