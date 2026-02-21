@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Space Miner – Idle Clicker</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230a0a1a'/><text y='72' x='50' text-anchor='middle' font-size='68'>⛏</text></svg>">
   <style>
     :root{
       --bg:#070a14; --txt:#eaf0ff; --muted:#9fb0d7;
@@ -1414,6 +1415,8 @@
     #profileNameInput::placeholder{ color:rgba(255,255,255,.25); }
     #profileNameInput:focus{ border-bottom-color:rgba(102,163,255,.6); }
 
+    #tutorialStartBtn:hover{ transform:scale(1.04); box-shadow:0 6px 28px rgba(99,102,241,.5)!important; }
+    #tutorialStartBtn{ transition:transform .15s,box-shadow .15s; }
     @keyframes minerBob{
       0%  { transform:translateY(0) rotate(-8deg); }
       100%{ transform:translateY(-4px) rotate(8deg); }
@@ -1535,6 +1538,7 @@
           <div class="muted" style="margin-top:8px;display:none;" id="offlineText"></div>
         </div>
       </div>
+      <div style="text-align:center;padding:4px 0 2px;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:.08em;">SPACE MINER · v0.1.0-early Early Access</div>
     </div>
   </div>
 
@@ -2172,6 +2176,7 @@
       joinDate: Date.now(),
       rankHistory: [],  // [{mr, ts}]
       rankMinerSlots: 0,   // extra slots from rank-up rewards
+      tutorialDone: false,
       rankCargoBonus: 0,   // extra cargo from rank-up rewards
       // Station modules
       station: { hangar:0, reactor:0, smelter:0, tradeDock:0 },
@@ -2245,6 +2250,7 @@
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
       if(s.rankMinerSlots === undefined) s.rankMinerSlots = 0;
+      if(s.tutorialDone === undefined) s.tutorialDone = true; // existing players skip tutorial
       if(s.rankCargoBonus === undefined){
         // Retroactively calculate based on MR
         const mr = s.minerRank||1;
@@ -5884,7 +5890,11 @@
           state = r.state;
           applyStats(state);
           // Run offline progression for time since the save was made
-          const offSummary = simulateOffline();
+          // Expose tutorial state for second script tag
+  window._spaceMinerTutorialDone = !!state.tutorialDone;
+  window._spaceMinerSetTutorialDone = function(){ state.tutorialDone = true; save(); };
+
+  const offSummary = simulateOffline();
           save();
           localStorage.setItem("spaceminer_username", username);
           localStorage.setItem("spaceminer_pin", pin);
@@ -6083,6 +6093,10 @@
   syncSpawnedDrones();
   applyPlanetVisuals();
   renderQuestStrip();
+
+  // Expose tutorial state for second script tag
+  window._spaceMinerTutorialDone = !!state.tutorialDone;
+  window._spaceMinerSetTutorialDone = function(){ state.tutorialDone = true; save(); };
 
   const offSummary = simulateOffline();
   if(offSummary){
@@ -6505,11 +6519,85 @@
     }
   })()
 
+
   // ── checkAchievements on startup ─────────────────────────────────────────
   checkAchievements();
 
 
 })();
 </script>
+
+  <!-- ===== Tutorial Overlay ===== -->
+  <div id="tutorialOverlay" style="
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.82);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:20px;padding:24px;backdrop-filter:blur(6px);
+  ">
+    <div style="font-size:52px;animation:minerBob .9s ease-in-out infinite alternate;">⛏</div>
+    <div style="font-size:22px;font-weight:900;color:#a5d4ff;text-align:center;letter-spacing:.02em;">
+      Welcome to Space Miner
+    </div>
+    <div style="max-width:320px;text-align:center;color:rgba(255,255,255,.75);font-size:14px;line-height:1.6;">
+      You're an asteroid miner at the edge of the galaxy.<br>
+      <b style="color:#fff;">Click the asteroid</b> to fire your laser and earn credits.<br><br>
+      Upgrade your gear, deploy drones &amp; miners, smelt alloys,<br>
+      and climb the Miner Rank leaderboard.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;">
+      <div style="display:flex;gap:10px;justify-content:center;font-size:13px;color:rgba(255,255,255,.5);">
+        <span>⛏ Click to mine</span>
+        <span>·</span>
+        <span>💰 Earn credits</span>
+        <span>·</span>
+        <span>🚀 Rank up</span>
+      </div>
+      <button id="tutorialStartBtn" style="
+        margin-top:8px;padding:14px 28px;border-radius:14px;border:none;cursor:pointer;
+        background:linear-gradient(135deg,#3b82f6,#6366f1);
+        color:#fff;font-size:16px;font-weight:900;letter-spacing:.04em;
+        box-shadow:0 4px 24px rgba(99,102,241,.4);
+        transition:transform .15s,box-shadow .15s;
+      ">
+        Start Mining 🚀
+      </button>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,.2);margin-top:4px;">Space Miner · v0.1.0 Early Access</div>
+  </div>
+
+
+  <script>
+    // Tutorial wiring — runs after main IIFE so state/save are accessible via closure
+    (function waitForState(){
+      var ov = document.getElementById("tutorialOverlay");
+      var btn = document.getElementById("tutorialStartBtn");
+      if(!ov || !btn) return;
+
+      // Hide immediately if already done (state exposed via window by main IIFE)
+      try {
+        if(window._spaceMinerTutorialDone){
+          ov.style.display = "none";
+          return;
+        }
+      } catch(e){}
+
+      ov.style.display = "flex";
+
+      btn.addEventListener("click", function(){
+        ov.style.transition = "opacity .5s";
+        ov.style.opacity = "0";
+        setTimeout(function(){ ov.style.display = "none"; }, 500);
+        // Signal main game to persist
+        if(window._spaceMinerSetTutorialDone) window._spaceMinerSetTutorialDone();
+        // Pulse asteroid
+        var ast = document.getElementById("asteroid");
+        if(ast){
+          ast.style.boxShadow = "0 0 0 8px rgba(102,163,255,.5),0 0 0 16px rgba(102,163,255,.2)";
+          ast.style.transition = "box-shadow .3s";
+          setTimeout(function(){ ast.style.boxShadow = ""; }, 2500);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
