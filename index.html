@@ -1692,6 +1692,38 @@
     }
   };
 
+  const STELLAR_DUST_PER_PRESTIGE = 10;
+
+  const PRESTIGE_UPGRADES = [
+    // ⚡ Power
+    { id:"p1", cat:"power",  name:"Stellar Forge",     desc:"+15% laser credits globally",    cost:3,  effect:{ laserCreditMult:0.15 } },
+    { id:"p2", cat:"power",  name:"Ion Drill",          desc:"+20% ore drop rate globally",    cost:5,  effect:{ allDropChance:0.20 } },
+    { id:"p3", cat:"power",  name:"Plasma Edge",        desc:"+25% crit damage multiplier",    cost:8,  effect:{ critMult:0.25 } },
+    { id:"p4", cat:"power",  name:"Quantum Pick",       desc:"+30% laser credits globally",    cost:12, effect:{ laserCreditMult:0.30 } },
+    { id:"p5", cat:"power",  name:"Neutron Core",       desc:"+40% ore drop rate globally",    cost:20, effect:{ allDropChance:0.40 } },
+    { id:"p6", cat:"power",  name:"Singularity Drill",  desc:"+50% all mining income",         cost:35, effect:{ globalCreditMult:0.50 } },
+    // 🌌 Cosmic
+    { id:"c1", cat:"cosmic", name:"Void Market",        desc:"+20% credits from all sales",    cost:4,  effect:{ sellMult:0.20 } },
+    { id:"c2", cat:"cosmic", name:"Dark Economy",       desc:"+25% drone credit yield",        cost:6,  effect:{ droneCreditMult:0.25 } },
+    { id:"c3", cat:"cosmic", name:"Nebula Trade",       desc:"+30% credits from all sources",  cost:10, effect:{ globalCreditMult:0.30 } },
+    { id:"c4", cat:"cosmic", name:"Stellar Commerce",   desc:"+50 cargo capacity",             cost:15, effect:{ cargoCap:50 } },
+    { id:"c5", cat:"cosmic", name:"Galactic Exchange",  desc:"+40% drone credit yield",        cost:25, effect:{ droneCreditMult:0.40 } },
+    { id:"c6", cat:"cosmic", name:"Universal Trade",    desc:"+75% all credit gains",          cost:40, effect:{ globalCreditMult:0.75 } },
+    // 🔮 Arcane
+    { id:"a1", cat:"arcane", name:"Astral Sense",       desc:"+25% rare ore drop chance",      cost:5,  effect:{ rareDropMult:0.25 } },
+    { id:"a2", cat:"arcane", name:"Void Pulse",         desc:"+25% drone orbit speed",         cost:7,  effect:{ dronePulseMult:0.25 } },
+    { id:"a3", cat:"arcane", name:"Cosmic Memory",      desc:"+50% offline income",            cost:10, effect:{ offlineMult:0.50 } },
+    { id:"a4", cat:"arcane", name:"Dark Resonance",     desc:"+40% mining XP gain",            cost:16, effect:{ xpMult:0.40 } },
+    { id:"a5", cat:"arcane", name:"Nebula Sight",       desc:"+50% rare ore drop chance",      cost:28, effect:{ rareDropMult:0.50 } },
+    { id:"a6", cat:"arcane", name:"Stellar Ascension",  desc:"+2\u00d7 all Stellar Dust earned",    cost:45, effect:{ dustMult:1.0 } },
+  ];
+
+  const PRESTIGE_CATS = {
+    power:  { label:"⚡ Power",  color:"rgba(43,212,255," },
+    cosmic: { label:"🌌 Cosmic", color:"rgba(124,92,255," },
+    arcane: { label:"🔮 Arcane", color:"rgba(255,100,200," },
+  };
+
   const MR_MILESTONES = {
     2:  "Unlock: Nickel ore.",
     4:  "Unlock: Cobalt ore.",
@@ -2816,38 +2848,6 @@
   }
 
   /* ===== Prestige System ===== */
-
-  const STELLAR_DUST_PER_PRESTIGE = 10;
-
-  const PRESTIGE_UPGRADES = [
-    // ⚡ Power
-    { id:"p1", cat:"power",  name:"Stellar Forge",     desc:"+15% laser credits globally",    cost:3,  effect:{ laserCreditMult:0.15 } },
-    { id:"p2", cat:"power",  name:"Ion Drill",          desc:"+20% ore drop rate globally",    cost:5,  effect:{ allDropChance:0.20 } },
-    { id:"p3", cat:"power",  name:"Plasma Edge",        desc:"+25% crit damage multiplier",    cost:8,  effect:{ critMult:0.25 } },
-    { id:"p4", cat:"power",  name:"Quantum Pick",       desc:"+30% laser credits globally",    cost:12, effect:{ laserCreditMult:0.30 } },
-    { id:"p5", cat:"power",  name:"Neutron Core",       desc:"+40% ore drop rate globally",    cost:20, effect:{ allDropChance:0.40 } },
-    { id:"p6", cat:"power",  name:"Singularity Drill",  desc:"+50% all mining income",         cost:35, effect:{ globalCreditMult:0.50 } },
-    // 🌌 Cosmic
-    { id:"c1", cat:"cosmic", name:"Void Market",        desc:"+20% credits from all sales",    cost:4,  effect:{ sellMult:0.20 } },
-    { id:"c2", cat:"cosmic", name:"Dark Economy",       desc:"+25% drone credit yield",        cost:6,  effect:{ droneCreditMult:0.25 } },
-    { id:"c3", cat:"cosmic", name:"Nebula Trade",       desc:"+30% credits from all sources",  cost:10, effect:{ globalCreditMult:0.30 } },
-    { id:"c4", cat:"cosmic", name:"Stellar Commerce",   desc:"+50 cargo capacity",             cost:15, effect:{ cargoCap:50 } },
-    { id:"c5", cat:"cosmic", name:"Galactic Exchange",  desc:"+40% drone credit yield",        cost:25, effect:{ droneCreditMult:0.40 } },
-    { id:"c6", cat:"cosmic", name:"Universal Trade",    desc:"+75% all credit gains",          cost:40, effect:{ globalCreditMult:0.75 } },
-    // 🔮 Arcane
-    { id:"a1", cat:"arcane", name:"Astral Sense",       desc:"+25% rare ore drop chance",      cost:5,  effect:{ rareDropMult:0.25 } },
-    { id:"a2", cat:"arcane", name:"Void Pulse",         desc:"+25% drone orbit speed",         cost:7,  effect:{ dronePulseMult:0.25 } },
-    { id:"a3", cat:"arcane", name:"Cosmic Memory",      desc:"+50% offline income",            cost:10, effect:{ offlineMult:0.50 } },
-    { id:"a4", cat:"arcane", name:"Dark Resonance",     desc:"+40% mining XP gain",            cost:16, effect:{ xpMult:0.40 } },
-    { id:"a5", cat:"arcane", name:"Nebula Sight",       desc:"+50% rare ore drop chance",      cost:28, effect:{ rareDropMult:0.50 } },
-    { id:"a6", cat:"arcane", name:"Stellar Ascension",  desc:"+2× all Stellar Dust earned",    cost:45, effect:{ dustMult:1.0 } },
-  ];
-
-  const PRESTIGE_CATS = {
-    power:  { label:"⚡ Power",  color:"rgba(43,212,255," },
-    cosmic: { label:"🌌 Cosmic", color:"rgba(124,92,255," },
-    arcane: { label:"🔮 Arcane", color:"rgba(255,100,200," },
-  };
 
   function prestigeUpgradeOwned(id){ return (state.prestigeUpgrades||[]).includes(id); }
 
