@@ -1326,6 +1326,9 @@
           <button class="planetBtn" id="btnPlanetVulcan" data-planet="vulcan">
             <span class="planetDot vulcan"></span>Vulcan Core
           </button>
+          <button class="planetBtn" id="btnPlanetVoid" data-planet="void">
+            <span class="planetDot void"></span>Void Expanse
+          </button>
           <button class="btn secondary" id="openPlanetsBtn" style="margin-left:auto;padding:5px 10px;font-size:11px;border-radius:10px;flex-shrink:0;">🪐 Explore</button>
         </div>
 
@@ -1650,6 +1653,22 @@
          <path d="M10 14h4" stroke="rgba(255,80,20,.55)" stroke-width="1.6" stroke-linecap="round"/>`
       );
     }
+    if(kind==="voidShard"){
+      return base(
+        `${defs(`<stop offset="0" stop-color="#f5f0ff"/><stop offset=".30" stop-color="#c084fc"/><stop offset=".65" stop-color="#7c3aed"/><stop offset="1" stop-color="#2e1065"/>`)}
+         <path d="M12 3l3 5 5 2-4 4 1 6-5-3-5 3 1-6-4-4 5-2 3-5Z" stroke="${g}" stroke-width="2.2" stroke-linejoin="round"/>`,
+        `<path d="M12 7v10M9 10l3-3 3 3" stroke="rgba(255,255,255,.55)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
+      );
+    }
+    if(kind==="darkMatter"){
+      return base(
+        `${defs(`<stop offset="0" stop-color="#fdf4ff"/><stop offset=".25" stop-color="#e879f9"/><stop offset=".60" stop-color="#9333ea"/><stop offset="1" stop-color="#1a0040"/>`)}
+         <path d="M12 2l2 4 4 2-3 3 1 5-4-2-4 2 1-5-3-3 4-2 2-4Z" stroke="${g}" stroke-width="2.2" stroke-linejoin="round"/>
+         <circle cx="12" cy="12" r="2.5" stroke="rgba(255,255,255,.65)" stroke-width="1.5"/>`,
+        `<path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round"/>
+         <path d="M15 7l1 1 1-1" fill="rgba(255,255,255,.70)"/>`
+      );
+    }
     /* coin icon for labels */
     if(kind==="coin"){
       return `<svg viewBox="0 0 24 24" fill="none">
@@ -1676,6 +1695,8 @@
     { id:"platinum", name:"Platinum",  value: 45,  rarity: 0.005, unlockMR: 8,  color:"rgba(124,92,255,.92)",  planet:"iron" },
     { id:"pyrite",   name:"Pyrolusite",value: 60,  rarity: 0.30,  unlockMR: 10, color:"rgba(255,140,60,.95)",  planet:"vulcan" },
     { id:"obsidian", name:"Obsidian",  value: 120, rarity: 0.06,  unlockMR: 10, color:"rgba(255,80,30,.95)",   planet:"vulcan" },
+    { id:"voidShard",   name:"Void Shard",   value: 200, rarity: 0.22,  unlockMR: 15, color:"rgba(167,139,250,.95)", planet:"void" },
+    { id:"darkMatter",  name:"Dark Matter",  value: 500, rarity: 0.04,  unlockMR: 15, color:"rgba(216,180,254,.98)", planet:"void" },
   ];
 
   const PLANETS = {
@@ -1689,6 +1710,13 @@
       unlockMR: 10, unlockCredits: 8000,
       laserMult:1, creditMult:2.5, xpMult:1.5,
       prestigeBaseCost: 250000,
+    },
+    void: {
+      id:"void", name:"Void Expanse",
+      unlockMR: 15, unlockCredits: 25000,
+      laserMult:1, creditMult:5, xpMult:2,
+      prestigeBaseCost: 800000,
+      voidSurgeChance: 0.08,
     }
   };
 
@@ -1751,11 +1779,11 @@
       droneAI: 0,
       laserPower: 1,
       rps: 0,
-      costLaser:    planetId === "vulcan" ? 80  : 25,
-      costDrones:   planetId === "vulcan" ? 260 : 85,
-      costDroneAI:  planetId === "vulcan" ? 420 : 140,
+      costLaser:    planetId === "void" ? 200  : planetId === "vulcan" ? 80  : 25,
+      costDrones:   planetId === "void" ? 650  : planetId === "vulcan" ? 260 : 85,
+      costDroneAI:  planetId === "void" ? 1100 : planetId === "vulcan" ? 420 : 140,
       prospectLvl:  0,
-      costProspect: planetId === "vulcan" ? 300 : 95,
+      costProspect: planetId === "void" ? 800  : planetId === "vulcan" ? 300 : 95,
     };
   }
 
@@ -1816,7 +1844,7 @@
       // Prestige
       stellarDust: 0,
       prestigeUpgrades: [],        // owned prestige upgrade ids
-      prestigeCount: { iron:0, vulcan:0 },  // how many times each planet was prestiged
+      prestigeCount: { iron:0, vulcan:0, void:0 },  // how many times each planet was prestiged
 
       cosmetics: {
         droneSkin: "default",
@@ -1880,7 +1908,8 @@
       // migrate prestige
       s.stellarDust = s.stellarDust || 0;
       s.prestigeUpgrades = Array.isArray(s.prestigeUpgrades) ? s.prestigeUpgrades : [];
-      s.prestigeCount = s.prestigeCount || { iron:0, vulcan:0 };
+      s.prestigeCount = s.prestigeCount || { iron:0, vulcan:0, void:0 };
+      if(s.prestigeCount.void === undefined) s.prestigeCount.void = 0;
 
       const fresh = defaultOreSettings();
       const old = s.oreSettings || {};
@@ -1902,6 +1931,9 @@
       s.planets.iron.droneAI     = Math.max(0, Math.min(50, Math.floor(s.planets.iron.droneAI||0)));
       s.planets.vulcan.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.vulcan.dronesLvl||0)));
       s.planets.vulcan.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.vulcan.droneAI||0)));
+      if(!s.planets.void){ s.planets.void = defaultPlanetState('void'); }
+      s.planets.void.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.void.dronesLvl||0)));
+      s.planets.void.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.void.droneAI||0)));
 
       if(s.trades && Array.isArray(s.trades.offers)){
         s.trades.offers = s.trades.offers.map(of => of ? ({ used:false, ...of }) : of);
@@ -1937,26 +1969,36 @@
 
     clickArea.classList.toggle("planet-vulcan", isVulcan);
     asteroid.classList.toggle("planet-vulcan", isVulcan);
+    clickArea.classList.toggle("planet-void", p === "void");
+    asteroid.classList.toggle("planet-void", p === "void");
     const ring = asteroidWrap.querySelector(".ring");
     if(ring) ring.classList.toggle("planet-vulcan", isVulcan);
 
     const btnIron   = el("btnPlanetIron");
     const btnVulcan = el("btnPlanetVulcan");
+    const btnVoid   = el("btnPlanetVoid");
     const vulcanDef = PLANETS.vulcan;
+    const voidDef   = PLANETS.void;
     const vulcanRankLocked = state.minerRank < (vulcanDef.unlockMR||10);
+    const voidRankLocked   = state.minerRank < (voidDef.unlockMR||15);
     const vulcanBought = !!(state.planetsBought?.vulcan);
+    const voidBought   = !!(state.planetsBought?.void);
 
     const ironDrones   = state.planets?.iron?.dronesLvl   || 0;
     const vulcanDrones = state.planets?.vulcan?.dronesLvl || 0;
+    const voidDrones   = state.planets?.void?.dronesLvl   || 0;
 
     btnIron.innerHTML   = `<span class="planetDot iron"></span>Iron Belt${ironDrones>0 ? ` <span style="color:var(--good);font-size:11px;">(${ironDrones}🛸)</span>` : ""}`;
     btnVulcan.innerHTML = `<span class="planetDot vulcan"></span>Vulcan Core${vulcanDrones>0 ? ` <span style="color:#ffb060;font-size:11px;">(${vulcanDrones}🛸)</span>` : ""}`;
+    if(btnVoid) btnVoid.innerHTML = `<span class="planetDot void"></span>Void Expanse${voidDrones>0 ? ` <span style="color:#c084fc;font-size:11px;">(${voidDrones}🛸)</span>` : ""}`;
 
-    btnIron.classList.toggle("active-iron", !isVulcan);
+    const isVoid = p === "void";
+    btnIron.classList.toggle("active-iron", !isVulcan && !isVoid);
     btnVulcan.classList.toggle("active-vulcan", isVulcan);
-    // Vulcan button only disabled if rank locked AND not bought — otherwise open overview
+    if(btnVoid) btnVoid.classList.toggle("active-void", isVoid);
     btnVulcan.disabled = vulcanRankLocked && !vulcanBought;
     btnVulcan.title = vulcanRankLocked ? `Requires MR ${vulcanDef.unlockMR}` : vulcanBought ? "Switch to Vulcan Core" : `Colonize for ${fmt(vulcanDef.unlockCredits)}c`;
+    if(btnVoid){ btnVoid.disabled = voidRankLocked && !voidBought; btnVoid.title = voidRankLocked ? `Requires MR ${voidDef.unlockMR}` : voidBought ? "Switch to Void Expanse" : `Colonize for ${fmt(voidDef.unlockCredits)}c`; }
   }
 
   function switchPlanet(planetId){
@@ -2513,6 +2555,20 @@
     addMiningXP((crit ? 18 : 4) * planetXpMult() * (1 + skillBonus("xpMult")));
 
     const dropBonus = skillBonus("clickDropChance") + skillBonus("allDropChance");
+    // Void Surge — only on void planet
+    if(state.currentPlanet === "void"){
+      const surgeChance = (PLANETS.void.voidSurgeChance||0.08) * (1 + skillBonus("rareDropMult")*0.5);
+      if(Math.random() < surgeChance){
+        const surgeGain = addCredits(regolith * 9); // 10x total (already got 1x above)
+        spawnPop(`VOID SURGE! +${fmt(surgeGain)}`, true, 50, 38, null);
+        asteroid.classList.remove("void-surge");
+        void asteroid.offsetWidth;
+        asteroid.classList.add("void-surge");
+        setTimeout(()=>asteroid.classList.remove("void-surge"), 600);
+        spawnParticles(28);
+      }
+    }
+
     const drop = tryCargoDrop(dropBonus);
     if(drop){
       const took = addOreWithMode(drop.id, 1);
@@ -3154,6 +3210,17 @@
         { label:"Exclusive ores",  kind:"ore" },
       ]
     },
+    void: {
+      orb:"void-orb", banner:"void-banner",
+      subtitle:"A deep-space void rich in dark matter. Unstable but incredibly lucrative.",
+      ores:["voidShard","darkMatter"],
+      stats:[
+        { label:"Credits ×5.0",    kind:"good" },
+        { label:"XP ×2.0",         kind:"good" },
+        { label:"Void Surge: 8%",  kind:"warn" },
+        { label:"Exclusive ores",  kind:"ore" },
+      ]
+    },
     future: {
       orb:"future-orb", banner:"future-banner",
       subtitle:"Signal detected — location unknown. Further exploration required.",
@@ -3173,7 +3240,8 @@
     const allPlanets = [
       { ...PLANETS.iron,   id:"iron",   future:false },
       { ...PLANETS.vulcan, id:"vulcan", future:false },
-      { id:"future", name:"Unknown World", unlockMR:15, unlockCredits:null, future:true },
+      { ...PLANETS.void,   id:"void",   future:false },
+      { id:"future", name:"Unknown World", unlockMR:20, unlockCredits:null, future:true },
     ];
 
     const owned  = state.planetsBought || {};
@@ -4559,6 +4627,7 @@
   el("skillBackdrop").addEventListener("click", (e)=>{ if(e.target===el("skillBackdrop")) el("skillBackdrop").classList.remove("show"); });
   el("btnPlanetIron").addEventListener("click", ()=>switchPlanet("iron"));
   el("btnPlanetVulcan").addEventListener("click", ()=>switchPlanet("vulcan"));
+  if(el("btnPlanetVoid")) el("btnPlanetVoid").addEventListener("click", ()=>switchPlanet("void"));
   el("reset").addEventListener("click", ()=>{
     if(!confirm("Wirklich alles zurücksetzen?")) return;
     state = defaultState();
