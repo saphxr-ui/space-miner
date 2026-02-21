@@ -1746,34 +1746,34 @@
   }
 
   const ORES = [
-    { id:"iron",     name:"Iron",      value: 6,   rarity: 0.55,  unlockMR: 1,  color:"rgba(255,204,102,.92)", planet:"iron" },
-    { id:"nickel",   name:"Nickel",    value: 9,   rarity: 0.28,  unlockMR: 2,  color:"rgba(210,230,255,.90)", planet:"iron" },
-    { id:"cobalt",   name:"Cobalt",    value: 15,  rarity: 0.13,  unlockMR: 4,  color:"rgba(43,212,255,.92)",  planet:"iron" },
-    { id:"gold",     name:"Gold",      value: 28,  rarity: 0.035, unlockMR: 6,  color:"rgba(255,204,102,.98)", planet:"iron" },
-    { id:"platinum", name:"Platinum",  value: 45,  rarity: 0.005, unlockMR: 8,  color:"rgba(124,92,255,.92)",  planet:"iron" },
-    { id:"pyrite",   name:"Pyrolusite",value: 60,  rarity: 0.30,  unlockMR: 10, color:"rgba(255,140,60,.95)",  planet:"vulcan" },
-    { id:"obsidian", name:"Obsidian",  value: 120, rarity: 0.06,  unlockMR: 10, color:"rgba(255,80,30,.95)",   planet:"vulcan" },
-    { id:"voidShard",   name:"Void Shard",   value: 200, rarity: 0.22,  unlockMR: 15, color:"rgba(167,139,250,.95)", planet:"void" },
-    { id:"darkMatter",  name:"Dark Matter",  value: 500, rarity: 0.04,  unlockMR: 15, color:"rgba(216,180,254,.98)", planet:"void" },
+    { id:"iron",     name:"Iron",      value: 8,   rarity: 0.55,  unlockMR: 1,  color:"rgba(255,204,102,.92)", planet:"iron" },
+    { id:"nickel",   name:"Nickel",    value: 14,   rarity: 0.28,  unlockMR: 2,  color:"rgba(210,230,255,.90)", planet:"iron" },
+    { id:"cobalt",   name:"Cobalt",    value: 25,  rarity: 0.13,  unlockMR: 4,  color:"rgba(43,212,255,.92)",  planet:"iron" },
+    { id:"gold",     name:"Gold",      value: 55,  rarity: 0.035, unlockMR: 6,  color:"rgba(255,204,102,.98)", planet:"iron" },
+    { id:"platinum", name:"Platinum",  value: 110,  rarity: 0.005, unlockMR: 8,  color:"rgba(124,92,255,.92)",  planet:"iron" },
+    { id:"pyrite",   name:"Pyrolusite",value: 140,  rarity: 0.30,  unlockMR: 10, color:"rgba(255,140,60,.95)",  planet:"vulcan" },
+    { id:"obsidian", name:"Obsidian",  value: 380, rarity: 0.06,  unlockMR: 10, color:"rgba(255,80,30,.95)",   planet:"vulcan" },
+    { id:"voidShard",   name:"Void Shard",   value: 600, rarity: 0.22,  unlockMR: 15, color:"rgba(167,139,250,.95)", planet:"void" },
+    { id:"darkMatter",  name:"Dark Matter",  value: 2000, rarity: 0.04,  unlockMR: 15, color:"rgba(216,180,254,.98)", planet:"void" },
   ];
 
   const PLANETS = {
     iron: {
       id:"iron", name:"Iron Belt",
       laserMult:1, creditMult:1, xpMult:1,
-      prestigeBaseCost: 50000,
+      prestigeBaseCost: 500000,
     },
     vulcan: {
       id:"vulcan", name:"Vulcan Core",
-      unlockMR: 10, unlockCredits: 8000,
+      unlockMR: 10, unlockCredits: 50000,
       laserMult:1, creditMult:2.5, xpMult:1.5,
-      prestigeBaseCost: 250000,
+      prestigeBaseCost: 2000000,
     },
     void: {
       id:"void", name:"Void Expanse",
-      unlockMR: 15, unlockCredits: 25000,
+      unlockMR: 15, unlockCredits: 150000,
       laserMult:1, creditMult:5, xpMult:2,
-      prestigeBaseCost: 800000,
+      prestigeBaseCost: 8000000,
       voidSurgeChance: 0.08,
     }
   };
@@ -1819,7 +1819,13 @@
   };
 
   function miningNeedFor(rank){
-    return Math.floor(60 + (rank-1)*28 + Math.pow(rank-1, 1.35)*14);
+    // Soft early, exponential wall post MR10, brutal post MR20
+    const r = rank - 1;
+    if(rank <= 5)  return Math.floor(120 + r * 60);
+    if(rank <= 10) return Math.floor(500 + r * 180 + Math.pow(r, 1.6) * 30);
+    if(rank <= 20) return Math.floor(2000 + r * 800 + Math.pow(r, 2.0) * 55);
+    if(rank <= 30) return Math.floor(8000 + r * 3200 + Math.pow(r, 2.3) * 120);
+    return Math.floor(30000 + r * 12000 + Math.pow(r, 2.6) * 300);
   }
 
   function defaultOreSettings(){
@@ -1837,11 +1843,11 @@
       droneAI: 0,
       laserPower: 1,
       rps: 0,
-      costLaser:    planetId === "void" ? 200  : planetId === "vulcan" ? 80  : 25,
-      costDrones:   planetId === "void" ? 650  : planetId === "vulcan" ? 260 : 85,
-      costDroneAI:  planetId === "void" ? 1100 : planetId === "vulcan" ? 420 : 140,
+      costLaser:    planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
+      costDrones:   planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
+      costDroneAI:  planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
       prospectLvl:  0,
-      costProspect: planetId === "void" ? 800  : planetId === "vulcan" ? 300 : 95,
+      costProspect: planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
     };
   }
 
@@ -1989,6 +1995,11 @@
       s.planets.iron.droneAI     = Math.max(0, Math.min(50, Math.floor(s.planets.iron.droneAI||0)));
       s.planets.vulcan.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.vulcan.dronesLvl||0)));
       s.planets.vulcan.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.vulcan.droneAI||0)));
+      // Balance migration: reset upgrade costs if they're from old low-cost version
+      if(s.planets.iron && s.planets.iron.costLaser < 80)
+        s.planets.iron = { ...defaultPlanetState("iron"), laserLvl:s.planets.iron.laserLvl||0, dronesLvl:s.planets.iron.dronesLvl||0, droneAI:s.planets.iron.droneAI||0, prospectLvl:s.planets.iron.prospectLvl||0 };
+      if(s.planets.vulcan && s.planets.vulcan.costLaser < 350)
+        s.planets.vulcan = { ...defaultPlanetState("vulcan"), laserLvl:s.planets.vulcan.laserLvl||0, dronesLvl:s.planets.vulcan.dronesLvl||0, droneAI:s.planets.vulcan.droneAI||0, prospectLvl:s.planets.vulcan.prospectLvl||0 };
       if(!s.planets.void){ s.planets.void = defaultPlanetState('void'); }
       s.planets.void.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.void.dronesLvl||0)));
       s.planets.void.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.void.droneAI||0)));
@@ -2610,7 +2621,7 @@
     const gained = addCredits(regolith);
     spawnPop(`+${fmt(gained)}`, crit, 50, 52, miniIconWrap(ICONS.coin, 20));
 
-    addMiningXP((crit ? 18 : 4) * planetXpMult() * (1 + skillBonus("xpMult")));
+    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")));
 
     const dropBonus = skillBonus("clickDropChance") + skillBonus("allDropChance");
     // Void Surge — only on void planet
@@ -2636,7 +2647,7 @@
         const ico = oreIconHTML(drop.id, 20);
         if(mode === "drop") spawnPop(`+${fmt(oreValue(drop.id))}c`, true, 50, 60, ico);
         else spawnPop(`+1 ${drop.name}`, true, 50, 60, ico);
-        addMiningXP(6 * planetXpMult() * (1 + skillBonus("xpMult")));
+        addMiningXP(10 * planetXpMult() * (1 + skillBonus("xpMult")));
       }
     }
     updateHUD();
@@ -3299,7 +3310,7 @@
       { ...PLANETS.iron,   id:"iron",   future:false },
       { ...PLANETS.vulcan, id:"vulcan", future:false },
       { ...PLANETS.void,   id:"void",   future:false },
-      { id:"future", name:"Unknown World", unlockMR:20, unlockCredits:null, future:true },
+      { id:"future", name:"Unknown World", unlockMR:35, unlockCredits:null, future:true },
     ];
 
     const owned  = state.planetsBought || {};
@@ -3759,7 +3770,7 @@
     if(state.credits < p.costLaser) return toast("Not enough credits.");
     state.credits -= p.costLaser;
     p.laserLvl += 1;
-    p.costLaser = Math.floor(p.costLaser * 1.45 + 10);
+    p.costLaser = Math.floor(p.costLaser * 1.62 + 40);
     applyStats(state);
     toast("Laser upgraded.");
     pingCard("laser");
@@ -3775,7 +3786,7 @@
 
     state.credits -= p.costDrones;
     p.dronesLvl += 1;
-    p.costDrones = Math.floor(p.costDrones * 1.42 + 35);
+    p.costDrones = Math.floor(p.costDrones * 1.58 + 120);
 
     applyStats(state);
     toast("Drone deployed.");
@@ -3801,7 +3812,7 @@
     if(state.credits < p.costDroneAI) return toast("Not enough credits.");
     state.credits -= p.costDroneAI;
     p.droneAI += 1;
-    p.costDroneAI = Math.floor(p.costDroneAI * 1.52 + 50);
+    p.costDroneAI = Math.floor(p.costDroneAI * 1.65 + 200);
     applyStats(state);
     toast("Drone AI improved.");
     pingCard("droneAI");
@@ -3815,7 +3826,7 @@
     if(state.credits < p.costProspect) return toast("Not enough credits.");
     state.credits -= p.costProspect;
     p.prospectLvl += 1;
-    p.costProspect = Math.floor(p.costProspect * 1.55 + 25);
+    p.costProspect = Math.floor(p.costProspect * 1.68 + 150);
     toast("Prospecting upgraded.");
     pingCard("prospect");
     updateUpgradeTexts();
@@ -4108,13 +4119,28 @@
     { rank:11, title:"Lava Drones",         rewards:[{type:"perk", label:"Vulcan drone tier available"}] },
     { rank:12, title:"Magma Lens",          rewards:[{type:"perk", label:"+Laser power on Vulcan"}] },
     { rank:13, title:"Deep Orbit",          rewards:[{type:"perk", label:"Drone orbit radius expands"}] },
-    { rank:14, title:"Void Signal",         rewards:[{type:"perk", label:"Deep-space signal detected"}, {type:"perk", label:"Overclock efficiency +10%"}] },
-    { rank:15, title:"Void Expanse",        rewards:[{type:"planet", label:"🌌 Void Expanse unlocked", planet:"void"}, {type:"ore", label:"Void Shard ore", id:"voidShard"}, {type:"ore", label:"Dark Matter ore", id:"darkMatter"}], major:true },
-    { rank:16, title:"Void Resonance",      rewards:[{type:"perk", label:"Void Surge chance +2%"}] },
-    { rank:17, title:"Dark Prospector",     rewards:[{type:"perk", label:"+Rare drop rate on Void"}] },
-    { rank:18, title:"Stellar Cartographer",rewards:[{type:"perk", label:"Stellar Dust gains +10%"}] },
-    { rank:19, title:"Event Horizon",       rewards:[{type:"perk", label:"Offline income on all planets"}] },
-    { rank:20, title:"????? — Coming Soon", rewards:[{type:"planet", label:"🪐 Unknown World (TBD)", planet:"future"}], major:true },
+    { rank:14, title:"Void Signal",          rewards:[{type:"perk", label:"Deep-space signal detected"}, {type:"perk", label:"Overclock efficiency +10%"}] },
+    { rank:15, title:"Void Expanse",         rewards:[{type:"planet", label:"🌌 Void Expanse unlocked", planet:"void"}, {type:"ore", label:"Void Shard ore", id:"voidShard"}, {type:"ore", label:"Dark Matter ore", id:"darkMatter"}], major:true },
+    { rank:16, title:"Void Resonance",       rewards:[{type:"perk", label:"Void Surge chance +3%"}, {type:"perk", label:"+10% Void credits"}] },
+    { rank:17, title:"Dark Prospector",      rewards:[{type:"perk", label:"Rare drop rate +15% (all planets)"}] },
+    { rank:18, title:"Stellar Cartographer", rewards:[{type:"perk", label:"Stellar Dust gain +20%"}, {type:"perk", label:"Prestige cost -5%"}] },
+    { rank:19, title:"Event Horizon",        rewards:[{type:"perk", label:"Offline income extended to 24h"}] },
+    { rank:20, title:"Singularity",          rewards:[{type:"perk", label:"All planet multipliers +10%"}, {type:"perk", label:"Drone AI speed +25%"}], major:true },
+    { rank:21, title:"Quantum Tunneling",    rewards:[{type:"perk", label:"Laser pierces — double XP on crits"}] },
+    { rank:22, title:"Dark Matter Cache",    rewards:[{type:"perk", label:"Dark Matter drop rate +50%"}, {type:"perk", label:"Cargo capacity +100"}] },
+    { rank:23, title:"Warp Efficiency",      rewards:[{type:"perk", label:"Planet switching costs 0 credits"}] },
+    { rank:24, title:"Neural Override",      rewards:[{type:"perk", label:"Drone AI tier cap raised"}, {type:"perk", label:"+20% drone yields"}] },
+    { rank:25, title:"Void Master",          rewards:[{type:"perk", label:"All Void bonuses ×1.5"}, {type:"perk", label:"Prestige Dust ×1.2"}], major:true },
+    { rank:26, title:"Chronoshard Mining",   rewards:[{type:"perk", label:"Time-based bonus: +1% per hour online"}] },
+    { rank:27, title:"Exo-Rig Calibration",  rewards:[{type:"perk", label:"Laser power scales with MR (+2% per rank)"}] },
+    { rank:28, title:"Spectral Analysis",    rewards:[{type:"perk", label:"All ore values +15%"}, {type:"perk", label:"Trade sell rate +10%"}] },
+    { rank:29, title:"Graviton Drill",       rewards:[{type:"perk", label:"Every 5th laser shot free (no cooldown)"}] },
+    { rank:30, title:"Ascendant Miner",      rewards:[{type:"perk", label:"All multipliers stack additively +20%"}, {type:"perk", label:"Stellar Dust cap removed"}], major:true },
+    { rank:31, title:"Nebula Walker",        rewards:[{type:"perk", label:"Void Surge triggers on drones too"}] },
+    { rank:32, title:"Antimatter Core",      rewards:[{type:"perk", label:"Dark Matter value +30%"}, {type:"perk", label:"Crit chance +5%"}] },
+    { rank:33, title:"Deep Void Protocol",   rewards:[{type:"perk", label:"Offline haul quality matches online rate"}] },
+    { rank:34, title:"Stellar Architect",    rewards:[{type:"perk", label:"Prestige resets leave 5% upgrade bonus"}, {type:"perk", label:"MR never resets on prestige"}] },
+    { rank:35, title:"????? — Coming Soon",  rewards:[{type:"planet", label:"🪐 Unknown World (TBD)", planet:"future"}], major:true },
   ];
 
   const roadmapBackdrop = el("roadmapBackdrop");
