@@ -2172,6 +2172,7 @@
       joinDate: Date.now(),
       rankHistory: [],  // [{mr, ts}]
       rankMinerSlots: 0,   // extra slots from rank-up rewards
+      rankCargoBonus: 0,   // extra cargo from rank-up rewards
       // Station modules
       station: { hangar:0, reactor:0, smelter:0, tradeDock:0 },
       smeltInv: {},  // processed alloys
@@ -2244,6 +2245,11 @@
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
       if(s.rankMinerSlots === undefined) s.rankMinerSlots = 0;
+      if(s.rankCargoBonus === undefined){
+        // Retroactively calculate based on MR
+        const mr = s.minerRank||1;
+        s.rankCargoBonus = (mr>=14?50:0) + (mr>=20?100:0) + (mr>=25?150:0);
+      }
       if(s.playerName===undefined) s.playerName="";
       if(!s.perksUnlocked.stationDiscount20) s.perksUnlocked.stationDiscount20 = s.minerRank >= 20;
       // Sync from localStorage if profile name not yet set
@@ -2425,7 +2431,12 @@
     if(o.planet && o.planet !== "iron" && ctx !== o.planet) return false;
     return true;
   }
-  function oreValue(id){ const o = ORES.find(x=>x.id===id); return o ? o.value : 0; }
+  function oreValue(id){
+    const o = ORES.find(x=>x.id===id);
+    if(!o) return 0;
+    const sellBonus = 1 + skillBonus("sellMult");
+    return o.value * sellBonus;
+  }
 
   function dronePulsesPerSecondFor(p){
     const base = 0.22;
@@ -2460,7 +2471,8 @@
     const base = 120 + (s.cargoTier-1)*50;
     const perk = s.perksUnlocked?.capacityBoost ? 30 : 0;
     const skill = skillBonusFlat("cargoCap", s);
-    s.cargoCap = base + perk + skill;
+    const rankBonus = s.rankCargoBonus || 0;
+    s.cargoCap = base + perk + skill + rankBonus;
   }
 
   const el = (id)=>document.getElementById(id);
@@ -2756,14 +2768,9 @@
       }
 
       // Cargo capacity bonuses
-      if(mr === 14){ state.cargoCap += 50;  spawnPop(`+50 CARGO!`, true, 50, 55, null); }
-      if(mr === 20){ state.cargoCap += 100; spawnPop(`+100 CARGO!`, true, 50, 55, null);
-        // Also: -20% station costs permanently via perk
-        state.perksUnlocked.stationDiscount20 = true;
-        applyStats(state);
-        toast("MR 20 Bonus: +100 Cargo · Station costs −20%!");
-      }
-      if(mr === 25){ state.cargoCap += 150; spawnPop(`+150 CARGO!`, true, 50, 55, null); }
+      if(mr === 14){ state.rankCargoBonus = (state.rankCargoBonus||0) + 50;  applyStats(state); spawnPop(`+50 CARGO!`, true, 50, 55, null); }
+      if(mr === 20){ state.rankCargoBonus = (state.rankCargoBonus||0) + 100; state.perksUnlocked.stationDiscount20 = true; applyStats(state); spawnPop(`+100 CARGO!`, true, 50, 55, null); toast("MR 20 Bonus: +100 Cargo · Station costs −20%!"); }
+      if(mr === 25){ state.rankCargoBonus = (state.rankCargoBonus||0) + 150; applyStats(state); spawnPop(`+150 CARGO!`, true, 50, 55, null); }
 
       // Planet unlocks
       if(mr === 10){
@@ -2876,10 +2883,10 @@
       if(sell > 0){
         state.cargo[o.id] -= sell;
         freed += sell;
-        creditsGained += sell * o.value;
+        creditsGained += sell * oreValue(o.id);
       }
     }
-    if(creditsGained > 0){ state.credits += creditsGained; }
+    if(creditsGained > 0){ addCredits(creditsGained); }
     return {freed, creditsGained};
   }
 
@@ -2948,7 +2955,8 @@
   }
 
   function addCredits(amount){
-    const gain = Math.round(amount * boostMult() * (1 + skillBonus("globalCreditMult")));
+    const voidBonus = state?.currentPlanet === "void" ? (1 + skillBonus("voidCreditMult")) : 1;
+    const gain = Math.round(amount * boostMult() * (1 + skillBonus("globalCreditMult")) * voidBonus);
     state.credits += gain;
     questProgressUpdate("earn", gain);
     if(state._stats){state._stats.totalEarned=(state._stats.totalEarned||0)+gain;state._stats._cc=(state._stats._cc||0)+1;if(state._stats._cc%50===0)checkAchievements();}
@@ -3129,7 +3137,7 @@
             spawnDronePop(droneEl, `+${fmt(gained)}c`, "credit", `<span class="ico">${ICONS.coin}</span>`);
           }
 
-          addMiningXP((0.65 + pp.droneAI*0.06) * planetXpMult());
+          addMiningXP((0.65 + pp.droneAI*0.06) * planetXpMult() * (1 + skillBonus("xpMult")));
 
           // Drones give credits only — no ore drops (miners handle that)
         }
@@ -3228,7 +3236,6 @@
       ]
     },
   };
-;
 
   function skillOwned(id, s){ return (s || state).skills.includes(id); }
   function skillNodeUnlocked(branchId, nodeIdx){
@@ -3653,6 +3660,49 @@
     });
   }
 
+  const PLANET_DISPLAY = {
+    iron: {
+      orb:"iron-orb", banner:"iron-banner",
+      subtitle:"The starting zone — reliable yields, steady income.",
+      ores: ORES.filter(o=>!o.planet || o.planet==="iron").map(o=>o.id),
+      stats:[
+        { label:"Credits ×1.0",  kind:"" },
+        { label:"XP ×1.0",       kind:"" },
+        { label:"Standard ores", kind:"" },
+      ]
+    },
+    vulcan: {
+      orb:"vulcan-orb", banner:"vulcan-banner",
+      subtitle:"A volcanic world with molten veins and rare ore formations.",
+      ores:["pyrite","obsidian"],
+      stats:[
+        { label:"Credits ×2.5",   kind:"good" },
+        { label:"XP ×1.5",        kind:"good" },
+        { label:"Exclusive ores",  kind:"ore" },
+      ]
+    },
+    void: {
+      orb:"void-orb", banner:"void-banner",
+      subtitle:"A deep-space void rich in dark matter. Unstable but incredibly lucrative.",
+      ores:["voidShard","darkMatter"],
+      stats:[
+        { label:"Credits ×5.0",   kind:"good" },
+        { label:"XP ×2.0",        kind:"good" },
+        { label:"Void Surge: 8%", kind:"warn" },
+        { label:"Exclusive ores", kind:"ore" },
+      ]
+    },
+    future: {
+      orb:"future-orb", banner:"future-banner",
+      subtitle:"Signal detected — location unknown. Further exploration required.",
+      ores:[],
+      stats:[
+        { label:"???", kind:"warn" },
+        { label:"???", kind:"warn" },
+      ]
+    }
+  };
+
   function renderPlanetOverview(){
     const el2 = el("planetCardsEl");
     if(!el2) return;
@@ -3799,27 +3849,37 @@
     const pin_hash = await hashPin(pin);
     const state_json = JSON.stringify(state);
     try {
-      // Try insert first
-      const resIns = await fetch(`${SB_URL}/rest/v1/game_saves`, {
-        method: "POST",
-        headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
-        body: JSON.stringify({ username, pin_hash, state_json, updated_at: new Date().toISOString() })
-      });
-      if(resIns.status === 201 || resIns.status === 200) return { ok:true, msg:"new" };
-
-      // Username exists — PATCH only if PIN matches
-      const resPatch = await fetch(
-        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
-        {
-          method: "PATCH",
-          headers: { ...sbHeaders, "Prefer": "return=representation" },
-          body: JSON.stringify({ state_json, updated_at: new Date().toISOString() })
-        }
+      // First check if username already exists
+      const resCheck = await fetch(
+        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&select=username,pin_hash`,
+        { headers: sbHeaders }
       );
-      if(!resPatch.ok) throw new Error(await resPatch.text());
-      const patched = await resPatch.json();
-      if(!patched.length) return { ok:false, msg:"wrong_pin" };
-      return { ok:true, msg:"updated" };
+      const existing = await resCheck.json();
+
+      if(existing.length === 0){
+        // New entry — INSERT
+        const resIns = await fetch(`${SB_URL}/rest/v1/game_saves`, {
+          method: "POST",
+          headers: { ...sbHeaders, "Prefer": "return=minimal" },
+          body: JSON.stringify({ username, pin_hash, state_json, updated_at: new Date().toISOString() })
+        });
+        if(!resIns.ok) throw new Error(await resIns.text());
+        return { ok:true, msg:"new" };
+      } else {
+        // Existing — PATCH only if PIN matches
+        const resPatch = await fetch(
+          `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
+          {
+            method: "PATCH",
+            headers: { ...sbHeaders, "Prefer": "return=representation" },
+            body: JSON.stringify({ state_json, updated_at: new Date().toISOString() })
+          }
+        );
+        if(!resPatch.ok) throw new Error(await resPatch.text());
+        const patched = await resPatch.json();
+        if(!patched.length) return { ok:false, msg:"wrong_pin" };
+        return { ok:true, msg:"updated" };
+      }
     } catch(e) {
       console.error("Cloud save error:", e);
       return { ok:false, msg:"error" };
@@ -3831,7 +3891,7 @@
     try {
       const res = await fetch(
         `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}&select=state_json,updated_at`,
-        { headers: sbHeaders }
+        { headers: { ...sbHeaders, "Cache-Control": "no-cache" } }
       );
       if(!res.ok) throw new Error(await res.text());
       const rows = await res.json();
@@ -4141,10 +4201,8 @@
       state.sellPlan[o.id] = 0;
     }
     if(total<=0) return toast("Nothing sellable (check Keep reserve).");
-
-    state.credits += total;
-
-    toast(`Sold for +${fmt(total)} credits`);
+    const gained = addCredits(total);
+    toast(`Sold for +${fmt(gained)} credits`);
     setCargoDirtyAll();
     updateHUD();
   }
@@ -5611,22 +5669,6 @@
       ]);
   }
 
-  function checkAchievements(){
-    if(!state||!state._stats) return;
-    if(!state.unlockedAch) state.unlockedAch=[];
-    const newOnes=[];
-    for(const a of ACHIEVEMENTS){
-      if(state.unlockedAch.includes(a.id)) continue;
-      try{ if(a.check(state)){state.unlockedAch.push(a.id); newOnes.push(a);} }catch(e){}
-    }
-    if(newOnes.length){
-      const dust=newOnes.reduce((t,a)=>t+(a.reward||0),0);
-      if(dust){state.stellarDust=(state.stellarDust||0)+dust; updateHUD();}
-      newOnes.forEach((a,i)=>setTimeout(()=>toast(`🏅 ${a.name}!${a.reward?` +${a.reward}✨`:""}`),i*1500));
-      save();
-    }
-  }
-
 
   function playerTitle(s){
     const mr = s.minerRank||1;
@@ -5749,8 +5791,6 @@
     {id:"a_sta2",  cat:"station", icon:"🌌", name:"Starbase",         desc:"Max out any station module",             reward:10, check:s=>STATION_MODULES.some(m=>(s.station?.[m.id]||0)>=m.maxLvl)},
     {id:"a_cmb1",  cat:"mining",  icon:"🔥", name:"On Fire",          desc:"Reach a ×2.5 combo multiplier",          reward:2,  check:s=>(s._stats?.maxCombo||0)>=10},
   ];
-  var ACH_CATS = {mining:"⛏ Mining",economy:"💰 Economy",explore:"🚀 Exploration",ranks:"⭐ Ranks",fleet:"🛸 Fleet",station:"🛰 Station"};
-
   function checkAchievements(){
     if(!state||!state._stats) return;
     if(!state.unlockedAch) state.unlockedAch=[];
@@ -5766,6 +5806,8 @@
       save();
     }
   }
+
+  var ACH_CATS = {mining:"⛏ Mining",economy:"💰 Economy",explore:"🚀 Exploration",ranks:"⭐ Ranks",fleet:"🛸 Fleet",station:"🛰 Station"};
 
 
   function initCloudPanel(){
