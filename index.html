@@ -1413,6 +1413,11 @@
 
     #profileNameInput::placeholder{ color:rgba(255,255,255,.25); }
     #profileNameInput:focus{ border-bottom-color:rgba(102,163,255,.6); }
+
+    @keyframes minerBob{
+      0%  { transform:translateY(0) rotate(-8deg); }
+      100%{ transform:translateY(-4px) rotate(8deg); }
+    }
   </style>
 </head>
 <body>
@@ -1996,18 +2001,18 @@
 
   const PLANETS = {
     iron: {
-      id:"iron", name:"Iron Belt",
+      id:"iron", name:"Iron Belt", icon:"🟤",
       laserMult:1, creditMult:1, xpMult:1,
       prestigeBaseCost: 500000,
     },
     vulcan: {
-      id:"vulcan", name:"Vulcan Core",
+      id:"vulcan", name:"Vulcan Core", icon:"🌋",
       unlockMR: 10, unlockCredits: 50000,
       laserMult:1, creditMult:2.5, xpMult:1.5,
       prestigeBaseCost: 2000000,
     },
     void: {
-      id:"void", name:"Void Expanse",
+      id:"void", name:"Void Expanse", icon:"🌌",
       unlockMR: 15, unlockCredits: 150000,
       laserMult:1, creditMult:5, xpMult:2,
       prestigeBaseCost: 8000000,
@@ -2015,15 +2020,15 @@
     }
   };
 
-  const STELLAR_DUST_PER_PRESTIGE = 10;
+  const STELLAR_DUST_PER_PRESTIGE = 25;
 
   const PRESTIGE_UPGRADES = [
     // ⚡ Power
     { id:"p1", cat:"power",  name:"Stellar Forge",     desc:"+15% laser credits globally",    cost:3,  effect:{ laserCreditMult:0.15 } },
-    { id:"p2", cat:"power",  name:"Ion Drill",          desc:"+20% ore drop rate globally",    cost:5,  effect:{ allDropChance:0.20 } },
+    { id:"p2", cat:"power",  name:"Ion Drill",          desc:"+20% Miner ore output globally", cost:5,  effect:{ allDropChance:0.20 } },
     { id:"p3", cat:"power",  name:"Plasma Edge",        desc:"+25% crit damage multiplier",    cost:8,  effect:{ critMult:0.25 } },
     { id:"p4", cat:"power",  name:"Quantum Pick",       desc:"+30% laser credits globally",    cost:12, effect:{ laserCreditMult:0.30 } },
-    { id:"p5", cat:"power",  name:"Neutron Core",       desc:"+40% ore drop rate globally",    cost:20, effect:{ allDropChance:0.40 } },
+    { id:"p5", cat:"power",  name:"Neutron Core",       desc:"+40% Miner ore output globally", cost:20, effect:{ allDropChance:0.40 } },
     { id:"p6", cat:"power",  name:"Singularity Drill",  desc:"+50% all mining income",         cost:35, effect:{ globalCreditMult:0.50 } },
     // 🌌 Cosmic
     { id:"c1", cat:"cosmic", name:"Void Market",        desc:"+20% credits from all sales",    cost:4,  effect:{ sellMult:0.20 } },
@@ -2039,20 +2044,33 @@
     { id:"a4", cat:"arcane", name:"Dark Resonance",     desc:"+40% mining XP gain",            cost:16, effect:{ xpMult:0.40 } },
     { id:"a5", cat:"arcane", name:"Nebula Sight",       desc:"+50% rare ore drop chance",      cost:28, effect:{ rareDropMult:0.50 } },
     { id:"a6", cat:"arcane", name:"Stellar Ascension",  desc:"+2\u00d7 all Stellar Dust earned",    cost:45, effect:{ dustMult:1.0 } },
+    // 🏭 Industrial
+    { id:"i1", cat:"industrial", name:"Master Foundry",   desc:"+30% Alloy sell value",          cost:8,  effect:{ smeltSellMult:0.30 } },
+    { id:"i2", cat:"industrial", name:"Station Veteran",  desc:"-15% Station Module costs",      cost:12, effect:{ stationDiscount:0.15 } },
+    { id:"i3", cat:"industrial", name:"Cargo Titan",      desc:"+200 cargo capacity",            cost:18, effect:{ cargoCap:200 } },
+    { id:"i4", cat:"industrial", name:"Deep Mining",      desc:"+60% Miner ore output",          cost:30, effect:{ allDropChance:0.60 } },
   ];
 
   const PRESTIGE_CATS = {
     power:  { label:"⚡ Power",  color:"rgba(43,212,255," },
     cosmic: { label:"🌌 Cosmic", color:"rgba(124,92,255," },
-    arcane: { label:"🔮 Arcane", color:"rgba(255,100,200," },
+    arcane:      { label:"🔮 Arcane",      color:"rgba(255,100,200," },
+    industrial:  { label:"🏭 Industrial",  color:"rgba(251,146,60,"  },
   };
 
   const MR_MILESTONES = {
     2:  "Unlock: Nickel ore.",
     4:  "Unlock: Cobalt ore.",
+    5:  "+1 Miner slot on all planets.",
     6:  "Unlock: Gold ore + Trade Terminal.",
     8:  "Unlock: Platinum ore.",
-    10: "Unlock: Vulcan Core + Pyrolusite & Obsidian ore. +Cargo Capacity."
+    10: "Unlock: Vulcan Core + Pyrolusite & Obsidian ore.",
+    12: "+1 Miner slot on all planets.",
+    14: "+50 Cargo Capacity.",
+    15: "Unlock: Void Expanse + Void Shard & Dark Matter ore.",
+    18: "+1 Miner slot on all planets.",
+    20: "+100 Cargo Capacity. All Station Module costs −20%.",
+    25: "+1 Miner slot on all planets. +150 Cargo Capacity.",
   };
 
   function miningNeedFor(rank){
@@ -2117,6 +2135,7 @@
       planets: {
         iron:   defaultPlanetState("iron"),
         vulcan: defaultPlanetState("vulcan"),
+        void:   defaultPlanetState("void"),
       },
 
       laserPower: 1,
@@ -2152,6 +2171,7 @@
       playerName: "",
       joinDate: Date.now(),
       rankHistory: [],  // [{mr, ts}]
+      rankMinerSlots: 0,   // extra slots from rank-up rewards
       // Station modules
       station: { hangar:0, reactor:0, smelter:0, tradeDock:0 },
       smeltInv: {},  // processed alloys
@@ -2222,7 +2242,10 @@
       if(!s._stats) s._stats={};
       if(!s.unlockedAch) s.unlockedAch=[];
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
+      if(!s.planets.void) s.planets.void = defaultPlanetState("void");
+      if(s.rankMinerSlots === undefined) s.rankMinerSlots = 0;
       if(s.playerName===undefined) s.playerName="";
+      if(!s.perksUnlocked.stationDiscount20) s.perksUnlocked.stationDiscount20 = s.minerRank >= 20;
       // Sync from localStorage if profile name not yet set
       if(!s.playerName){ const lsName=localStorage.getItem("spaceminer_username"); if(lsName) s.playerName=lsName; }
       if(!s.joinDate) s.joinDate=Date.now();
@@ -2352,6 +2375,8 @@
       state.credits -= planet.unlockCredits;
       state.planetsBought = state.planetsBought || {};
       state.planetsBought[planetId] = true;
+      // Apply hangar level to newly unlocked planet
+      if(state.planets[planetId]) state.planets[planetId].maxMiners = 2 + (state.station?.hangar||0);
       checkAchievements();
       toast(`${planet.name} unlocked for ${fmt(planet.unlockCredits)}c!`);
       spawnParticles(20);
@@ -2423,6 +2448,8 @@
     p.rps = Math.round(((p.dronesLvl||0) * speed * cpp) * 10)/10;
     // Miner speed gets allDropChance skill bonus as speed multiplier
     p.minerSpeed = 1.0 * (1 + skillBonusFlat("allDropChance", s));
+    // Hangar Bay + Rank rewards: maxMiners always derived from station + rank
+    p.maxMiners = 2 + (s.station?.hangar||0) + (s.rankMinerSlots||0);
   }
 
   function applyStats(s){
@@ -2718,26 +2745,61 @@
       // Refresh roadmap if it's open
       if(roadmapBackdrop && roadmapBackdrop.classList.contains("show")) renderRoadmap();
 
-      if(state.minerRank === 10){
+      // ── Rank-up rewards ──────────────────────────────────────────────
+      const mr = state.minerRank;
+
+      // Extra miner slots at key ranks
+      if([5, 12, 18, 25].includes(mr)){
+        state.rankMinerSlots = (state.rankMinerSlots||0) + 1;
+        spawnPop(`+1 MINER SLOT!`, true, 50, 55, null);
+        applyStats(state);
+      }
+
+      // Cargo capacity bonuses
+      if(mr === 14){ state.cargoCap += 50;  spawnPop(`+50 CARGO!`, true, 50, 55, null); }
+      if(mr === 20){ state.cargoCap += 100; spawnPop(`+100 CARGO!`, true, 50, 55, null);
+        // Also: -20% station costs permanently via perk
+        state.perksUnlocked.stationDiscount20 = true;
+        applyStats(state);
+        toast("MR 20 Bonus: +100 Cargo · Station costs −20%!");
+      }
+      if(mr === 25){ state.cargoCap += 150; spawnPop(`+150 CARGO!`, true, 50, 55, null); }
+
+      // Planet unlocks
+      if(mr === 10){
         state.perksUnlocked.capacityBoost = true;
         applyStats(state);
         toast("Vulcan Core unlocked! Switch planets in the Zone bar.");
         spawnPop("VULCAN CORE UNLOCKED!", true, 50, 38, miniIconWrap(ICONS.prospect, 20));
         spawnParticles(20);
       }
+      if(mr === 15){
+        toast("Void Expanse unlocked! Danger ahead — great rewards.");
+        spawnPop("VOID EXPANSE UNLOCKED!", true, 50, 38, null);
+        spawnParticles(20);
+      }
 
-      const newly = ORES.filter(o => o.unlockMR === state.minerRank);
+      // Rare boost perk at MR 8
+      if(mr === 8 && !state.perksUnlocked.rareBoost){
+        state.perksUnlocked.rareBoost = true;
+        applyStats(state);
+        toast("Rare Prospecting unlocked! +25% rare ore chance.");
+        spawnPop("+25% RARE!", true, 50, 55, null);
+      }
+
+      // Ore discoveries
+      const newly = ORES.filter(o => o.unlockMR === mr);
       for(const o of newly){
         state.recentUnlocks.push({ id:o.id, ts: now() });
         state.recentUnlocks = state.recentUnlocks.slice(-12);
-
         toast(`New Ore Discovered: ${o.name}`);
         spawnPop(`NEW ORE: ${o.name}`, true, 50, 60, oreIconHTML(o.id, 20));
         spawnParticles(16);
         setCargoDirtyAll();
       }
 
-      if(state.minerRank === 6){
+      // Feature unlocks
+      if(mr === 6){
         toast("Trade Terminal Online");
         spawnPop("TRADE TERMINAL ONLINE", true, 50, 68, miniIconWrap(ICONS.trade, 20));
       }
@@ -2745,13 +2807,22 @@
   }
 
   function nextUnlockText(){
-    const nextOre = ORES.filter(o => state.minerRank < o.unlockMR).sort((a,b)=>a.unlockMR-b.unlockMR)[0];
+    const mr = state.minerRank;
     const parts = [];
+    const nextOre = ORES.filter(o => mr < o.unlockMR).sort((a,b)=>a.unlockMR-b.unlockMR)[0];
     if(nextOre) parts.push(`MR ${nextOre.unlockMR}: ${nextOre.name} ore`);
-    if(state.minerRank < 6) parts.push(`MR 6: Trade Terminal`);
-    if(state.minerRank < 10) parts.push(`MR 10: Vulcan Core`);
+    if(mr < 5)  parts.push(`MR 5: +1 Miner slot`);
+    if(mr < 6)  parts.push(`MR 6: Trade Terminal`);
+    if(mr < 8)  parts.push(`MR 8: +25% Rare ore chance`);
+    if(mr < 10) parts.push(`MR 10: Vulcan Core`);
+    if(mr < 12) parts.push(`MR 12: +1 Miner slot`);
+    if(mr < 14) parts.push(`MR 14: +50 Cargo`);
+    if(mr < 15) parts.push(`MR 15: Void Expanse`);
+    if(mr < 18) parts.push(`MR 18: +1 Miner slot`);
+    if(mr < 20) parts.push(`MR 20: +100 Cargo · Station −20%`);
+    if(mr < 25) parts.push(`MR 25: +1 Miner slot · +150 Cargo`);
     if(parts.length === 0) return "Next unlock: Maxed (for now).";
-    return `Next unlock: ${parts[0]}${parts.length>1 ? ` · then ${parts[1]}` : ""}`;
+    return `Next: ${parts[0]}${parts.length > 1 ? ` · ${parts[1]}` : ""}`;
   }
 
   function rareBoostMult(){
@@ -3107,56 +3178,57 @@
     mining: {
       label:"⛏ Mining", branch:"mining",
       nodes:[
-        { id:"m1", name:"Sharp Edge",        desc:"+10% laser credits/shot",             cost:{ credits:200 },                          effect:{ laserCreditMult:0.10 } },
-        { id:"m2", name:"Miner Efficiency I",  desc:"+20% Miner ore output",              cost:{ credits:600,   iron:30 },               effect:{ allDropChance:0.20 } },
-        { id:"m3", name:"Crystal Focus",      desc:"+20% crit damage mult",              cost:{ credits:1500,  nickel:20 },             effect:{ critMult:0.20 } },
-        { id:"m4", name:"Miner Efficiency II", desc:"+30% Miner ore output",              cost:{ credits:4000,  cobalt:15 },             effect:{ allDropChance:0.30 } },
-        { id:"m5", name:"Resonance Core",     desc:"+40% mining XP gain",                cost:{ credits:9000,  gold:8 },                effect:{ xpMult:0.40 } },
-        { id:"m6", name:"Laser Lens",         desc:"+15% laser credits/shot",            cost:{ credits:22000, platinum:5 },            effect:{ laserCreditMult:0.15 } },
-        { id:"m7", name:"Seismic Array",      desc:"+20% Miner speed + cargo capacity",  cost:{ credits:55000, platinum:8, cobalt:25 }, effect:{ allDropChance:0.20 } },
-        { id:"m8", name:"Overclock Synergy",  desc:"+60% XP while Overclock active",     cost:{ credits:130000,gold:20, platinum:10 },  effect:{ xpMult:0.60 } },
-        { id:"m9", name:"Void Attunement",    desc:"+25% credits on Void planet",        cost:{ credits:300000,obsidian:15 },           effect:{ voidCreditMult:0.25 }, unlockMR:15 },
+        { id:"m1", name:"Sharp Edge",        desc:"+10% laser credits/shot",            cost:{ credits:200 },                          effect:{ laserCreditMult:0.10 } },
+        { id:"m2", name:"Miner Efficiency I", desc:"+20% Miner ore output",             cost:{ credits:600,   iron:30 },               effect:{ allDropChance:0.20 } },
+        { id:"m3", name:"Crystal Focus",      desc:"+20% crit damage multiplier",       cost:{ credits:1500,  nickel:20 },             effect:{ critMult:0.20 } },
+        { id:"m4", name:"Miner Efficiency II",desc:"+30% Miner ore output",             cost:{ credits:4000,  cobalt:15 },             effect:{ allDropChance:0.30 } },
+        { id:"m5", name:"Resonance Core",     desc:"+40% mining XP gain",               cost:{ credits:9000,  gold:8 },                effect:{ xpMult:0.40 } },
+        { id:"m6", name:"Laser Lens",         desc:"+15% laser credits/shot",           cost:{ credits:22000, platinum:5 },            effect:{ laserCreditMult:0.15 } },
+        { id:"m7", name:"Seismic Array",      desc:"+20% Miner speed & +50 cargo",      cost:{ credits:55000, platinum:8, cobalt:25 }, effect:{ allDropChance:0.20, cargoCap:50 } },
+        { id:"m8", name:"Forge Mastery",      desc:"+25% Alloy sell value",             cost:{ credits:130000,gold:20, platinum:10 },  effect:{ smeltSellMult:0.25 } },
+        { id:"m9", name:"Void Attunement",    desc:"+25% credits on Void planet",       cost:{ credits:300000,obsidian:15 },           effect:{ voidCreditMult:0.25 }, unlockMR:15 },
       ]
     },
     economy: {
       label:"💰 Economy", branch:"economy",
       nodes:[
-        { id:"e1", name:"Bulk Trader",        desc:"+10% credits from sales",            cost:{ credits:250 },                          effect:{ sellMult:0.10 } },
-        { id:"e2", name:"Cargo Liner I",      desc:"+25 cargo capacity",                 cost:{ credits:700,   iron:40 },               effect:{ cargoCap:25 } },
-        { id:"e3", name:"Market Insight",     desc:"+15% drone credit yield",            cost:{ credits:1800,  nickel:25 },             effect:{ droneCreditMult:0.15 } },
-        { id:"e4", name:"Cargo Liner II",     desc:"+50 cargo capacity",                 cost:{ credits:5000,  cobalt:20 },             effect:{ cargoCap:50 } },
-        { id:"e5", name:"Compound Interest",  desc:"+20% all credit gains",              cost:{ credits:12000, gold:10 },               effect:{ globalCreditMult:0.20 } },
-        { id:"e6", name:"Trade Expert",       desc:"+25% cargo sell value",              cost:{ credits:30000, platinum:6 },            effect:{ sellMult:0.25 } },
-        { id:"e7", name:"Cargo Liner III",    desc:"+100 cargo capacity",                cost:{ credits:75000, gold:15, cobalt:30 },    effect:{ cargoCap:100 } },
-        { id:"e8", name:"Market Mastery",     desc:"+30% all credit gains",              cost:{ credits:190000,platinum:12 },           effect:{ globalCreditMult:0.30 } },
-        { id:"e9", name:"Stellar Economy",    desc:"+15% Stellar Dust from prestige",    cost:{ credits:420000,obsidian:20 },           effect:{ dustMult:0.15 }, unlockMR:10 },
+        { id:"e1", name:"Bulk Trader",        desc:"+10% credits from cargo sales",     cost:{ credits:250 },                          effect:{ sellMult:0.10 } },
+        { id:"e2", name:"Cargo Liner I",      desc:"+25 cargo capacity",                cost:{ credits:700,   iron:40 },               effect:{ cargoCap:25 } },
+        { id:"e3", name:"Market Insight",     desc:"+15% drone credit yield",           cost:{ credits:1800,  nickel:25 },             effect:{ droneCreditMult:0.15 } },
+        { id:"e4", name:"Cargo Liner II",     desc:"+50 cargo capacity",                cost:{ credits:5000,  cobalt:20 },             effect:{ cargoCap:50 } },
+        { id:"e5", name:"Compound Interest",  desc:"+20% all credit gains",             cost:{ credits:12000, gold:10 },               effect:{ globalCreditMult:0.20 } },
+        { id:"e6", name:"Trade Expert",       desc:"+25% cargo sell value",             cost:{ credits:30000, platinum:6 },            effect:{ sellMult:0.25 } },
+        { id:"e7", name:"Cargo Liner III",    desc:"+100 cargo capacity",               cost:{ credits:75000, gold:15, cobalt:30 },    effect:{ cargoCap:100 } },
+        { id:"e8", name:"Market Mastery",     desc:"+30% all credit gains",             cost:{ credits:190000,platinum:12 },           effect:{ globalCreditMult:0.30 } },
+        { id:"e9", name:"Stellar Economy",    desc:"+20% Stellar Dust from prestige",   cost:{ credits:420000,obsidian:20 },           effect:{ dustMult:0.20 }, unlockMR:10 },
       ]
     },
     exploration: {
       label:"🚀 Exploration", branch:"exploration",
       nodes:[
-        { id:"x1", name:"Warp Prep",          desc:"+10% offline income",                cost:{ credits:200 },                          effect:{ offlineMult:0.10 } },
-        { id:"x2", name:"Drone Overclock",    desc:"+15% drone pulse speed",             cost:{ credits:600,   iron:30 },               effect:{ dronePulseMult:0.15 } },
-        { id:"x3", name:"Rare Prospector",    desc:"+20% rare drop rate",                cost:{ credits:1500,  cobalt:12 },             effect:{ rareDropMult:0.20 } },
-        { id:"x4", name:"Orbital Survey",     desc:"+25% drone pulse speed",             cost:{ credits:4500,  gold:8 },                effect:{ dronePulseMult:0.25 } },
-        { id:"x5", name:"Void Cartographer",  desc:"+10% planet unlock discount",        cost:{ credits:10000, platinum:5 },            effect:{ planetDiscount:0.10 } },
-        { id:"x6", name:"Deep Warp",          desc:"+20% offline income",                cost:{ credits:26000, gold:12 },               effect:{ offlineMult:0.20 } },
-        { id:"x7", name:"Pulse Amplifier",    desc:"+35% drone pulse speed",             cost:{ credits:68000, platinum:8, nickel:40 }, effect:{ dronePulseMult:0.35 } },
-        { id:"x8", name:"Exotic Finder",      desc:"+40% rare drop rate",                cost:{ credits:160000,platinum:15 },           effect:{ rareDropMult:0.40 } },
-        { id:"x9", name:"Void Navigator",     desc:"+30% offline income on Void",        cost:{ credits:380000,obsidian:10 },           effect:{ offlineMult:0.30 }, unlockMR:16 },
+        { id:"x1", name:"Warp Prep",          desc:"+10% offline income efficiency",    cost:{ credits:200 },                          effect:{ offlineMult:0.10 } },
+        { id:"x2", name:"Drone Overclock",    desc:"+15% drone pulse speed",            cost:{ credits:600,   iron:30 },               effect:{ dronePulseMult:0.15 } },
+        { id:"x3", name:"Rare Prospector",    desc:"+20% rare Miner ore chance",        cost:{ credits:1500,  cobalt:12 },             effect:{ rareDropMult:0.20 } },
+        { id:"x4", name:"Orbital Survey",     desc:"+25% drone pulse speed",            cost:{ credits:4500,  gold:8 },                effect:{ dronePulseMult:0.25 } },
+        { id:"x5", name:"Station Logistics",  desc:"-10% Station Module upgrade costs", cost:{ credits:10000, platinum:5 },            effect:{ stationDiscount:0.10 } },
+        { id:"x6", name:"Deep Warp",          desc:"+20% offline income efficiency",    cost:{ credits:26000, gold:12 },               effect:{ offlineMult:0.20 } },
+        { id:"x7", name:"Pulse Amplifier",    desc:"+35% drone pulse speed",            cost:{ credits:68000, platinum:8, nickel:40 }, effect:{ dronePulseMult:0.35 } },
+        { id:"x8", name:"Exotic Finder",      desc:"+40% rare Miner ore chance",        cost:{ credits:160000,platinum:15 },           effect:{ rareDropMult:0.40 } },
+        { id:"x9", name:"Void Navigator",     desc:"+30% offline income efficiency",    cost:{ credits:380000,obsidian:10 },           effect:{ offlineMult:0.30 }, unlockMR:16 },
       ]
     },
     void: {
       label:"🌌 Void Mastery", branch:"void",
       nodes:[
-        { id:"v1", name:"Void Sense",         desc:"+2% Void Surge chance",              cost:{ credits:50000,  obsidian:5 },           effect:{ rareDropMult:0.02 }, unlockMR:15 },
-        { id:"v2", name:"Dark Resonance",     desc:"+20% all credits on Void",           cost:{ credits:120000, obsidian:15 },          effect:{ voidCreditMult:0.20 }, unlockMR:15 },
-        { id:"v3", name:"Surge Amplifier",    desc:"+60% XP on Void planet",             cost:{ credits:280000, obsidian:25 },          effect:{ xpMult:0.60 }, unlockMR:16 },
-        { id:"v4", name:"Void Drones",        desc:"+30% drone yield on Void",           cost:{ credits:500000, obsidian:40 },          effect:{ droneCreditMult:0.30 }, unlockMR:17 },
-        { id:"v5", name:"Singularity Core",   desc:"+50% ALL credits on Void planet",    cost:{ credits:1200000,obsidian:80 },          effect:{ voidCreditMult:0.50 }, unlockMR:20 },
+        { id:"v1", name:"Void Sense",         desc:"+2% Void Surge chance",             cost:{ credits:50000,  obsidian:5 },           effect:{ voidSurgeChance:0.02 }, unlockMR:15 },
+        { id:"v2", name:"Dark Resonance",     desc:"+20% all credits on Void",          cost:{ credits:120000, obsidian:15 },          effect:{ voidCreditMult:0.20 }, unlockMR:15 },
+        { id:"v3", name:"Surge Amplifier",    desc:"+60% XP on Void planet",            cost:{ credits:280000, obsidian:25 },          effect:{ xpMult:0.60 }, unlockMR:16 },
+        { id:"v4", name:"Void Drones",        desc:"+30% drone yield on Void",          cost:{ credits:500000, obsidian:40 },          effect:{ droneCreditMult:0.30 }, unlockMR:17 },
+        { id:"v5", name:"Singularity Core",   desc:"+50% ALL credits on Void planet",   cost:{ credits:1200000,obsidian:80 },          effect:{ voidCreditMult:0.50 }, unlockMR:20 },
       ]
     },
   };
+;
 
   function skillOwned(id, s){ return (s || state).skills.includes(id); }
   function skillNodeUnlocked(branchId, nodeIdx){
@@ -3281,7 +3353,7 @@
 
   function dustEarnedFor(planetId){
     const count = state.prestigeCount?.[planetId] || 0;
-    const base  = STELLAR_DUST_PER_PRESTIGE + count * 2;
+    const base  = STELLAR_DUST_PER_PRESTIGE + count * 8;
     const mult  = 1 + prestigeBonus("dustMult");
     return Math.floor(base * mult);
   }
@@ -4406,19 +4478,20 @@
   function sellAlloys(){
     const inv = smeltInventory(state);
     let total = 0;
+    const smeltBonus = 1 + skillBonus("smeltSellMult");
     for(const recipe of SMELT_RECIPES){
       const have = inv[recipe.id]||0;
       if(have > 0){
-        total += have * recipe.output.value;
+        total += have * recipe.output.value * smeltBonus;
         inv[recipe.id] = 0;
       }
     }
     if(total <= 0) return toast("No alloys to sell.");
-    const gained = Math.round(total * (1 + skillBonus("sellMult")));
-    state.credits += gained;
-    toast(`Sold alloys for +${fmt(gained)}c`);
-    setCargoDirtyAll();
-    updateHUD();
+    addCredits(total);
+    if(state._stats) state._stats.cargoSells = (state._stats.cargoSells||0)+1;
+    toast(`Sold alloys for +${fmt(Math.round(total))}c`);
+    spawnPop(`+${fmt(Math.round(total))}c`, true, 50, 45, null);
+    save();
   }
 
   function buyStationModule(moduleId){
@@ -5012,37 +5085,70 @@
   function minerPanelHTML(){
     let html = '';
     for(const [pid, planet] of Object.entries(PLANETS)){
-      if(!state.planets[pid]) continue;
-      if(pid==="void" && state.minerRank<15) continue;
       const pp = state.planets[pid];
-      const deployed = pp.minersDeployed||0;
-      const maxM = pp.maxMiners||2;
+      if(!pp) continue;
+
+      // Unlock check: iron always available, others need planetsBought
+      const isUnlocked = pid === "iron" || !!(state.planetsBought?.[pid]);
+      if(!isUnlocked) continue;
+      // Void requires MR 15
+      if(pid === "void" && state.minerRank < 15) continue;
+
+      const deployed   = pp.minersDeployed||0;
+      const maxM       = pp.maxMiners||2;
       const reactorBonus = 1+(state.station?.reactor||0)*0.25;
-      const orePerMin = ((pp.minerSpeed||1)*reactorBonus*deployed).toFixed(2);
-      const full = freeSpace()<=0;
-      html += `
-      <div style="padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <span style="font-size:18px;">${planet.icon||"🪐"}</span>
-          <span style="font-size:13px;font-weight:900;">${planet.name}</span>
-          <span style="font-size:11px;color:var(--muted);">${deployed}/${maxM} miners · ${orePerMin} ore/min</span>
-          ${full?'<span style="font-size:10px;color:#ef4444;font-weight:700;margin-left:auto;">FULL</span>':""}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div style="display:flex;gap:4px;flex:1;">
-            ${Array.from({length:maxM},(_,i)=>`
-            <div style="width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.15);
-              background:${i<deployed?"#32d583":"rgba(255,255,255,.05)"};
-              display:flex;align-items:center;justify-content:center;font-size:12px;">
-              ${i<deployed?"⛏":""}
-            </div>`).join("")}
+      const orePerMin  = ((pp.minerSpeed||1)*reactorBonus*deployed).toFixed(2);
+      const isFull     = freeSpace()<=0;
+      const isCurrent  = state.currentPlanet === pid;
+
+      // Build miner slots with animated pickaxe visuals
+      const slots = Array.from({length:maxM},(_,i)=>{
+        const active = i < deployed;
+        return `<div style="
+          display:flex;flex-direction:column;align-items:center;gap:3px;
+          padding:8px 10px;border-radius:12px;min-width:52px;
+          background:${active ? "rgba(50,213,131,.10)" : "rgba(255,255,255,.03)"};
+          border:1px solid ${active ? "rgba(50,213,131,.25)" : "rgba(255,255,255,.08)"};
+          transition:all .3s;">
+          <div style="font-size:20px;${active ? "animation:minerBob .9s ease-in-out infinite alternate;" : "opacity:.25"}">
+            ${active ? "⛏" : "·"}
           </div>
-          ${deployed<maxM
-            ? `<button class="btn good" style="padding:6px 14px;font-size:12px;"
+          <div style="font-size:9px;font-weight:700;color:${active ? "#32d583" : "var(--muted)"};text-transform:uppercase;letter-spacing:.05em;">
+            ${active ? "Mining" : "Empty"}
+          </div>
+        </div>`;
+      }).join("");
+
+      html += `
+      <div style="padding:14px;border-radius:16px;
+        background:${isCurrent ? "rgba(102,163,255,.06)" : "rgba(255,255,255,.03)"};
+        border:1px solid ${isCurrent ? "rgba(102,163,255,.2)" : "rgba(255,255,255,.07)"};
+        margin-bottom:10px;">
+
+        <!-- Planet header -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:22px;">${planet.icon||"🪐"}</span>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;font-weight:900;">${planet.name}</span>
+              ${isCurrent ? '<span style="font-size:9px;padding:2px 6px;border-radius:6px;background:rgba(102,163,255,.15);color:#a5d4ff;font-weight:700;">ACTIVE</span>' : ""}
+              ${isFull && deployed>0 ? '<span style="font-size:9px;padding:2px 6px;border-radius:6px;background:rgba(239,68,68,.15);color:#ef4444;font-weight:700;">CARGO FULL</span>' : ""}
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+              ${deployed>0 ? `${deployed}/${maxM} miners · <span style="color:#32d583;">${orePerMin} ore/min</span>` : `${deployed}/${maxM} miners · idle`}
+            </div>
+          </div>
+          ${deployed < maxM
+            ? `<button class="btn good" style="padding:6px 14px;font-size:12px;white-space:nowrap;"
                 data-act="buyMiner" data-planet="${pid}">
-                Deploy · ${fmt(pp.costMiner||200)}c
+                +1 Miner · ${fmt(pp.costMiner||200)}c
               </button>`
-            : `<span style="font-size:11px;color:#32d583;">All slots filled</span>`}
+            : `<span style="font-size:11px;color:#32d583;font-weight:700;">Full ✓</span>`}
+        </div>
+
+        <!-- Miner slots visual -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${slots}
         </div>
       </div>`;
     }
@@ -5605,43 +5711,43 @@
   }
 
   var ACHIEVEMENTS = [
-    {id:"a_shot1", cat:"mining",  icon:"🔫", name:"First Shot",       desc:"Fire your first laser shot",            reward:2,  check:s=>(s._stats?.shots||0)>=1},
-    {id:"a_shot2", cat:"mining",  icon:"🎯", name:"Trigger Happy",    desc:"Fire 500 laser shots",                  reward:3,  check:s=>(s._stats?.shots||0)>=500},
-    {id:"a_shot3", cat:"mining",  icon:"⚡", name:"Sharpshooter",     desc:"Fire 5,000 laser shots",                reward:5,  check:s=>(s._stats?.shots||0)>=5000},
-    {id:"a_shot4", cat:"mining",  icon:"💥", name:"Void Sniper",      desc:"Fire 50,000 laser shots",               reward:12, check:s=>(s._stats?.shots||0)>=50000},
-    {id:"a_crit1", cat:"mining",  icon:"✨", name:"Critical Mass",    desc:"Land 100 critical hits",                reward:3,  check:s=>(s._stats?.crits||0)>=100},
-    {id:"a_crit2", cat:"mining",  icon:"💫", name:"Crit Machine",     desc:"Land 2,500 critical hits",              reward:8,  check:s=>(s._stats?.crits||0)>=2500},
-    {id:"a_srg1",  cat:"mining",  icon:"🌌", name:"Void Awakening",   desc:"Trigger your first Void Surge",         reward:5,  check:s=>(s._stats?.voidSurges||0)>=1},
-    {id:"a_srg2",  cat:"mining",  icon:"🔮", name:"Surge Master",     desc:"Trigger 100 Void Surges",               reward:15, check:s=>(s._stats?.voidSurges||0)>=100},
-    {id:"a_ern1",  cat:"economy", icon:"💵", name:"First Earnings",   desc:"Earn 10,000 credits total",             reward:2,  check:s=>(s._stats?.totalEarned||0)>=10000},
-    {id:"a_ern2",  cat:"economy", icon:"💰", name:"Rolling In It",    desc:"Earn 1,000,000 credits total",          reward:5,  check:s=>(s._stats?.totalEarned||0)>=1e6},
-    {id:"a_ern3",  cat:"economy", icon:"🏦", name:"Credit Baron",     desc:"Earn 1,000,000,000 credits total",      reward:20, check:s=>(s._stats?.totalEarned||0)>=1e9},
-    {id:"a_sel1",  cat:"economy", icon:"📦", name:"First Haul",       desc:"Sell your cargo for the first time",    reward:2,  check:s=>(s._stats?.cargoSells||0)>=1},
-    {id:"a_sel2",  cat:"economy", icon:"🚚", name:"Trade Mogul",      desc:"Sell cargo 50 times",                   reward:6,  check:s=>(s._stats?.cargoSells||0)>=50},
-    {id:"a_trd1",  cat:"economy", icon:"🤝", name:"Market Player",    desc:"Complete 5 trade deals",                reward:3,  check:s=>(s._stats?.tradeDeals||0)>=5},
-    {id:"a_trd2",  cat:"economy", icon:"📈", name:"Commodities King", desc:"Complete 25 trade deals",               reward:8,  check:s=>(s._stats?.tradeDeals||0)>=25},
-    {id:"a_vul",   cat:"explore", icon:"🌋", name:"Colonist",         desc:"Unlock Vulcan Core",                    reward:8,  check:s=>!!(s.planetsBought?.vulcan)},
-    {id:"a_void",  cat:"explore", icon:"🌌", name:"Into the Void",    desc:"Unlock Void Expanse",                   reward:15, check:s=>!!(s.planetsBought?.void)},
-    {id:"a_prs1",  cat:"explore", icon:"⭐", name:"Rebirth",          desc:"Prestige any planet once",              reward:8,  check:s=>Object.values(s.prestigeCount||{}).some(n=>n>=1)},
-    {id:"a_prs2",  cat:"explore", icon:"🌟", name:"Stellar Miner",    desc:"Prestige every planet at least once",   reward:25, check:s=>["iron","vulcan","void"].every(p=>(s.prestigeCount?.[p]||0)>=1)},
-    {id:"a_dst1",  cat:"explore", icon:"✨", name:"Dust Collector",   desc:"Own 10 Prestige upgrades",              reward:10, check:s=>(s.prestigeUpgrades||[]).length>=10},
-    {id:"a_mr5",   cat:"ranks",   icon:"🪖", name:"Rookie",           desc:"Reach Miner Rank 5",                    reward:2,  check:s=>s.minerRank>=5},
-    {id:"a_mr10",  cat:"ranks",   icon:"🎖", name:"Veteran",          desc:"Reach Miner Rank 10",                   reward:5,  check:s=>s.minerRank>=10},
-    {id:"a_mr15",  cat:"ranks",   icon:"🏅", name:"Elite",            desc:"Reach Miner Rank 15",                   reward:8,  check:s=>s.minerRank>=15},
-    {id:"a_mr20",  cat:"ranks",   icon:"🥇", name:"Legend",           desc:"Reach Miner Rank 20",                   reward:15, check:s=>s.minerRank>=20},
-    {id:"a_mr30",  cat:"ranks",   icon:"👑", name:"Transcendent",     desc:"Reach Miner Rank 30",                   reward:30, check:s=>s.minerRank>=30},
-    {id:"a_drn1",  cat:"fleet",   icon:"🛸", name:"First Drone",      desc:"Deploy your first mining drone",        reward:2,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=1)},
-    {id:"a_drn2",  cat:"fleet",   icon:"🚀", name:"Drone Commander",  desc:"Have 5 drones on a single planet",      reward:5,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=5)},
-    {id:"a_drn3",  cat:"fleet",   icon:"🌠", name:"Drone Armada",     desc:"15 drones across all planets",          reward:10, check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.dronesLvl||0),0)>=15},
-    {id:"a_skl1",  cat:"fleet",   icon:"🧠", name:"Skill Seeker",     desc:"Buy your first skill",                  reward:2,  check:s=>(s.skills||[]).length>=1},
-    {id:"a_skl2",  cat:"fleet",   icon:"🎓", name:"Skill Master",     desc:"Buy 20 skills",                         reward:20, check:s=>(s.skills||[]).length>=20},
-    {id:"a_mnr1",  cat:"station", icon:"⛏", name:"First Miner",      desc:"Deploy your first Miner",               reward:3,  check:s=>(s._stats?.minersDeployed||0)>=1},
-    {id:"a_mnr2",  cat:"station", icon:"🏗", name:"Mining Operation", desc:"Have 5 Miners deployed across planets",  reward:8,  check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0)>=5},
-    {id:"a_smlt1", cat:"station", icon:"🔥", name:"Alchemist",        desc:"Smelt your first alloy",                 reward:5,  check:s=>(s._stats?.smeltCount||0)>=1},
-    {id:"a_smlt2", cat:"station", icon:"⚗️", name:"Master Smelter",   desc:"Smelt 50 alloys",                        reward:15, check:s=>(s._stats?.smeltCount||0)>=50},
-    {id:"a_sta1",  cat:"station", icon:"🛰", name:"Station Commander",desc:"Upgrade any station module",             reward:5,  check:s=>(s._stats?.stationUpgrades||0)>=1},
-    {id:"a_sta2",  cat:"station", icon:"🌌", name:"Starbase",         desc:"Max out any station module",             reward:20, check:s=>STATION_MODULES.some(m=>(s.station?.[m.id]||0)>=m.maxLvl)},
-    {id:"a_cmb1",  cat:"mining",  icon:"🔥", name:"On Fire",          desc:"Reach a ×2.5 combo multiplier",          reward:5,  check:s=>(s._stats?.maxCombo||0)>=10},
+    {id:"a_shot1", cat:"mining",  icon:"🔫", name:"First Shot",       desc:"Fire your first laser shot",            reward:1,  check:s=>(s._stats?.shots||0)>=1},
+    {id:"a_shot2", cat:"mining",  icon:"🎯", name:"Trigger Happy",    desc:"Fire 500 laser shots",                  reward:2,  check:s=>(s._stats?.shots||0)>=500},
+    {id:"a_shot3", cat:"mining",  icon:"⚡", name:"Sharpshooter",     desc:"Fire 5,000 laser shots",                reward:2,  check:s=>(s._stats?.shots||0)>=5000},
+    {id:"a_shot4", cat:"mining",  icon:"💥", name:"Void Sniper",      desc:"Fire 50,000 laser shots",               reward:6, check:s=>(s._stats?.shots||0)>=50000},
+    {id:"a_crit1", cat:"mining",  icon:"✨", name:"Critical Mass",    desc:"Land 100 critical hits",                reward:2,  check:s=>(s._stats?.crits||0)>=100},
+    {id:"a_crit2", cat:"mining",  icon:"💫", name:"Crit Machine",     desc:"Land 2,500 critical hits",              reward:4,  check:s=>(s._stats?.crits||0)>=2500},
+    {id:"a_srg1",  cat:"mining",  icon:"🌌", name:"Void Awakening",   desc:"Trigger your first Void Surge",         reward:2,  check:s=>(s._stats?.voidSurges||0)>=1},
+    {id:"a_srg2",  cat:"mining",  icon:"🔮", name:"Surge Master",     desc:"Trigger 100 Void Surges",               reward:8, check:s=>(s._stats?.voidSurges||0)>=100},
+    {id:"a_ern1",  cat:"economy", icon:"💵", name:"First Earnings",   desc:"Earn 10,000 credits total",             reward:1,  check:s=>(s._stats?.totalEarned||0)>=10000},
+    {id:"a_ern2",  cat:"economy", icon:"💰", name:"Rolling In It",    desc:"Earn 1,000,000 credits total",          reward:2,  check:s=>(s._stats?.totalEarned||0)>=1e6},
+    {id:"a_ern3",  cat:"economy", icon:"🏦", name:"Credit Baron",     desc:"Earn 1,000,000,000 credits total",      reward:10, check:s=>(s._stats?.totalEarned||0)>=1e9},
+    {id:"a_sel1",  cat:"economy", icon:"📦", name:"First Haul",       desc:"Sell your cargo for the first time",    reward:1,  check:s=>(s._stats?.cargoSells||0)>=1},
+    {id:"a_sel2",  cat:"economy", icon:"🚚", name:"Trade Mogul",      desc:"Sell cargo 50 times",                   reward:3,  check:s=>(s._stats?.cargoSells||0)>=50},
+    {id:"a_trd1",  cat:"economy", icon:"🤝", name:"Market Player",    desc:"Complete 5 trade deals",                reward:2,  check:s=>(s._stats?.tradeDeals||0)>=5},
+    {id:"a_trd2",  cat:"economy", icon:"📈", name:"Commodities King", desc:"Complete 25 trade deals",               reward:4,  check:s=>(s._stats?.tradeDeals||0)>=25},
+    {id:"a_vul",   cat:"explore", icon:"🌋", name:"Colonist",         desc:"Unlock Vulcan Core",                    reward:4,  check:s=>!!(s.planetsBought?.vulcan)},
+    {id:"a_void",  cat:"explore", icon:"🌌", name:"Into the Void",    desc:"Unlock Void Expanse",                   reward:8, check:s=>!!(s.planetsBought?.void)},
+    {id:"a_prs1",  cat:"explore", icon:"⭐", name:"Rebirth",          desc:"Prestige any planet once",              reward:4,  check:s=>Object.values(s.prestigeCount||{}).some(n=>n>=1)},
+    {id:"a_prs2",  cat:"explore", icon:"🌟", name:"Stellar Miner",    desc:"Prestige every planet at least once",   reward:12, check:s=>["iron","vulcan","void"].every(p=>(s.prestigeCount?.[p]||0)>=1)},
+    {id:"a_dst1",  cat:"explore", icon:"✨", name:"Dust Collector",   desc:"Own 10 Prestige upgrades",              reward:5, check:s=>(s.prestigeUpgrades||[]).length>=10},
+    {id:"a_mr5",   cat:"ranks",   icon:"🪖", name:"Rookie",           desc:"Reach Miner Rank 5",                    reward:1,  check:s=>s.minerRank>=5},
+    {id:"a_mr10",  cat:"ranks",   icon:"🎖", name:"Veteran",          desc:"Reach Miner Rank 10",                   reward:2,  check:s=>s.minerRank>=10},
+    {id:"a_mr15",  cat:"ranks",   icon:"🏅", name:"Elite",            desc:"Reach Miner Rank 15",                   reward:4,  check:s=>s.minerRank>=15},
+    {id:"a_mr20",  cat:"ranks",   icon:"🥇", name:"Legend",           desc:"Reach Miner Rank 20",                   reward:8, check:s=>s.minerRank>=20},
+    {id:"a_mr30",  cat:"ranks",   icon:"👑", name:"Transcendent",     desc:"Reach Miner Rank 30",                   reward:15, check:s=>s.minerRank>=30},
+    {id:"a_drn1",  cat:"fleet",   icon:"🛸", name:"First Drone",      desc:"Deploy your first mining drone",        reward:1,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=1)},
+    {id:"a_drn2",  cat:"fleet",   icon:"🚀", name:"Drone Commander",  desc:"Have 5 drones on a single planet",      reward:2,  check:s=>Object.values(s.planets||{}).some(p=>p.dronesLvl>=5)},
+    {id:"a_drn3",  cat:"fleet",   icon:"🌠", name:"Drone Armada",     desc:"15 drones across all planets",          reward:5, check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.dronesLvl||0),0)>=15},
+    {id:"a_skl1",  cat:"fleet",   icon:"🧠", name:"Skill Seeker",     desc:"Buy your first skill",                  reward:1,  check:s=>(s.skills||[]).length>=1},
+    {id:"a_skl2",  cat:"fleet",   icon:"🎓", name:"Skill Master",     desc:"Buy 20 skills",                         reward:10, check:s=>(s.skills||[]).length>=20},
+    {id:"a_mnr1",  cat:"station", icon:"⛏", name:"First Miner",      desc:"Deploy your first Miner",               reward:2,  check:s=>(s._stats?.minersDeployed||0)>=1},
+    {id:"a_mnr2",  cat:"station", icon:"🏗", name:"Mining Operation", desc:"Have 5 Miners deployed across planets",  reward:4,  check:s=>Object.values(s.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0)>=5},
+    {id:"a_smlt1", cat:"station", icon:"🔥", name:"Alchemist",        desc:"Smelt your first alloy",                 reward:2,  check:s=>(s._stats?.smeltCount||0)>=1},
+    {id:"a_smlt2", cat:"station", icon:"⚗️", name:"Master Smelter",   desc:"Smelt 50 alloys",                        reward:8, check:s=>(s._stats?.smeltCount||0)>=50},
+    {id:"a_sta1",  cat:"station", icon:"🛰", name:"Station Commander",desc:"Upgrade any station module",             reward:2,  check:s=>(s._stats?.stationUpgrades||0)>=1},
+    {id:"a_sta2",  cat:"station", icon:"🌌", name:"Starbase",         desc:"Max out any station module",             reward:10, check:s=>STATION_MODULES.some(m=>(s.station?.[m.id]||0)>=m.maxLvl)},
+    {id:"a_cmb1",  cat:"mining",  icon:"🔥", name:"On Fire",          desc:"Reach a ×2.5 combo multiplier",          reward:2,  check:s=>(s._stats?.maxCombo||0)>=10},
   ];
   var ACH_CATS = {mining:"⛏ Mining",economy:"💰 Economy",explore:"🚀 Exploration",ranks:"⭐ Ranks",fleet:"🛸 Fleet",station:"🛰 Station"};
 
