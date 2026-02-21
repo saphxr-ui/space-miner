@@ -1280,11 +1280,12 @@
               <div style="font-weight:950;font-size:18px;">MR <span id="minerRank">1</span></div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-              <div style="display:flex;gap:6px;">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
                 <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
                 <button class="btn secondary" id="openLeaderboardBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🏆 Board</button>
+                <button class="btn secondary" id="openPrestigeBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">✨ Prestige</button>
               </div>
-              <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP</div>
+              <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP · ✨ <span id="stellarDustHud">0</span></div>
             </div>
           </div>
           <div class="bar" style="margin-top:8px;"><div id="xpBar"></div></div>
@@ -1420,6 +1421,20 @@
           <div class="muted" style="text-align:center;padding:20px;">Loading…</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== Prestige Modal ===== -->
+  <div class="modalBackdrop" id="prestigeBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" style="width:min(700px,100%);">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle">✨ Stellar Prestige</div>
+          <div class="muted" style="font-size:12px;" id="prestigeSubLabel">Prestige planets for Stellar Dust</div>
+        </div>
+        <button class="btn secondary" id="closePrestige">Close</button>
+      </div>
+      <div class="modalBody" style="padding:10px 14px 16px;max-height:72dvh;overflow-y:auto;" id="prestigeBody"></div>
     </div>
   </div>
 
@@ -1667,11 +1682,13 @@
     iron: {
       id:"iron", name:"Iron Belt",
       laserMult:1, creditMult:1, xpMult:1,
+      prestigeBaseCost: 50000,
     },
     vulcan: {
       id:"vulcan", name:"Vulcan Core",
       unlockMR: 10, unlockCredits: 8000,
       laserMult:1, creditMult:2.5, xpMult:1.5,
+      prestigeBaseCost: 250000,
     }
   };
 
@@ -1764,6 +1781,11 @@
       // Skill tree: owned node ids
       skills: [],
 
+      // Prestige
+      stellarDust: 0,
+      prestigeUpgrades: [],        // owned prestige upgrade ids
+      prestigeCount: { iron:0, vulcan:0 },  // how many times each planet was prestiged
+
       cosmetics: {
         droneSkin: "default",
         owned: { default:true, carbon:false, neon:false, solar:false }
@@ -1823,6 +1845,10 @@
       // migrate quests & skills
       s.quests = s.quests || { date:"", list:[] };
       s.skills = Array.isArray(s.skills) ? s.skills : [];
+      // migrate prestige
+      s.stellarDust = s.stellarDust || 0;
+      s.prestigeUpgrades = Array.isArray(s.prestigeUpgrades) ? s.prestigeUpgrades : [];
+      s.prestigeCount = s.prestigeCount || { iron:0, vulcan:0 };
 
       const fresh = defaultOreSettings();
       const old = s.oreSettings || {};
@@ -2698,6 +2724,12 @@
         }
       }
     }
+    // Add prestige bonuses (always use global state — prestige upgrades never reset)
+    for(const u of PRESTIGE_UPGRADES){
+      if((state.prestigeUpgrades||[]).includes(u.id) && u.effect[effectKey] !== undefined){
+        total += u.effect[effectKey];
+      }
+    }
     return total;
   }
   function skillBonusFlat(effectKey, s){ return skillBonus(effectKey, s); }
@@ -2782,6 +2814,181 @@
       el2.appendChild(col);
     }
   }
+
+  /* ===== Prestige System ===== */
+
+  const STELLAR_DUST_PER_PRESTIGE = 10;
+
+  const PRESTIGE_UPGRADES = [
+    // ⚡ Power
+    { id:"p1", cat:"power",  name:"Stellar Forge",     desc:"+15% laser credits globally",    cost:3,  effect:{ laserCreditMult:0.15 } },
+    { id:"p2", cat:"power",  name:"Ion Drill",          desc:"+20% ore drop rate globally",    cost:5,  effect:{ allDropChance:0.20 } },
+    { id:"p3", cat:"power",  name:"Plasma Edge",        desc:"+25% crit damage multiplier",    cost:8,  effect:{ critMult:0.25 } },
+    { id:"p4", cat:"power",  name:"Quantum Pick",       desc:"+30% laser credits globally",    cost:12, effect:{ laserCreditMult:0.30 } },
+    { id:"p5", cat:"power",  name:"Neutron Core",       desc:"+40% ore drop rate globally",    cost:20, effect:{ allDropChance:0.40 } },
+    { id:"p6", cat:"power",  name:"Singularity Drill",  desc:"+50% all mining income",         cost:35, effect:{ globalCreditMult:0.50 } },
+    // 🌌 Cosmic
+    { id:"c1", cat:"cosmic", name:"Void Market",        desc:"+20% credits from all sales",    cost:4,  effect:{ sellMult:0.20 } },
+    { id:"c2", cat:"cosmic", name:"Dark Economy",       desc:"+25% drone credit yield",        cost:6,  effect:{ droneCreditMult:0.25 } },
+    { id:"c3", cat:"cosmic", name:"Nebula Trade",       desc:"+30% credits from all sources",  cost:10, effect:{ globalCreditMult:0.30 } },
+    { id:"c4", cat:"cosmic", name:"Stellar Commerce",   desc:"+50 cargo capacity",             cost:15, effect:{ cargoCap:50 } },
+    { id:"c5", cat:"cosmic", name:"Galactic Exchange",  desc:"+40% drone credit yield",        cost:25, effect:{ droneCreditMult:0.40 } },
+    { id:"c6", cat:"cosmic", name:"Universal Trade",    desc:"+75% all credit gains",          cost:40, effect:{ globalCreditMult:0.75 } },
+    // 🔮 Arcane
+    { id:"a1", cat:"arcane", name:"Astral Sense",       desc:"+25% rare ore drop chance",      cost:5,  effect:{ rareDropMult:0.25 } },
+    { id:"a2", cat:"arcane", name:"Void Pulse",         desc:"+25% drone orbit speed",         cost:7,  effect:{ dronePulseMult:0.25 } },
+    { id:"a3", cat:"arcane", name:"Cosmic Memory",      desc:"+50% offline income",            cost:10, effect:{ offlineMult:0.50 } },
+    { id:"a4", cat:"arcane", name:"Dark Resonance",     desc:"+40% mining XP gain",            cost:16, effect:{ xpMult:0.40 } },
+    { id:"a5", cat:"arcane", name:"Nebula Sight",       desc:"+50% rare ore drop chance",      cost:28, effect:{ rareDropMult:0.50 } },
+    { id:"a6", cat:"arcane", name:"Stellar Ascension",  desc:"+2× all Stellar Dust earned",    cost:45, effect:{ dustMult:1.0 } },
+  ];
+
+  const PRESTIGE_CATS = {
+    power:  { label:"⚡ Power",  color:"rgba(43,212,255," },
+    cosmic: { label:"🌌 Cosmic", color:"rgba(124,92,255," },
+    arcane: { label:"🔮 Arcane", color:"rgba(255,100,200," },
+  };
+
+  function prestigeUpgradeOwned(id){ return (state.prestigeUpgrades||[]).includes(id); }
+
+  function prestigeBonus(effectKey){
+    let total = 0;
+    for(const u of PRESTIGE_UPGRADES){
+      if(prestigeUpgradeOwned(u.id) && u.effect[effectKey] !== undefined)
+        total += u.effect[effectKey];
+    }
+    return total;
+  }
+
+  function prestigeCostFor(planetId){
+    const base  = PLANETS[planetId]?.prestigeBaseCost || 50000;
+    const count = (state.prestigeCount?.[planetId] || 0);
+    return base * (count + 1);
+  }
+
+  function dustEarnedFor(planetId){
+    const count = state.prestigeCount?.[planetId] || 0;
+    const base  = STELLAR_DUST_PER_PRESTIGE + count * 2;
+    const mult  = 1 + prestigeBonus("dustMult");
+    return Math.floor(base * mult);
+  }
+
+  function doPlanetPrestige(planetId){
+    const cost = prestigeCostFor(planetId);
+    const dust = dustEarnedFor(planetId);
+    if(state.credits < cost) return toast(`Need ${fmt(cost)}c to prestige.`);
+
+    state.credits -= cost;
+    state.stellarDust = (state.stellarDust || 0) + dust;
+    state.prestigeCount = state.prestigeCount || {};
+    state.prestigeCount[planetId] = (state.prestigeCount[planetId] || 0) + 1;
+
+    // Reset only this planet's upgrades
+    state.planets[planetId] = defaultPlanetState(planetId);
+
+    applyStats(state);
+    syncSpawnedDrones();
+    buildTab(state.shopTab);
+    updateHUD();
+    save();
+
+    toast(`✨ ${PLANETS[planetId].name} prestiged! +${dust} Stellar Dust`);
+    spawnPop(`+${dust} ✨ Stellar Dust`, true, 50, 40, null);
+    spawnParticles(24);
+    if(el("prestigeBackdrop").classList.contains("show")) renderPrestigeModal();
+  }
+
+  function buyPrestigeUpgrade(id){
+    const upg = PRESTIGE_UPGRADES.find(u=>u.id===id);
+    if(!upg || prestigeUpgradeOwned(id)) return;
+    if((state.stellarDust||0) < upg.cost) return toast(`Need ${upg.cost} ✨ Stellar Dust.`);
+    state.stellarDust -= upg.cost;
+    state.prestigeUpgrades = state.prestigeUpgrades || [];
+    state.prestigeUpgrades.push(id);
+    applyStats(state);
+    updateHUD();
+    save();
+    toast(`✨ ${upg.name} unlocked!`);
+    renderPrestigeModal();
+  }
+
+  function renderPrestigeModal(){
+    const body = el("prestigeBody");
+    if(!body) return;
+    const dust  = state.stellarDust || 0;
+    const owned = (state.prestigeUpgrades||[]).length;
+    el("prestigeSubLabel").textContent = `✨ ${fmt(dust)} Stellar Dust · ${owned}/${PRESTIGE_UPGRADES.length} upgrades`;
+
+    let html = `<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">`;
+    for(const [pid, planet] of Object.entries(PLANETS)){
+      if(!planet.prestigeBaseCost) continue;
+      const cost   = prestigeCostFor(pid);
+      const dust2  = dustEarnedFor(pid);
+      const count  = state.prestigeCount?.[pid] || 0;
+      const afford = state.credits >= cost;
+      html += `
+        <div style="padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.09);
+          background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.16));
+          display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:900;font-size:13px;">${planet.name}
+              ${count>0?`<span class="chip good" style="font-size:10px;margin-left:4px;">${count}× Prestiged</span>`:""}
+            </div>
+            <div class="muted" style="font-size:11px;margin-top:3px;">Resets all planet upgrades &amp; earns Stellar Dust</div>
+            <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="chip warn">Cost: ${fmt(cost)}c</span>
+              <span class="chip" style="border-color:rgba(180,130,255,.28);background:rgba(150,100,255,.10);color:rgba(220,190,255,.95);">+${dust2} ✨</span>
+            </div>
+          </div>
+          <button class="btn ${afford?"warn":"secondary"}" data-prestige="${pid}"
+            style="padding:10px 18px;flex-shrink:0;" ${afford?"":"disabled"}>✨ Prestige</button>
+        </div>`;
+    }
+    html += `</div>`;
+
+    for(const [catId, cat] of Object.entries(PRESTIGE_CATS)){
+      const upgrades = PRESTIGE_UPGRADES.filter(u=>u.cat===catId);
+      html += `
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:900;font-size:12px;padding:6px 10px;border-radius:10px;margin-bottom:8px;
+            background:${cat.color}.10);border:1px solid ${cat.color}.20);">${cat.label}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
+      for(const upg of upgrades){
+        const own2    = prestigeUpgradeOwned(upg.id);
+        const afford2 = !own2 && (state.stellarDust||0) >= upg.cost;
+        html += `
+          <div class="skillNode${own2?" owned":""}${afford2?" affordable":""}"
+            style="cursor:${own2?"default":"pointer"};position:relative;"
+            ${own2?"":"data-buy-prestige=\""+upg.id+"\""}> 
+            ${own2?`<div class="skillOwnedBadge">✓ Owned</div>`:""}
+            <div class="skillNodeName">${escapeHtml(upg.name)}</div>
+            <div class="skillNodeDesc">${escapeHtml(upg.desc)}</div>
+            ${!own2?`<div class="skillNodeCost">
+              <span class="skillCostChip ${afford2?"met":""}">✨ ${upg.cost}</span>
+            </div>`:""}
+          </div>`;
+      }
+      html += `</div></div>`;
+    }
+
+    body.innerHTML = html;
+
+    body.querySelectorAll("[data-prestige]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        if(confirm(`Prestige ${PLANETS[btn.dataset.prestige].name}?\n\nAll upgrades on this planet reset.\nYou keep: MR, Skill Tree, other planets, Stellar Dust upgrades.`))
+          doPlanetPrestige(btn.dataset.prestige);
+      });
+    });
+    body.querySelectorAll("[data-buy-prestige]").forEach(node=>{
+      node.addEventListener("click", ()=>buyPrestigeUpgrade(node.dataset.buyPrestige));
+    });
+  }
+
+  function openPrestige(){
+    renderPrestigeModal();
+    el("prestigeBackdrop").classList.add("show");
+  }
+  function closePrestige(){ el("prestigeBackdrop").classList.remove("show"); }
 
   /* ===== Daily Quests ===== */
 
@@ -3130,7 +3337,8 @@
   async function lbUpsert(username, pin){
     const mr       = state.minerRank;
     const credits  = Math.floor(state.credits);
-    const score    = mr * 100000 + credits;
+    const prestigeTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
+    const score    = prestigeTotal * 10000000 + mr * 100000 + credits;
     const pin_hash = await hashPin(pin);
     try {
       const resInsert = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
@@ -3250,6 +3458,10 @@
   el("lbUsernameInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") el("lbPinInput").focus(); });
   el("lbPinInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") el("lbSubmitBtn").click(); });
   el("lbPinInput").addEventListener("focus", ()=>{ if(el("lbPinInput").value==="••••") el("lbPinInput").value=""; });
+
+  el("openPrestigeBtn").addEventListener("click", openPrestige);
+  el("closePrestige").addEventListener("click", closePrestige);
+  el("prestigeBackdrop").addEventListener("click", (e)=>{ if(e.target===el("prestigeBackdrop")) closePrestige(); });
 
   el("openLeaderboardBtn").addEventListener("click", openLeaderboard);
   el("closeLb").addEventListener("click", closeLeaderboard);
@@ -4279,6 +4491,7 @@
     minerRankEl.textContent = state.minerRank;
     xpNowEl.textContent = Math.floor(state.miningXP);
     xpNeedEl.textContent = state.miningNeed;
+    el("stellarDustHud").textContent = fmt(state.stellarDust || 0);
     xpBarEl.style.width = `${Math.min(100, (state.miningXP/state.miningNeed)*100)}%`;
     rankPerkTextEl.textContent = currentRankBonusText();
     nextUnlockTextEl.textContent = nextUnlockText();
@@ -4397,6 +4610,7 @@
       if(planetsBackdrop.classList.contains("show")) closePlanetOverview();
       if(el("skillBackdrop").classList.contains("show")) el("skillBackdrop").classList.remove("show");
       if(el("lbBackdrop").classList.contains("show")) closeLeaderboard();
+      if(el("prestigeBackdrop").classList.contains("show")) closePrestige();
     }
   });
 
