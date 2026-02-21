@@ -1310,8 +1310,63 @@
       100%{ filter:brightness(1)   drop-shadow(0 0 0px rgba(192,132,252,0)); }
     }
     .asteroid.void-surge{ animation: voidSurgeAnim 0.55s ease-out forwards; }
-    #musicToggleBtn{ opacity:.7; transition:opacity .2s; }
-    #musicToggleBtn.playing{ opacity:1; color:#a5f3fc; border-color:rgba(165,243,252,.3); }
+    #openSettingsBtn{ opacity:.8; transition:opacity .2s; }
+    #openSettingsBtn:hover{ opacity:1; }
+
+    /* ===== Settings Modal ===== */
+    .settingsRow{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .settingsLabel{
+      display:flex; align-items:center; gap:8px;
+      font-size:13px; font-weight:700; color:var(--txt);
+    }
+    .settingsToggle{
+      margin-left:auto; padding:3px 12px;
+      font-size:11px; border-radius:8px;
+    }
+    .settingsToggle.active{
+      background:rgba(43,212,255,.15);
+      border-color:rgba(43,212,255,.35);
+      color:#a5f3fc;
+    }
+    .settingsSlider{
+      -webkit-appearance:none; appearance:none;
+      width:100%; height:6px; border-radius:99px;
+      background:rgba(255,255,255,.10);
+      outline:none; cursor:pointer;
+      accent-color:var(--acc);
+    }
+    .settingsSlider::-webkit-slider-thumb{
+      -webkit-appearance:none; appearance:none;
+      width:18px; height:18px; border-radius:50%;
+      background:var(--acc);
+      box-shadow:0 0 8px rgba(102,163,255,.5);
+      cursor:pointer; transition:transform .12s;
+    }
+    .settingsSlider::-webkit-slider-thumb:hover{ transform:scale(1.15); }
+    .settingsSlider.dimmed{ opacity:.30; }
+    .settingsIconBtn{
+      background:none; border:none; font-size:20px; cursor:pointer;
+      padding:0; line-height:1; position:relative;
+      transition:opacity .15s; opacity:1; flex-shrink:0;
+    }
+    .settingsIconBtn:hover{ opacity:.7; }
+    .settingsIconBtn.muted{ opacity:.30; }
+    .settingsIconBtn.muted::after{
+      content:"";
+      position:absolute;
+      left:50%; top:50%;
+      width:130%; height:2px;
+      background:rgba(255,255,255,.9);
+      transform:translate(-50%,-50%) rotate(-45deg);
+      border-radius:2px;
+      pointer-events:none;
+    }
+    .settingsValue{
+      font-size:12px; color:var(--muted);
+      text-align:right; font-variant-numeric:tabular-nums;
+    }
   </style>
 </head>
 <body>
@@ -1341,7 +1396,7 @@
                 <button class="btn secondary" id="openRoadmapBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🗺 Rank Road</button>
                 <button class="btn secondary" id="openLeaderboardBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">🏆 Board</button>
                 <button class="btn secondary" id="openPrestigeBtn" style="padding:6px 12px;font-size:12px;border-radius:10px;">✨ Prestige</button>
-                <button class="btn secondary" id="musicToggleBtn" style="padding:6px 10px;font-size:14px;border-radius:10px;" title="Toggle Music">🔇</button>
+                <button class="btn secondary" id="openSettingsBtn" style="padding:6px 10px;font-size:14px;border-radius:10px;" title="Settings">⚙️</button>
               </div>
               <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP · ✨ <span id="stellarDustHud">0</span></div>
             </div>
@@ -1562,6 +1617,50 @@
       </div>
       <div class="roadmapScroll">
         <div class="roadmap" id="roadmapList"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Settings Modal -->
+  <div class="modalBackdrop" id="settingsBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" style="width:min(400px,96%);">
+      <div class="modalHeader">
+        <div class="modalTitle">⚙️ Settings</div>
+        <button class="btn secondary" id="closeSettingsBtn">Close</button>
+      </div>
+      <div class="modalBody" style="padding:20px 22px 28px;display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Music -->
+        <div class="settingsRow">
+          <div class="settingsLabel">
+            <button class="settingsIconBtn" id="toggleMusicBtn" title="Toggle music">🎵</button>
+            <span>Music</span>
+            <span class="settingsValue" id="valMusic">38%</span>
+          </div>
+          <input type="range" class="settingsSlider" id="sliderMusic" min="0" max="100" value="38" step="1">
+        </div>
+
+        <!-- SFX -->
+        <div class="settingsRow">
+          <div class="settingsLabel">
+            <button class="settingsIconBtn" id="toggleSfxBtn" title="Toggle UI sounds">🔔</button>
+            <span>UI Sounds</span>
+            <span class="settingsValue" id="valSfx">70%</span>
+          </div>
+          <input type="range" class="settingsSlider" id="sliderSfx" min="0" max="100" value="70" step="1">
+        </div>
+
+        <!-- Master -->
+        <div class="settingsRow" style="border-top:1px solid rgba(255,255,255,.08);padding-top:18px;">
+          <div class="settingsLabel">
+            <button class="settingsIconBtn" id="toggleMasterBtn" title="Toggle all sound">🔊</button>
+            <span>Master</span>
+            <span class="settingsValue" id="valMaster">55%</span>
+          </div>
+          <input type="range" class="settingsSlider" id="sliderMaster" min="0" max="100" value="55" step="1">
+        </div>
+
       </div>
     </div>
   </div>
@@ -4798,24 +4897,75 @@
     let musicNodes = [];
     let musicScheduled = false;
 
+    // Volume levels (0–1), loaded from localStorage
+    const vol = (() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('spaceMinerAudio') || '{}');
+        return {
+          master:   saved.master   ?? 0.55,
+          music:    saved.music    ?? 0.38,
+          sfx:      saved.sfx      ?? 0.70,
+          musicOn:  saved.musicOn  ?? false,
+          sfxOn:    saved.sfxOn    ?? true,
+          masterOn: saved.masterOn ?? true,
+        };
+      } catch(e) { return { master:0.55, music:0.38, sfx:0.70, musicOn:false }; }
+    })();
+
+    function saveVol() {
+      try { localStorage.setItem('spaceMinerAudio', JSON.stringify(vol)); } catch(e){}
+    }
+
     function getCtx() {
       if (!ctx) {
         ctx = new (window.AudioContext || window.webkitAudioContext)();
         masterGain = ctx.createGain();
-        masterGain.gain.value = 0.55;
+        masterGain.gain.value = vol.master;
         masterGain.connect(ctx.destination);
 
         musicGain = ctx.createGain();
-        musicGain.gain.value = 0.38;
+        musicGain.gain.value = vol.music;
         musicGain.connect(masterGain);
 
         sfxGain = ctx.createGain();
-        sfxGain.gain.value = 0.7;
+        sfxGain.gain.value = vol.sfx;
         sfxGain.connect(masterGain);
       }
       if (ctx.state === 'suspended') ctx.resume();
       return ctx;
     }
+
+    function setMasterVolume(v) {
+      vol.master = v;
+      if (masterGain) masterGain.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
+      saveVol();
+    }
+    function setMusicVolume(v) {
+      vol.music = v;
+      if (musicGain) musicGain.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
+      saveVol();
+    }
+    function setSfxVolume(v) {
+      vol.sfx = v;
+      if (sfxGain) sfxGain.gain.setTargetAtTime(v, ctx.currentTime, 0.05);
+      saveVol();
+    }
+    function setMusicOn(on) {
+      vol.musicOn = on;
+      saveVol();
+    }
+    function toggleSfx() {
+      vol.sfxOn = !vol.sfxOn;
+      if (sfxGain) sfxGain.gain.setTargetAtTime(vol.sfxOn ? vol.sfx : 0, ctx.currentTime, 0.05);
+      saveVol();
+    }
+    function toggleMaster() {
+      vol.masterOn = !vol.masterOn;
+      if (masterGain) masterGain.gain.setTargetAtTime(vol.masterOn ? vol.master : 0, ctx.currentTime, 0.05);
+      saveVol();
+    }
+
+    function getVol() { return vol; }
 
     // ── Utility ──────────────────────────────────────────────────────────────
     function osc(type, freq, startT, endT, gainVal, gainEnd, dest) {
@@ -4847,6 +4997,7 @@
 
     // ── SFX: UI Click ─────────────────────────────────────────────────────────
     function sfxClick() {
+      if (!vol.sfxOn || !vol.masterOn) return;
       const ac = getCtx();
       const t = ac.currentTime;
       osc('sine', 820, t, t + 0.06, 0.12, 0.001);
@@ -4981,32 +5132,85 @@
     function toggleMusic() {
       if (musicPlaying) {
         stopMusic();
+        setMusicOn(false);
       } else {
         startMusic();
+        setMusicOn(true);
       }
     }
 
     function updateMusicBtn() {
-      const btn = document.getElementById('musicToggleBtn');
-      if (!btn) return;
-      if (musicPlaying) {
-        btn.textContent = '🔊';
-        btn.classList.add('playing');
-        btn.title = 'Music: On';
-      } else {
-        btn.textContent = '🔇';
-        btn.classList.remove('playing');
-        btn.title = 'Music: Off';
-      }
+      // Settings modal handles UI — see updateSettingsMusicToggle()
     }
 
-    return { sfxClick, toggleMusic, startMusic, stopMusic, updateMusicBtn };
+    return { sfxClick, toggleMusic, toggleSfx, toggleMaster, startMusic, stopMusic, updateMusicBtn, setMasterVolume, setMusicVolume, setSfxVolume, setMusicOn, getVol };
   })();
 
-  // Wire up music button
-  document.getElementById('musicToggleBtn').addEventListener('click', () => {
-    Audio.toggleMusic();
+  // ── Settings Modal ─────────────────────────────────────────────────────────
+  function el2(id){ return document.getElementById(id); }
+
+  function syncSettingsUI() {
+    const v = Audio.getVol();
+    el2('sliderMusic').value  = Math.round(v.music  * 100);
+    el2('sliderSfx').value    = Math.round(v.sfx    * 100);
+    el2('sliderMaster').value = Math.round(v.master * 100);
+    el2('valMusic').textContent  = Math.round(v.music  * 100) + '%';
+    el2('valSfx').textContent    = Math.round(v.sfx    * 100) + '%';
+    el2('valMaster').textContent = Math.round(v.master * 100) + '%';
+    el2('toggleMusicBtn').classList.toggle('muted',  !v.musicOn);
+    el2('toggleSfxBtn').classList.toggle('muted',    !v.sfxOn);
+    el2('toggleMasterBtn').classList.toggle('muted', !v.masterOn);
+    el2('sliderMusic').classList.toggle('dimmed',  !v.musicOn);
+    el2('sliderSfx').classList.toggle('dimmed',    !v.sfxOn);
+    el2('sliderMaster').classList.toggle('dimmed', !v.masterOn);
+  }
+
+  function openSettings() {
+    syncSettingsUI();
+    el2('settingsBackdrop').classList.add('show');
+  }
+  function closeSettings() {
+    el2('settingsBackdrop').classList.remove('show');
+  }
+
+  el2('openSettingsBtn').addEventListener('click', openSettings);
+  el2('closeSettingsBtn').addEventListener('click', closeSettings);
+  el2('settingsBackdrop').addEventListener('click', (e) => {
+    if (e.target === el2('settingsBackdrop')) closeSettings();
   });
+
+  el2('toggleMusicBtn').addEventListener('click', () => {
+    Audio.toggleMusic();
+    syncSettingsUI();
+  });
+  el2('toggleSfxBtn').addEventListener('click', () => {
+    Audio.toggleSfx();
+    syncSettingsUI();
+  });
+  el2('toggleMasterBtn').addEventListener('click', () => {
+    Audio.toggleMaster();
+    syncSettingsUI();
+  });
+
+  el2('sliderMusic').addEventListener('input', (e) => {
+    Audio.setMusicVolume(e.target.value / 100);
+    el2('valMusic').textContent = e.target.value + '%';
+  });
+  el2('sliderSfx').addEventListener('input', (e) => {
+    Audio.setSfxVolume(e.target.value / 100);
+    el2('valSfx').textContent = e.target.value + '%';
+  });
+  el2('sliderMaster').addEventListener('input', (e) => {
+    Audio.setMasterVolume(e.target.value / 100);
+    el2('valMaster').textContent = e.target.value + '%';
+  });
+
+  // Auto-restore music if it was on last session
+  if (Audio.getVol().musicOn) {
+    // Defer until first user interaction (browser policy)
+    const resumeMusic = () => { Audio.startMusic(); document.removeEventListener('pointerdown', resumeMusic); };
+    document.addEventListener('pointerdown', resumeMusic, { once: true });
+  }
 
   // Wire UI click sounds to all buttons (delegated)
   document.addEventListener('pointerdown', (e) => {
