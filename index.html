@@ -1586,10 +1586,49 @@
         <button class="btn secondary codexTabBtn active" id="profileTabAch"   style="font-size:12px;padding:5px 12px;border-radius:10px;">🏅 Achievements</button>
         <button class="btn secondary codexTabBtn"        id="profileTabStats" style="font-size:12px;padding:5px 12px;border-radius:10px;">📊 Stats</button>
         <button class="btn secondary codexTabBtn"        id="profileTabRanks" style="font-size:12px;padding:5px 12px;border-radius:10px;">⭐ Rank History</button>
+        <button class="btn secondary codexTabBtn"        id="profileTabCloud" style="font-size:12px;padding:5px 12px;border-radius:10px;">☁️ Cloud</button>
       </div>
       <div class="modalBody" id="profileAchPanel"><div id="profileAchGrid"></div></div>
       <div class="modalBody" id="profileStatsPanel" style="display:none;"><div id="profileStatsGrid"></div></div>
       <div class="modalBody" id="profileRanksPanel" style="display:none;"><div id="profileRanksGrid"></div></div>
+      <div class="modalBody" id="profileCloudPanel" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:8px;">
+
+          <!-- Credentials -->
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(102,163,255,.06);border:1px solid rgba(102,163,255,.15);">
+            <div style="font-size:12px;font-weight:900;margin-bottom:10px;">☁️ Cloud Credentials</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <input id="cloudUsernameInput" placeholder="Username (same as Leaderboard)"
+                style="font-size:13px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--fg);outline:none;width:100%;box-sizing:border-box;">
+              <input id="cloudPinInput" type="password" placeholder="PIN (min. 4 chars)"
+                style="font-size:13px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--fg);outline:none;width:100%;box-sizing:border-box;">
+            </div>
+            <div id="cloudStatus" style="font-size:11px;color:var(--muted);margin-top:8px;min-height:16px;"></div>
+          </div>
+
+          <!-- Save -->
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+            <div style="font-size:12px;font-weight:900;margin-bottom:6px;">💾 Save to Cloud</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Overwrites any existing save for this username (PIN required).</div>
+            <button class="btn good" id="cloudSaveBtn" style="width:100%;padding:10px;font-size:13px;">Save Current Game</button>
+          </div>
+
+          <!-- Load -->
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);">
+            <div style="font-size:12px;font-weight:900;margin-bottom:6px;">📥 Load from Cloud</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Replaces your current local game with the cloud save. <b>Cannot be undone.</b></div>
+            <button class="btn secondary" id="cloudLoadBtn" style="width:100%;padding:10px;font-size:13px;">Load Cloud Save</button>
+          </div>
+
+          <!-- Delete -->
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);">
+            <div style="font-size:12px;font-weight:900;color:#ef4444;margin-bottom:6px;">🗑 Delete Cloud Save</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Permanently deletes the cloud save for this username. Local game is unaffected.</div>
+            <button class="btn" id="cloudDeleteBtn" style="width:100%;padding:10px;font-size:13px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ef4444;">Delete Cloud Save</button>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2669,6 +2708,7 @@
       if(!state.rankHistory) state.rankHistory=[];
       state.rankHistory.push({mr:state.minerRank, ts:Date.now()});
       checkAchievements();
+      cloudSilentSave();  // auto-save on rank-up
 
       toast(`Miner Rank Up! (MR ${state.minerRank})`);
       spawnPop(`MR ${state.minerRank}!`, true, 50, 45, miniIconWrap(ICONS.prospect, 20));
@@ -3682,6 +3722,80 @@
     "Prefer": "return=minimal"
   };
 
+  // ═══ Cloud Save ═══════════════════════════════════════════════════════
+  async function cloudSave(username, pin){
+    const pin_hash = await hashPin(pin);
+    const state_json = JSON.stringify(state);
+    try {
+      // Try insert first
+      const resIns = await fetch(`${SB_URL}/rest/v1/game_saves`, {
+        method: "POST",
+        headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify({ username, pin_hash, state_json, updated_at: new Date().toISOString() })
+      });
+      if(resIns.status === 201 || resIns.status === 200) return { ok:true, msg:"new" };
+
+      // Username exists — PATCH only if PIN matches
+      const resPatch = await fetch(
+        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
+        {
+          method: "PATCH",
+          headers: { ...sbHeaders, "Prefer": "return=representation" },
+          body: JSON.stringify({ state_json, updated_at: new Date().toISOString() })
+        }
+      );
+      if(!resPatch.ok) throw new Error(await resPatch.text());
+      const patched = await resPatch.json();
+      if(!patched.length) return { ok:false, msg:"wrong_pin" };
+      return { ok:true, msg:"updated" };
+    } catch(e) {
+      console.error("Cloud save error:", e);
+      return { ok:false, msg:"error" };
+    }
+  }
+
+  async function cloudLoad(username, pin){
+    const pin_hash = await hashPin(pin);
+    try {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}&select=state_json,updated_at`,
+        { headers: sbHeaders }
+      );
+      if(!res.ok) throw new Error(await res.text());
+      const rows = await res.json();
+      if(!rows.length) return { ok:false, msg:"wrong_pin" };
+      return { ok:true, state: JSON.parse(rows[0].state_json), updated_at: rows[0].updated_at };
+    } catch(e) {
+      console.error("Cloud load error:", e);
+      return { ok:false, msg:"error" };
+    }
+  }
+
+  async function cloudDelete(username, pin){
+    const pin_hash = await hashPin(pin);
+    try {
+      const res = await fetch(
+        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
+        { method: "DELETE", headers: sbHeaders }
+      );
+      if(!res.ok) throw new Error(await res.text());
+      // Check if anything was actually deleted (wrong pin = 0 rows affected)
+      // Supabase DELETE returns 204 regardless, so we verify by trying to fetch
+      const check = await fetch(
+        `${SB_URL}/rest/v1/game_saves?username=eq.${encodeURIComponent(username)}&select=username`,
+        { headers: sbHeaders }
+      );
+      const remaining = await check.json();
+      // If row still exists, PIN was wrong (DELETE filtered it out)
+      if(remaining.length > 0) return { ok:false, msg:"wrong_pin" };
+      return { ok:true };
+    } catch(e) {
+      console.error("Cloud delete error:", e);
+      return { ok:false, msg:"error" };
+    }
+  }
+
+
   async function lbFetch(){
     try {
       const res = await fetch(
@@ -3840,8 +3954,22 @@
     await lbUpsert(username, pin);
   }
 
-  setInterval(lbSilentSync, 3 * 60 * 1000);
-  document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="hidden") lbSilentSync(); });
+  // ── Auto Cloud Save ──────────────────────────────────────────────────────
+  async function cloudSilentSave(){
+    const username = localStorage.getItem("spaceminer_username") || state?.playerName;
+    const pin      = localStorage.getItem("spaceminer_pin");
+    if(!username || !pin) return;  // only if previously authenticated
+    await cloudSave(username, pin);
+  }
+
+  setInterval(lbSilentSync, 3 * 60 * 1000);          // LB sync every 3 min
+  setInterval(cloudSilentSave, 3 * 60 * 1000);        // Cloud save every 3 min
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.visibilityState === "hidden"){
+      lbSilentSync();
+      cloudSilentSave();
+    }
+  });
   function openQuests(){
     renderQuestModal();
     questBackdrop.classList.add("show");
@@ -5533,6 +5661,121 @@
     }
   }
 
+
+  function initCloudPanel(){
+    // Pre-fill username from profile or localStorage
+    const userInp = document.getElementById("cloudUsernameInput");
+    const pinInp  = document.getElementById("cloudPinInput");
+    const status  = document.getElementById("cloudStatus");
+    if(!userInp) return;
+
+    const savedUser = state.playerName || localStorage.getItem("spaceminer_username") || "";
+    const savedPin  = localStorage.getItem("spaceminer_pin") || "";
+    if(userInp && !userInp.value) userInp.value = savedUser;
+    if(pinInp  && !pinInp.value && savedPin) pinInp.value = "••••";
+
+    function getCredentials(){
+      const username = userInp.value.trim();
+      const storedPin = localStorage.getItem("spaceminer_pin") || "";
+      const pinRaw = pinInp.value.trim();
+      const pin = (pinRaw === "••••" && storedPin) ? storedPin : pinRaw;
+      return { username, pin };
+    }
+
+    function setStatus(msg, color="var(--muted)"){
+      if(status){ status.textContent = msg; status.style.color = color; }
+    }
+
+    function setBusy(busy){
+      ["cloudSaveBtn","cloudLoadBtn","cloudDeleteBtn"].forEach(id=>{
+        const b = document.getElementById(id);
+        if(b) b.disabled = busy;
+      });
+    }
+
+    // Save button
+    const saveBtn = document.getElementById("cloudSaveBtn");
+    if(saveBtn && !saveBtn._wired){
+      saveBtn._wired = true;
+      saveBtn.addEventListener("click", async ()=>{
+        const { username, pin } = getCredentials();
+        if(!username || username.length < 2) return setStatus("⚠️ Username mind. 2 Zeichen.", "var(--danger)");
+        if(!pin || pin.length < 4) return setStatus("⚠️ PIN mind. 4 Zeichen.", "var(--danger)");
+        setBusy(true); setStatus("Saving…");
+        const r = await cloudSave(username, pin);
+        setBusy(false);
+        if(r.ok){
+          localStorage.setItem("spaceminer_username", username);
+          localStorage.setItem("spaceminer_pin", pin);
+          if(state.playerName !== username){ state.playerName = username; save(); }
+          pinInp.value = "••••";
+          setStatus(`✓ ${r.msg==="new"?"Cloud save created!":"Cloud save updated!"} (${new Date().toLocaleTimeString()})`, "var(--good)");
+        } else if(r.msg === "wrong_pin"){
+          setStatus("⚠️ Falscher PIN für diesen Username.", "var(--danger)");
+        } else {
+          setStatus("⚠️ Fehler — Verbindung prüfen.", "var(--danger)");
+        }
+      });
+    }
+
+    // Load button
+    const loadBtn = document.getElementById("cloudLoadBtn");
+    if(loadBtn && !loadBtn._wired){
+      loadBtn._wired = true;
+      loadBtn.addEventListener("click", async ()=>{
+        const { username, pin } = getCredentials();
+        if(!username || username.length < 2) return setStatus("⚠️ Username mind. 2 Zeichen.", "var(--danger)");
+        if(!pin || pin.length < 4) return setStatus("⚠️ PIN mind. 4 Zeichen.", "var(--danger)");
+        if(!confirm(`Lokalen Spielstand mit Cloud Save von "${username}" ersetzen? Das kann nicht rückgängig gemacht werden.`)) return;
+        setBusy(true); setStatus("Loading…");
+        const r = await cloudLoad(username, pin);
+        setBusy(false);
+        if(r.ok){
+          const loadedAt = new Date(r.updated_at).toLocaleString();
+          // Merge loaded state
+          state = r.state;
+          applyStats(state);
+          save();
+          localStorage.setItem("spaceminer_username", username);
+          localStorage.setItem("spaceminer_pin", pin);
+          setStatus(`✓ Stand geladen (gespeichert: ${loadedAt})`, "var(--good)");
+          // Refresh UI
+          setTab(state.shopTab || "core");
+          updateHUD();
+          buildTab(state.shopTab || "core");
+          renderProfileCard();
+          toast(`☁️ Cloud Save geladen! MR ${state.minerRank}`);
+        } else if(r.msg === "wrong_pin"){
+          setStatus("⚠️ Falscher PIN oder Username nicht gefunden.", "var(--danger)");
+        } else {
+          setStatus("⚠️ Fehler — Verbindung prüfen.", "var(--danger)");
+        }
+      });
+    }
+
+    // Delete button
+    const delBtn = document.getElementById("cloudDeleteBtn");
+    if(delBtn && !delBtn._wired){
+      delBtn._wired = true;
+      delBtn.addEventListener("click", async ()=>{
+        const { username, pin } = getCredentials();
+        if(!username || username.length < 2) return setStatus("⚠️ Username mind. 2 Zeichen.", "var(--danger)");
+        if(!pin || pin.length < 4) return setStatus("⚠️ PIN mind. 4 Zeichen.", "var(--danger)");
+        if(!confirm(`Cloud Save für "${username}" dauerhaft löschen? Lokales Spiel bleibt erhalten.`)) return;
+        setBusy(true); setStatus("Deleting…");
+        const r = await cloudDelete(username, pin);
+        setBusy(false);
+        if(r.ok){
+          setStatus("✓ Cloud Save gelöscht.", "var(--good)");
+        } else if(r.msg === "wrong_pin"){
+          setStatus("⚠️ Falscher PIN oder kein Save gefunden.", "var(--danger)");
+        } else {
+          setStatus("⚠️ Fehler — Verbindung prüfen.", "var(--danger)");
+        }
+      });
+    }
+  }
+
   function renderAchievements(){
     const grid=document.getElementById("profileAchGrid");
     if(!grid||!state) return;
@@ -6058,29 +6301,35 @@
 
   // ── Profile Modal wiring ─────────────────────────────────────────────────
   (function(){
-    const tAch   = document.getElementById("profileTabAch");
-    const tStats = document.getElementById("profileTabStats");
-    const tRanks = document.getElementById("profileTabRanks");
-    const pAch   = document.getElementById("profileAchPanel");
-    const pStats = document.getElementById("profileStatsPanel");
-    const pRanks = document.getElementById("profileRanksPanel");
+    const tAch    = document.getElementById("profileTabAch");
+    const tStats  = document.getElementById("profileTabStats");
+    const tRanks  = document.getElementById("profileTabRanks");
+    const tCloud  = document.getElementById("profileTabCloud");
+    const pAch    = document.getElementById("profileAchPanel");
+    const pStats  = document.getElementById("profileStatsPanel");
+    const pRanks  = document.getElementById("profileRanksPanel");
+    const pCloud  = document.getElementById("profileCloudPanel");
 
     function showProfileTab(which){
       pAch.style.display   = which==="ach"   ? "" : "none";
       pStats.style.display = which==="stats" ? "" : "none";
       pRanks.style.display = which==="ranks" ? "" : "none";
+      pCloud.style.display = which==="cloud" ? "" : "none";
       tAch.classList.toggle("active",   which==="ach");
       tStats.classList.toggle("active", which==="stats");
       tRanks.classList.toggle("active", which==="ranks");
+      tCloud.classList.toggle("active", which==="cloud");
       renderProfileCard();
       if(which==="ach")   renderAchievements();
       if(which==="stats") renderStats();
       if(which==="ranks") renderRankHistory();
+      if(which==="cloud") initCloudPanel();
     }
 
     if(tAch)   tAch.addEventListener("click",   ()=>showProfileTab("ach"));
     if(tStats) tStats.addEventListener("click", ()=>showProfileTab("stats"));
     if(tRanks) tRanks.addEventListener("click", ()=>showProfileTab("ranks"));
+    if(tCloud) tCloud.addEventListener("click", ()=>showProfileTab("cloud"));
 
     document.getElementById("openProfileBtn").addEventListener("click", ()=>{
       showProfileTab("ach");
