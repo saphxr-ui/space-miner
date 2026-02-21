@@ -1607,7 +1607,8 @@
 
         <!-- Submit score section -->
         <div id="lbSubmitSection" style="margin-bottom:14px;padding:12px;border-radius:16px;background:rgba(102,163,255,.07);border:1px solid rgba(102,163,255,.18);">
-          <div style="font-weight:900;font-size:13px;margin-bottom:8px;">📡 Submit Your Score</div>
+          <div style="font-weight:900;font-size:13px;margin-bottom:4px;">📡 Submit Your Score</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Name is synced with your 👤 Profile</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <input id="lbUsernameInput" type="text" maxlength="20" placeholder="Miner name…"
               style="flex:1;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
@@ -2183,6 +2184,8 @@
       if(!s.unlockedAch) s.unlockedAch=[];
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(s.playerName===undefined) s.playerName="";
+      // Sync from localStorage if profile name not yet set
+      if(!s.playerName){ const lsName=localStorage.getItem("spaceminer_username"); if(lsName) s.playerName=lsName; }
       if(!s.joinDate) s.joinDate=Date.now();
       if(!s.rankHistory) s.rankHistory=[];
       if(!s.smeltInv) s.smeltInv={};
@@ -3766,7 +3769,7 @@
   async function openLeaderboard(){
     el("lbBackdrop").classList.add("show");
     el("lbList").innerHTML = `<div class="muted" style="text-align:center;padding:20px;">Loading…</div>`;
-    const savedUser = localStorage.getItem("spaceminer_username") || "";
+    const savedUser = state.playerName || localStorage.getItem("spaceminer_username") || "";
     const savedPin  = localStorage.getItem("spaceminer_pin") || "";
     el("lbUsernameInput").value = savedUser;
     el("lbPinInput").value = savedPin ? "••••" : "";
@@ -3801,6 +3804,10 @@
     if(result.ok){
       localStorage.setItem("spaceminer_username", username);
       localStorage.setItem("spaceminer_pin", pin);
+      if(state.playerName !== username){ state.playerName = username; save(); }
+      // Sync name to profile card if open
+      const nameInp = document.getElementById("profileNameInput");
+      if(nameInp) nameInp.value = username;
       statusEl.textContent = result.msg==="new" ? `✓ Registriert! MR ${state.minerRank} · ${fmt(state.credits)}c` : `✓ Score updated! MR ${state.minerRank} · ${fmt(state.credits)}c`;
       statusEl.style.color = "var(--good)";
       const rows = await lbFetch();
@@ -3829,7 +3836,7 @@
   async function lbSilentSync(){
     const username = localStorage.getItem("spaceminer_username");
     const pin      = localStorage.getItem("spaceminer_pin");
-    if(!username || !pin) return;
+    if(!username || !pin) return;  // both required — PIN protects the entry
     await lbUpsert(username, pin);
   }
 
@@ -6090,7 +6097,10 @@
     // Name input — live save
     const nameInput = document.getElementById("profileNameInput");
     if(nameInput){
-      nameInput.addEventListener("input", ()=>{ state.playerName=nameInput.value; save(); });
+      nameInput.addEventListener("input", ()=>{
+        state.playerName = nameInput.value;
+        save(); // Profile name only — LB username stays PIN-protected
+      });
       nameInput.addEventListener("keydown", e=>{ if(e.key==="Enter") nameInput.blur(); });
     }
   })()
