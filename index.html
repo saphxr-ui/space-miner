@@ -2498,21 +2498,6 @@
     return gain;
   }
 
-  function tryCargoDrop(){
-    const baseChance = 0.22 * rareBoostMult();
-    if(Math.random() > baseChance) return null;
-
-    const candidates = ORES.filter(o=>oreUnlocked(o.id));
-    let total = 0;
-    for(const o of candidates) total += o.rarity;
-
-    let roll = Math.random() * total;
-    for(const o of candidates){
-      roll -= o.rarity;
-      if(roll <= 0) return o;
-    }
-    return candidates[0] || null;
-  }
 
   function doShot(clientX, clientY){
     questProgressUpdate("shots", 1);
