@@ -2258,6 +2258,7 @@
       if(!s.joinDate) s.joinDate=Date.now();
       if(!s.rankHistory) s.rankHistory=[];
       if(!s.smeltInv) s.smeltInv={};
+      if(!s.smeltSlots) s.smeltSlots=[];
       for(const pid of Object.keys(PLANETS)){
         const pp=s.planets?.[pid]; if(!pp) continue;
         if(pp.minersDeployed===undefined) pp.minersDeployed=0;
@@ -4222,6 +4223,7 @@
     const last = state.lastSeen || now();
     const dt = Math.max(0, (now() - last)/1000);
     state.lastSeen = now();
+    stepSmeltingOffline(Math.min(dt, 43200)); // process offline smelts
     if(dt < 10) return null;
 
     const capped = Math.min(dt, 12*3600);  // cap at 12h
@@ -4495,24 +4497,24 @@
 
   /* ═══ Smelting Recipes ═══ */
   const SMELT_RECIPES = [
-    { id:"steel",     name:"Steel Alloy",    icon:"🔩", unlockSmelter:1,
-      inputs:{iron:8, nickel:4},  output:{id:"steel",    count:1, value:120},
-      desc:"8 Iron + 4 Nickel → Steel (120c)" },
-    { id:"cobalteel", name:"Cobalt Steel",   icon:"💙", unlockSmelter:1,
-      inputs:{iron:6, cobalt:3},  output:{id:"cobalteel",count:1, value:280},
-      desc:"6 Iron + 3 Cobalt → Cobalt Steel (280c)" },
-    { id:"aurite",    name:"Aurite Bar",     icon:"🏅", unlockSmelter:2,
-      inputs:{gold:3, nickel:8},  output:{id:"aurite",   count:1, value:600},
-      desc:"3 Gold + 8 Nickel → Aurite Bar (600c)" },
-    { id:"platalloy", name:"Platinum Alloy", icon:"⚪", unlockSmelter:2,
-      inputs:{platinum:2, cobalt:6}, output:{id:"platalloy",count:1,value:1400},
-      desc:"2 Platinum + 6 Cobalt → Platinum Alloy (1,400c)" },
-    { id:"voidcore",  name:"Void Core",      icon:"🌌", unlockSmelter:3,
-      inputs:{obsidian:4, gold:2, platinum:1}, output:{id:"voidcore",count:1,value:4000},
-      desc:"4 Obsidian + 2 Gold + 1 Platinum → Void Core (4,000c)" },
-    { id:"stardust",  name:"Compressed Stardust", icon:"✨", unlockSmelter:4,
-      inputs:{obsidian:8, platalloy:2}, output:{id:"stardust_bar",count:1,value:12000},
-      desc:"8 Obsidian + 2 Platinum Alloy → Stardust Bar (12,000c)" },
+    { id:"steel",     name:"Steel Alloy",    icon:"🔩", unlockSmelter:1, duration:8,
+      inputs:{iron:8, nickel:4},  output:{id:"steel",    count:1, value:360},
+      desc:"8 Iron + 4 Nickel → Steel (360c)" },
+    { id:"cobalteel", name:"Cobalt Steel",   icon:"💙", unlockSmelter:1, duration:15,
+      inputs:{iron:6, cobalt:3},  output:{id:"cobalteel",count:1, value:490},
+      desc:"6 Iron + 3 Cobalt → Cobalt Steel (490c)" },
+    { id:"aurite",    name:"Aurite Bar",     icon:"🏅", unlockSmelter:2, duration:30,
+      inputs:{gold:3, nickel:8},  output:{id:"aurite",   count:1, value:950},
+      desc:"3 Gold + 8 Nickel → Aurite Bar (950c)" },
+    { id:"platalloy", name:"Platinum Alloy", icon:"⚪", unlockSmelter:2, duration:60,
+      inputs:{platinum:2, cobalt:6}, output:{id:"platalloy",count:1,value:1800},
+      desc:"2 Platinum + 6 Cobalt → Platinum Alloy (1,800c)" },
+    { id:"voidcore",  name:"Void Core",      icon:"🌌", unlockSmelter:3, duration:120,
+      inputs:{obsidian:4, gold:2, platinum:1}, output:{id:"voidcore",count:1,value:7500},
+      desc:"4 Obsidian + 2 Gold + 1 Platinum → Void Core (7,500c)" },
+    { id:"stardust",  name:"Compressed Stardust", icon:"✨", unlockSmelter:4, duration:240,
+      inputs:{obsidian:8, platalloy:2}, output:{id:"stardust_bar",count:1,value:28000},
+      desc:"8 Obsidian + 2 Platinum Alloy → Stardust Bar (28,000c)" },
   ];
 
   /* Smelt inventory: holds processed alloys (separate from ore cargo) */
@@ -4525,18 +4527,165 @@
     return true;
   }
 
+  // ── Smelting System ─────────────────────────────────────────────────
+  const SMELT_QUEUE_CAP = 20;  // max queued per recipe
+  const SMELT_SLOT_BASE = 1;   // slots at smelter lv1
+
+  function smeltSlotCount(){
+    const lvl = state.station?.smelter||0;
+    return Math.min(lvl, 4); // 1 slot at lv1, +1 per level up to 4
+  }
+
+  function smeltSpeedMult(){
+    const lvl = state.station?.smelter||0;
+    const skillBoost = skillBonus("smeltSpeed");
+    const stationBoost = lvl >= 3 ? 0.25 : 0;
+    const stationBoost2 = lvl >= 4 ? 0.25 : 0; // cumulative
+    return 1 + skillBoost + stationBoost + stationBoost2;
+  }
+
+  function smeltDuration(recipe){
+    return Math.max(1, Math.round(recipe.duration / smeltSpeedMult()));
+  }
+
   function doSmelt(recipe){
-    if(!canSmelt(recipe, state)) return toast("Not enough ores to smelt.");
+    // Count total queued for this recipe across all slots
+    const totalQueued = (state.smeltSlots||[]).reduce((t, slot) => {
+      if(!slot) return t;
+      const active = slot.recipeId === recipe.id ? 1 : 0;
+      const inQ = (slot.queue||[]).filter(id => id === recipe.id).length;
+      return t + active + inQ;
+    }, 0);
+    if(totalQueued >= SMELT_QUEUE_CAP)
+      return toast(`Queue full! Max ${SMELT_QUEUE_CAP} ${recipe.name} at a time.`);
+    if(!canSmelt(recipe, state))
+      return toast("Not enough ores to smelt.");
+
+    // Consume ores immediately
     for(const [oreId, need] of Object.entries(recipe.inputs)){
       state.cargo[oreId] = (state.cargo[oreId]||0) - need;
     }
-    const inv = smeltInventory(state);
-    inv[recipe.id] = (inv[recipe.id]||0) + recipe.output.count;
     if(state._stats) state._stats.smeltCount=(state._stats.smeltCount||0)+1;
-    toast(`Smelted: ${recipe.output.count}× ${recipe.name}!`);
+
+    // Find a free slot or queue it
+    if(!state.smeltSlots) state.smeltSlots = [];
+    const slots = smeltSlotCount();
+    let queued = false;
+
+    // Try to start in a free slot
+    for(let i = 0; i < slots; i++){
+      if(!state.smeltSlots[i]){
+        state.smeltSlots[i] = { recipeId: recipe.id, startedAt: now(), duration: smeltDuration(recipe) * 1000, queue: [] };
+        queued = true; break;
+      }
+    }
+    // Otherwise push into shortest queue of any active slot
+    if(!queued){
+      let minIdx = 0, minLen = Infinity;
+      for(let i = 0; i < slots; i++){
+        if(state.smeltSlots[i]){
+          const qlen = (state.smeltSlots[i].queue||[]).length;
+          if(qlen < minLen){ minLen = qlen; minIdx = i; }
+        }
+      }
+      if(!state.smeltSlots[minIdx]) state.smeltSlots[minIdx] = { recipeId: recipe.id, startedAt: now(), duration: smeltDuration(recipe)*1000, queue: [] };
+      else state.smeltSlots[minIdx].queue = [...(state.smeltSlots[minIdx].queue||[]), recipe.id];
+    }
+
+    checkAchievements();
     setCargoDirtyAll();
     updateHUD();
-    checkAchievements();
+  }
+
+  function cancelSmelt(slotIdx, fromQueue){
+    const slot = (state.smeltSlots||[])[slotIdx];
+    if(!slot) return;
+    let recipeId;
+    if(fromQueue !== undefined){
+      // Cancel one item from queue
+      recipeId = slot.queue[fromQueue];
+      slot.queue.splice(fromQueue, 1);
+    } else {
+      // Cancel active smelt - remove and promote queue
+      recipeId = slot.recipeId;
+      const next = slot.queue && slot.queue.length > 0 ? slot.queue.shift() : null;
+      if(next){
+        state.smeltSlots[slotIdx] = { recipeId: next, startedAt: now(), duration: smeltDuration(SMELT_RECIPES.find(r=>r.id===next))*1000, queue: slot.queue };
+      } else {
+        state.smeltSlots[slotIdx] = null;
+      }
+    }
+    // Refund ores
+    const recipe = SMELT_RECIPES.find(r=>r.id===recipeId);
+    if(recipe){
+      for(const [oreId, need] of Object.entries(recipe.inputs)){
+        state.cargo[oreId] = (state.cargo[oreId]||0) + need;
+      }
+      toast(`Cancelled: ${recipe.name} — ores refunded.`);
+    }
+    setCargoDirtyAll(); updateHUD();
+  }
+
+  function stepSmelting(dt){
+    if(!state.smeltSlots) return;
+    const t = now();
+    let changed = false;
+    for(let i = 0; i < state.smeltSlots.length; i++){
+      const slot = state.smeltSlots[i];
+      if(!slot) continue;
+      const elapsed = t - slot.startedAt;
+      if(elapsed >= slot.duration){
+        // Complete this smelt - add to inventory if cargo not full, else hold
+        const recipe = SMELT_RECIPES.find(r=>r.id===slot.recipeId);
+        if(recipe){
+          const inv = smeltInventory(state);
+          inv[recipe.id] = (inv[recipe.id]||0) + recipe.output.count;
+          changed = true;
+        }
+        // Promote next in queue
+        const next = slot.queue && slot.queue.length > 0 ? slot.queue.shift() : null;
+        if(next){
+          const nr = SMELT_RECIPES.find(r=>r.id===next);
+          state.smeltSlots[i] = { recipeId: next, startedAt: t, duration: smeltDuration(nr)*1000, queue: slot.queue };
+        } else {
+          state.smeltSlots[i] = null;
+        }
+      }
+    }
+    if(changed){ setCargoDirtyAll(); checkAchievements(); }
+  }
+
+  function stepSmeltingOffline(dtSeconds){
+    if(!state.smeltSlots) return;
+    let remaining = dtSeconds * 1000; // work in ms
+    let iterations = 0;
+    while(remaining > 0 && iterations < 10000){
+      iterations++;
+      let anyActive = false;
+      for(let i = 0; i < state.smeltSlots.length; i++){
+        const slot = state.smeltSlots[i];
+        if(!slot) continue;
+        anyActive = true;
+        const elapsed = now() - slot.startedAt;
+        const timeLeft = slot.duration - elapsed;
+        if(remaining >= timeLeft){
+          // Complete it
+          const recipe = SMELT_RECIPES.find(r=>r.id===slot.recipeId);
+          if(recipe){ const inv=smeltInventory(state); inv[recipe.id]=(inv[recipe.id]||0)+recipe.output.count; }
+          remaining -= timeLeft;
+          const next = slot.queue && slot.queue.length > 0 ? slot.queue.shift() : null;
+          if(next){
+            const nr = SMELT_RECIPES.find(r=>r.id===next);
+            state.smeltSlots[i] = { recipeId: next, startedAt: now() - remaining, duration: smeltDuration(nr)*1000, queue: slot.queue };
+          } else {
+            state.smeltSlots[i] = null;
+          }
+        } else {
+          break; // Not done yet
+        }
+      }
+      if(!anyActive) break;
+    }
   }
 
   function sellAlloys(){
@@ -4558,6 +4707,27 @@
     save();
   }
 
+
+  function buildTabPreserveAccordions(tab){
+    // Save open card IDs on window so they survive DOM rebuild + async renderCargoPanelsIfDirty
+    window._openAccordions = new Set();
+    document.querySelectorAll('.uCard.collapsible:not(.collapsed)').forEach(el => {
+      if(el.dataset.upg) window._openAccordions.add(el.dataset.upg);
+    });
+    buildTab(tab);
+    // restoreAccordions() is called at the end of renderCargoPanelsIfDirty
+  }
+
+  function restoreAccordions(){
+    if(!window._openAccordions || window._openAccordions.size === 0) return;
+    document.querySelectorAll('.uCard.collapsible.collapsed').forEach(el => {
+      if(el.dataset.upg && window._openAccordions.has(el.dataset.upg)){
+        el.classList.remove('collapsed');
+      }
+    });
+    window._openAccordions = new Set();
+  }
+
   function buyStationModule(moduleId){
     const mod = STATION_MODULES.find(m=>m.id===moduleId);
     if(!mod) return;
@@ -4574,7 +4744,7 @@
     checkAchievements();
     setCargoDirtyAll();
     updateHUD();
-    buildTab("cargo");
+    buildTabPreserveAccordions("cargo");
   }
 
   function buyMiner(planetId){
@@ -4592,7 +4762,7 @@
     toast(`Miner deployed on ${PLANETS[pid]?.name||pid}! (${pp.minersDeployed}/${pp.maxMiners})`);
     applyStats(state);
     setCargoDirtyAll();
-    buildTab("cargo");
+    buildTabPreserveAccordions("cargo");
     updateHUD();
   }
 
@@ -5203,7 +5373,7 @@
             </div>
           </div>
           ${deployed < maxM
-            ? `<button class="btn good" style="padding:6px 14px;font-size:12px;white-space:nowrap;"
+            ? `<button class="btn ${state.credits>=(pp.costMiner||200)?'good':''}" style="padding:6px 14px;font-size:12px;white-space:nowrap;"
                 data-act="buyMiner" data-planet="${pid}">
                 +1 Miner · ${fmt(pp.costMiner||200)}c
               </button>`
@@ -5220,7 +5390,7 @@
   }
 
 
-  function smelterPanelHTML(){
+    function smelterPanelHTML(){
     const smelterLvl = state.station?.smelter||0;
     if(smelterLvl===0){
       return `<div style="text-align:center;padding:20px;color:var(--muted);">
@@ -5229,13 +5399,67 @@
         <div style="font-size:12px;margin-top:6px;">Upgrade the Ore Smelter in Station Modules to unlock recipes.</div>
       </div>`;
     }
+
     const inv = smeltInventory(state);
-    const available = SMELT_RECIPES.filter(r=>r.unlockSmelter<=smelterLvl);
-    const totalAlloysValue = SMELT_RECIPES.reduce((t,r)=>t+(inv[r.id]||0)*r.output.value,0);
+    const slots = smeltSlotCount();
+    const speedMult = smeltSpeedMult();
+    const t = now();
     let html = "";
 
-    // Alloy inventory
-    if(totalAlloysValue>0){
+    // ── Active Smelt Slots ──────────────────────────────────────────
+    html += `<div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:8px;">
+        🔥 SMELTER · ${slots} SLOT${slots>1?"S":""} · ${speedMult.toFixed(2)}× SPEED
+      </div>`;
+
+    for(let i = 0; i < slots; i++){
+      const slot = (state.smeltSlots||[])[i];
+      if(!slot){
+        html += `<div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);
+          border:1px dashed rgba(255,255,255,.08);color:var(--muted);font-size:12px;margin-bottom:6px;text-align:center;">
+          Slot ${i+1} — idle
+        </div>`;
+      } else {
+        const recipe = SMELT_RECIPES.find(r=>r.id===slot.recipeId);
+        const elapsed = Math.min(t - slot.startedAt, slot.duration);
+        const pct = Math.round((elapsed / slot.duration)*100);
+        const secLeft = Math.max(0, Math.ceil((slot.duration - elapsed)/1000));
+        const timeStr = secLeft >= 60 ? `${Math.floor(secLeft/60)}m ${secLeft%60}s` : `${secLeft}s`;
+        const queuedIds = slot.queue||[];
+
+        html += `<div style="padding:10px 12px;border-radius:12px;background:rgba(99,102,241,.08);
+          border:1px solid rgba(99,102,241,.25);margin-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span style="font-size:16px;">${recipe?.icon||"🔩"}</span>
+            <span style="flex:1;font-size:12px;font-weight:700;">${recipe?.name||slot.recipeId}</span>
+            <span id="smeltTimer_${i}" style="font-size:11px;color:var(--muted);">${timeStr}</span>
+            <button data-act="cancelSmelt" data-slot="${i}" style="padding:2px 8px;border-radius:8px;
+              border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.1);
+              color:#f87171;font-size:10px;cursor:pointer;">✕</button>
+          </div>
+          <div style="height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;">
+            <div id="smeltBar_${i}" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6366f1,#a5b4fc);
+              border-radius:3px;transition:width .08s linear;"></div>
+          </div>
+          ${queuedIds.length > 0 ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+            ${queuedIds.map((qid,qi)=>{
+              const qr = SMELT_RECIPES.find(r=>r.id===qid);
+              return `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:8px;
+                background:rgba(255,255,255,.06);font-size:10px;color:var(--muted);">
+                ${qr?.icon||""}${qr?.name||qid}
+                <button data-act="cancelSmeltQueue" data-slot="${i}" data-qi="${qi}"
+                  style="background:none;border:none;cursor:pointer;color:rgba(248,113,113,.7);font-size:10px;padding:0;line-height:1;">✕</button>
+              </span>`;
+            }).join("")}
+          </div>` : ""}
+        </div>`;
+      }
+    }
+    html += `</div>`;
+
+    // ── Alloy Inventory ─────────────────────────────────────────────
+    const totalAlloysValue = SMELT_RECIPES.reduce((t,r)=>t+(inv[r.id]||0)*r.output.value,0);
+    if(totalAlloysValue > 0){
       const invRows = SMELT_RECIPES.filter(r=>(inv[r.id]||0)>0).map(r=>
         `<div style="display:flex;gap:8px;align-items:center;padding:3px 8px;font-size:12px;">
           <span>${r.icon}</span><span style="flex:1;">${r.name}</span>
@@ -5244,36 +5468,51 @@
         </div>`).join("");
       html += `<div style="border-radius:12px;background:rgba(50,213,131,.06);border:1px solid rgba(50,213,131,.18);margin-bottom:12px;overflow:hidden;">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(50,213,131,.12);">
-          <span style="font-size:12px;font-weight:700;color:#32d583;">Alloy Inventory · ${fmt(totalAlloysValue)}c</span>
-          <button class="btn good" style="padding:5px 14px;font-size:12px;" data-act="sellAlloys">Sell All</button>
+          <span style="font-size:11px;font-weight:700;color:#32d583;">ALLOY INVENTORY</span>
+          <button data-act="sellAlloys" style="padding:4px 12px;border-radius:8px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,#32d583,#059669);color:#000;font-size:11px;font-weight:800;">
+            Sell All · ${fmt(totalAlloysValue)}c
+          </button>
         </div>
         ${invRows}
       </div>`;
     }
 
-    // Recipes
-    html += `<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;">Recipes (Smelter Lv ${smelterLvl})</div>`;
+    // ── Recipe List ─────────────────────────────────────────────────
+    const available = SMELT_RECIPES.filter(r=>r.unlockSmelter<=smelterLvl);
+    html += `<div style="font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:8px;">RECIPES</div>`;
     for(const r of available){
-      const can = canSmelt(r, state);
-      const inputChips = Object.entries(r.inputs).map(([oreId,need])=>{
-        const have=state.cargo[oreId]||0, ok=have>=need;
-        return `<span style="font-size:11px;padding:2px 7px;border-radius:6px;
-          background:${ok?"rgba(50,213,131,.12)":"rgba(239,68,68,.12)"};
-          color:${ok?"#32d583":"#ef4444"};border:1px solid ${ok?"rgba(50,213,131,.2)":"rgba(239,68,68,.2)"};">
-          ${oreId}: ${have}/${need}
+      const canDo = canSmelt(r, state);
+      const totalQueued = (state.smeltSlots||[]).reduce((t,slot)=>{
+        if(!slot) return t;
+        return t + (slot.recipeId===r.id?1:0) + (slot.queue||[]).filter(id=>id===r.id).length;
+      }, 0);
+      const atCap = totalQueued >= SMELT_QUEUE_CAP;
+      const dur = smeltDuration(r);
+      const durStr = dur >= 60 ? `${Math.floor(dur/60)}m ${dur%60}s` : `${dur}s`;
+      const inputChips = Object.entries(r.inputs).map(([id,need])=>{
+        const have = state.cargo[id]||0;
+        const ok = have >= need;
+        return `<span style="padding:2px 8px;border-radius:8px;font-size:11px;
+          background:${ok?"rgba(50,213,131,.12)":"rgba(248,113,113,.12)"};
+          color:${ok?"#32d583":"#f87171"};">
+          ${ORES.find(o=>o.id===id)?.name||id} ${have}/${need}
         </span>`;
-      }).join(" ");
-      html += `
-      <div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);margin-bottom:8px;">
+      }).join("");
+
+      html += `<div style="padding:10px 12px;border-radius:12px;margin-bottom:6px;
+        background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:20px;">${r.icon}</span>
+          <span style="font-size:18px;">${r.icon}</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:900;">${r.name}</div>
-            <div style="font-size:11px;color:#a5d4ff;">${fmt(r.output.value)}c per alloy · ${r.desc}</div>
+            <div style="font-size:12px;font-weight:700;">${r.name}</div>
+            <div style="font-size:10px;color:var(--muted);">⏱ ${durStr} · ${fmt(r.output.value)}c · Queue: ${totalQueued}/${SMELT_QUEUE_CAP}</div>
           </div>
-          <button class="btn ${can?"good":"secondary"}" style="padding:6px 14px;font-size:12px;"
-            ${can?"":"disabled"} data-act="smelt" data-recipe="${r.id}">
-            Smelt ${can?"":"🔒"}
+          <button data-act="smelt" data-recipe="${r.id}"
+            ${(!canDo||atCap)?"disabled":""}
+            class="btn ${(!canDo||atCap)?'':'good'}"
+            style="padding:6px 14px;font-size:12px;flex-shrink:0;">
+            ${atCap?"Full":"Smelt"}
           </button>
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;">${inputChips}</div>
@@ -5282,6 +5521,22 @@
     return html;
   }
 
+  function tickSmeltUI(){
+    const t = now();
+    const slots = state.smeltSlots || [];
+    for(let i = 0; i < slots.length; i++){
+      const slot = slots[i];
+      const barEl = document.getElementById('smeltBar_' + i);
+      const timerEl = document.getElementById('smeltTimer_' + i);
+      if(!barEl || !timerEl || !slot) continue;
+      const elapsed = Math.min(t - slot.startedAt, slot.duration);
+      const pct = Math.round((elapsed / slot.duration) * 100);
+      const secLeft = Math.max(0, Math.ceil((slot.duration - elapsed) / 1000));
+      const timeStr = secLeft >= 60 ? `${Math.floor(secLeft/60)}m ${secLeft%60}s` : `${secLeft}s`;
+      barEl.style.width = pct + '%';
+      timerEl.textContent = timeStr;
+    }
+  }
 
   function recipePanelHTML(){
     // Legacy redirect - no longer used standalone
@@ -5365,6 +5620,7 @@
       dirty.trade = false;
       wireTrade(tradeNode?.bodyEl);
     }
+    restoreAccordions();
   }
 
   function wireTrade(el2){
@@ -5513,6 +5769,19 @@
         return;
       }
 
+      if(act === "cancelSmelt"){
+        const slotIdx = parseInt(t.getAttribute("data-slot")||"0",10);
+        cancelSmelt(slotIdx);
+        setCargoDirtyAll(); renderCargoPanelsIfDirty(true);
+        return;
+      }
+      if(act === "cancelSmeltQueue"){
+        const slotIdx = parseInt(t.getAttribute("data-slot")||"0",10);
+        const qi = parseInt(t.getAttribute("data-qi")||"0",10);
+        cancelSmelt(slotIdx, qi);
+        setCargoDirtyAll(); renderCargoPanelsIfDirty(true);
+        return;
+      }
       if(act === "smelt"){
         const recipeId = t.getAttribute("data-recipe");
         const recipe = SMELT_RECIPES.find(r=>r.id===recipeId);
@@ -5992,6 +6261,8 @@
       }
 
       stepDroneCharges(dt);
+      stepSmelting(dt);
+      tickSmeltUI();
 
       const sec = Math.floor(t/1000);
       if(sec !== lastSecond){
@@ -5999,6 +6270,7 @@
         state.lastSeen = t;  // update every second so offline gap is accurate
         autoSellOverflowSweep();
         updateTradeTimerTextOnly();
+        if((state.smeltSlots||[]).some(s=>s)) setCargoDirty("station"); // refresh smelter progress bars
         renderCargoPanelsIfDirty(false);
         applyStats(state);
         renderCodexIfDirty();
