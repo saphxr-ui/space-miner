@@ -1591,10 +1591,17 @@
         <button class="btn secondary codexTabBtn"        id="profileTabStats" style="font-size:12px;padding:5px 12px;border-radius:10px;">📊 Stats</button>
         <button class="btn secondary codexTabBtn"        id="profileTabRanks" style="font-size:12px;padding:5px 12px;border-radius:10px;">⭐ Rank History</button>
         <button class="btn secondary codexTabBtn"        id="profileTabCloud" style="font-size:12px;padding:5px 12px;border-radius:10px;">☁️ Cloud</button>
+        <button class="btn secondary codexTabBtn" id="profileTabCos" style="font-size:12px;padding:5px 12px;border-radius:10px;">🎨 Titles</button>
       </div>
       <div class="modalBody" id="profileAchPanel"><div id="profileAchGrid"></div></div>
       <div class="modalBody" id="profileStatsPanel" style="display:none;"><div id="profileStatsGrid"></div></div>
       <div class="modalBody" id="profileRanksPanel" style="display:none;"><div id="profileRanksGrid"></div></div>
+      <div class="modalBody" id="profileCosContent" style="display:none;overflow-y:auto;max-height:65vh;">
+        <div style="padding:14px;">
+          <div style="font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:10px;">SELECT TITLE</div>
+          <div id="profileTitleSelector"></div>
+        </div>
+      </div>
       <div class="modalBody" id="profileCloudPanel" style="display:none;">
         <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:8px;">
 
@@ -1635,7 +1642,6 @@
       </div>
     </div>
   </div>
-
   <!-- ===== Leaderboard Modal ===== -->
   <div class="modalBackdrop" id="lbBackdrop" role="dialog" aria-modal="true" aria-label="Leaderboard">
     <div class="modal" style="width:min(540px,100%);">
@@ -2183,6 +2189,7 @@
 
       cosmetics: {
         droneSkin: "default",
+        activeTitle: "default",
         owned: { default:true, carbon:false, neon:false, solar:false }
       }
     };
@@ -2312,6 +2319,7 @@
         s.cosmetics.owned[k] = !!s.cosmetics.owned[k];
       }
       if(!s.cosmetics.owned.default) s.cosmetics.owned.default = true;
+      if(!s.cosmetics.activeTitle) s.cosmetics.activeTitle = 'default';
       if(!s.cosmetics.owned[s.cosmetics.droneSkin]) s.cosmetics.droneSkin = "default";
 
       s.currentPlanet = s.currentPlanet || "iron";
@@ -4002,10 +4010,14 @@
       if(i===0) rowCls += " top1";
       else if(i===1) rowCls += " top2";
       else if(i===2) rowCls += " top3";
+      const myTitle = isMe ? `<div style="font-size:10px;color:var(--muted);margin-top:1px;">${playerTitle(state)}</div>` : "";
       return `
         <div class="${rowCls}">
           ${lbRankIcon(i)}
-          <div class="lbName">${escapeHtml(row.username)}${isMe?" <span style=\'font-size:10px;color:var(--acc);\'>(you)</span>":""}</div>
+          <div class="lbName">
+            <div>${escapeHtml(row.username)}${isMe?" <span style=\'font-size:10px;color:var(--acc);\'>(you)</span>":""}</div>
+            ${myTitle}
+          </div>
           <div class="lbMR">MR ${row.miner_rank}</div>
           <div class="lbScore">${fmt(row.credits)}c</div>
         </div>`;
@@ -5945,25 +5957,37 @@
   }
 
 
-  function playerTitle(s){
-    const mr = s.minerRank||1;
-    const dust = s.stellarDust||0;
-    const smelt = s._stats?.smeltCount||0;
-    const voidSurges = s._stats?.voidSurges||0;
-    const miners = Object.values(s.planets||{}).reduce((t,p)=>t+(p.minersDeployed||0),0);
-    if(mr>=30)  return "🌌 Void Sovereign";
-    if(dust>=500) return "✨ Stellar Legend";
-    if(voidSurges>=100) return "🔮 Surge Master";
-    if(smelt>=50) return "⚗️ Master Smelter";
-    if(mr>=20)  return "👑 Transcendent Miner";
-    if(mr>=15)  return "🌌 Void Pioneer";
-    if(miners>=10) return "🏗 Mining Tycoon";
-    if(mr>=10)  return "🎖 Veteran Miner";
-    if(dust>0)  return "⭐ Prestige Seeker";
-    if(mr>=5)   return "🪖 Rookie Miner";
-    return "⛏ Asteroid Rookie";
+
+  // ── Player Titles ────────────────────────────────────────────────────
+  const TITLES = [
+    { id:"default",        label:"⛏ Asteroid Rookie",    desc:"Starting title",                    check: s => true },
+    { id:"rookie",         label:"🪖 Rock Breaker",       desc:"Reach Miner Rank 5",                check: s => (s.minerRank||1) >= 5 },
+    { id:"veteran",        label:"🎖 Veteran Miner",      desc:"Reach Miner Rank 10",               check: s => (s.minerRank||1) >= 10 },
+    { id:"vulcan",         label:"🌋 Vulcan Pioneer",     desc:"Unlock Vulcan Core",                check: s => (s.minerRank||1) >= 10 },
+    { id:"drone_cmd",      label:"🤖 Drone Commander",    desc:"Deploy 10 drones total",            check: s => Object.values(s.planets||{}).reduce((t,p)=>t+(p.dronesLvl||0),0) >= 10 },
+    { id:"smelter",        label:"⚗️ Master Smelter",     desc:"Smelt 50 alloys",                   check: s => (s._stats?.smeltCount||0) >= 50 },
+    { id:"void_walker",    label:"🌌 Void Walker",        desc:"Reach Miner Rank 15",               check: s => (s.minerRank||1) >= 15 },
+    { id:"credit_baron",   label:"💰 Credit Baron",       desc:"Earn 1M credits total",             check: s => (s._stats?.totalEarned||0) >= 1000000 },
+    { id:"prestige1",      label:"🏆 Prestige I",         desc:"Prestige once",                     check: s => Object.values(s.prestigeCount||{}).reduce((a,b)=>a+b,0) >= 1 },
+    { id:"prestige3",      label:"💎 Prestige III",       desc:"Prestige 3 times total",            check: s => Object.values(s.prestigeCount||{}).reduce((a,b)=>a+b,0) >= 3 },
+    { id:"void_master",    label:"🔮 Void Master",        desc:"Reach Miner Rank 25",               check: s => (s.minerRank||1) >= 25 },
+    { id:"ascendant",      label:"👑 Ascendant",          desc:"Reach Miner Rank 30",               check: s => (s.minerRank||1) >= 30 },
+  ];
+
+  function unlockedTitles(s){
+    return TITLES.filter(t => t.check(s));
   }
 
+  function activeTitle(s){
+    const id = s.cosmetics?.activeTitle || "default";
+    return TITLES.find(t => t.id === id) || TITLES[0];
+  }
+
+  function playerTitle(s){
+    // Use player's chosen title if unlocked, else auto
+    const chosen = activeTitle(s);
+    return chosen.label;
+  }
   function profileAvatarEmoji(s){
     const mr = s.minerRank||1;
     if(mr>=20) return "🌌";
@@ -5988,8 +6012,50 @@
     if(badgeEl) badgeEl.textContent = `MR ${state.minerRank}`;
     const avatarEl = document.getElementById("profileAvatar");
     if(avatarEl) avatarEl.textContent = profileAvatarEmoji(state);
-  }
 
+    // Render title selector
+    const titleSel = document.getElementById("profileTitleSelector");
+    if(titleSel){
+      const unlocked = unlockedTitles(state);
+      const locked = TITLES.filter(t => !t.check(state));
+      const current = state.cosmetics?.activeTitle || "default";
+      titleSel.innerHTML = "";
+
+      unlocked.forEach(t => {
+        const isActive = t.id === current;
+        const d = document.createElement("div");
+        d.dataset.titleId = t.id;
+        d.style.cssText = "padding:8px 12px;border-radius:12px;cursor:pointer;margin-bottom:6px;display:flex;align-items:center;gap:10px;" +
+          (isActive ? "background:rgba(102,163,255,.15);border:1px solid rgba(102,163,255,.4);" : "background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);");
+        d.innerHTML = `<span style="font-size:15px;flex:1;font-weight:${isActive?700:400};">${t.label}</span>` +
+          (isActive ? `<span style="font-size:10px;color:var(--acc);font-weight:700;">ACTIVE</span>` : "");
+        titleSel.appendChild(d);
+      });
+
+      if(locked.length > 0){
+        const hdr = document.createElement("div");
+        hdr.style.cssText = "font-size:10px;color:var(--muted);margin:10px 0 6px;letter-spacing:.06em;";
+        hdr.textContent = "LOCKED";
+        titleSel.appendChild(hdr);
+        locked.forEach(t => {
+          const d = document.createElement("div");
+          d.style.cssText = "padding:8px 12px;border-radius:12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;opacity:.4;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);";
+          d.innerHTML = `<span style="font-size:15px;flex:1;">${t.label}</span><span style="font-size:10px;color:var(--muted);">${t.desc}</span>`;
+          titleSel.appendChild(d);
+        });
+      }
+
+      titleSel.onclick = (e) => {
+        const opt = e.target.closest("[data-title-id]");
+        if(!opt) return;
+        if(!state.cosmetics) state.cosmetics = {};
+        state.cosmetics.activeTitle = opt.dataset.titleId;
+        save();
+        renderProfileCard();
+        updateHUD();
+      };
+    }
+  }
   function renderRankHistory(){
     const grid = document.getElementById("profileRanksGrid");
     if(!grid||!state) return;
@@ -6811,31 +6877,37 @@
     const tStats  = document.getElementById("profileTabStats");
     const tRanks  = document.getElementById("profileTabRanks");
     const tCloud  = document.getElementById("profileTabCloud");
+    const tCos    = document.getElementById("profileTabCos");
     const pAch    = document.getElementById("profileAchPanel");
     const pStats  = document.getElementById("profileStatsPanel");
     const pRanks  = document.getElementById("profileRanksPanel");
     const pCloud  = document.getElementById("profileCloudPanel");
+    const pCos    = document.getElementById("profileCosContent");
 
     function showProfileTab(which){
       pAch.style.display   = which==="ach"   ? "" : "none";
       pStats.style.display = which==="stats" ? "" : "none";
       pRanks.style.display = which==="ranks" ? "" : "none";
       pCloud.style.display = which==="cloud" ? "" : "none";
+      if(pCos) pCos.style.display = which==="cos" ? "" : "none";
       tAch.classList.toggle("active",   which==="ach");
       tStats.classList.toggle("active", which==="stats");
       tRanks.classList.toggle("active", which==="ranks");
       tCloud.classList.toggle("active", which==="cloud");
+      if(tCos) tCos.classList.toggle("active", which==="cos");
       renderProfileCard();
       if(which==="ach")   renderAchievements();
       if(which==="stats") renderStats();
       if(which==="ranks") renderRankHistory();
       if(which==="cloud") initCloudPanel();
+      if(which==="cos")   renderProfileCard();
     }
 
     if(tAch)   tAch.addEventListener("click",   ()=>showProfileTab("ach"));
     if(tStats) tStats.addEventListener("click", ()=>showProfileTab("stats"));
     if(tRanks) tRanks.addEventListener("click", ()=>showProfileTab("ranks"));
     if(tCloud) tCloud.addEventListener("click", ()=>showProfileTab("cloud"));
+    if(tCos)   tCos.addEventListener("click",   ()=>showProfileTab("cos"));;
 
     document.getElementById("openProfileBtn").addEventListener("click", ()=>{
       showProfileTab("ach");
