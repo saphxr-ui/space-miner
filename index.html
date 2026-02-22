@@ -3957,14 +3957,24 @@
     const score    = prestigeTotal * 10000000 + mr * 100000 + credits;
     const pin_hash = await hashPin(pin);
     try {
-      const resInsert = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
-        method: "POST",
-        headers: { ...sbHeaders, "Prefer": "resolution=ignore-duplicates,return=minimal" },
-        body: JSON.stringify({ username, miner_rank: mr, credits, score, pin_hash, updated_at: new Date().toISOString() })
-      });
-      if(resInsert.status === 201 || resInsert.status === 200){
+      // First check if username exists
+      const resCheck = await fetch(
+        `${SB_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(username)}&select=username,pin_hash`,
+        { headers: sbHeaders }
+      );
+      const existing = await resCheck.json();
+
+      if(existing.length === 0){
+        // New username — INSERT
+        const resIns = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
+          method: "POST",
+          headers: { ...sbHeaders, "Prefer": "return=minimal" },
+          body: JSON.stringify({ username, miner_rank: mr, credits, score, pin_hash, updated_at: new Date().toISOString() })
+        });
+        if(!resIns.ok) throw new Error(await resIns.text());
         return { ok:true, msg:"new" };
       }
+
       // Username exists — PATCH only if PIN matches
       const resUpdate = await fetch(
         `${SB_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(username)}&pin_hash=eq.${encodeURIComponent(pin_hash)}`,
