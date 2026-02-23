@@ -6372,12 +6372,15 @@
       const dur = smeltDuration(r);
       const durStr = dur >= 60 ? `${Math.floor(dur/60)}m ${dur%60}s` : `${dur}s`;
       const inputChips = Object.entries(r.inputs).map(([id,need])=>{
-        const have = state.cargo[id]||0;
+        const _sinv = smeltInventory(state);
+        const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
+        const have = _aids.has(id) ? (_sinv[id]||0) : (state.cargo[id]||0);
         const ok = have >= need;
+        const label = SMELT_RECIPES.find(r=>r.id===id)?.name || ORES.find(o=>o.id===id)?.name || id;
         return `<span style="padding:2px 8px;border-radius:8px;font-size:11px;
           background:${ok?"rgba(50,213,131,.12)":"rgba(248,113,113,.12)"};
           color:${ok?"#32d583":"#f87171"};">
-          ${ORES.find(o=>o.id===id)?.name||id} ${have}/${need}
+          ${label} ${have}/${need}
         </span>`;
       }).join("");
 
