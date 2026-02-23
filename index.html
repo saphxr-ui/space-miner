@@ -234,6 +234,48 @@
       --thrB: rgba(255,204,102,.60);
       --thrGlow: rgba(255,204,102,.38);
     }
+    .skin-toxic{
+      --dA: rgba(220,255,100,.90); --dB: rgba(80,120,20,.65);
+      --dC: rgba(163,230,53,.92);  --dD: rgba(132,204,22,.28);
+      --dBorder: rgba(200,255,50,.20); --dGlow: rgba(163,230,53,.22);
+      --thrA: rgba(220,255,100,.95); --thrB: rgba(163,230,53,.70);
+    }
+    .skin-void{
+      --dA: rgba(233,213,255,.92); --dB: rgba(88,28,135,.70);
+      --dC: rgba(192,132,252,.92); --dD: rgba(124,58,237,.35);
+      --dBorder: rgba(192,132,252,.25); --dGlow: rgba(167,139,250,.28);
+      --thrA: rgba(255,255,255,.90); --thrB: rgba(167,139,250,.70);
+    }
+    .skin-magma{
+      --dA: rgba(255,220,150,.95); --dB: rgba(120,30,10,.75);
+      --dC: rgba(251,146,60,.92);  --dD: rgba(239,68,68,.30);
+      --dBorder: rgba(251,146,60,.22); --dGlow: rgba(239,68,68,.25);
+      --thrA: rgba(255,220,150,.95); --thrB: rgba(251,146,60,.75);
+    }
+    .skin-cryo{
+      --dA: rgba(224,242,254,.96); --dB: rgba(14,116,144,.60);
+      --dC: rgba(34,211,238,.92);  --dD: rgba(6,182,212,.28);
+      --dBorder: rgba(186,230,253,.22); --dGlow: rgba(34,211,238,.22);
+      --thrA: rgba(224,242,254,.95); --thrB: rgba(56,189,248,.65);
+    }
+    .skin-storm{
+      --dA: rgba(255,255,200,.95); --dB: rgba(60,60,20,.65);
+      --dC: rgba(250,204,21,.95);  --dD: rgba(234,179,8,.30);
+      --dBorder: rgba(250,204,21,.22); --dGlow: rgba(250,204,21,.25);
+      --thrA: rgba(255,255,200,.95); --thrB: rgba(250,204,21,.75);
+    }
+    .skin-reaper{
+      --dA: rgba(255,100,100,.85); --dB: rgba(40,5,5,.85);
+      --dC: rgba(239,68,68,.92);   --dD: rgba(185,28,28,.35);
+      --dBorder: rgba(239,68,68,.20); --dGlow: rgba(185,28,28,.30);
+      --thrA: rgba(255,100,100,.90); --thrB: rgba(239,68,68,.70);
+    }
+    .skin-ascendant{
+      --dA: rgba(255,248,220,.98); --dB: rgba(180,130,10,.65);
+      --dC: rgba(255,215,0,.98);   --dD: rgba(255,193,7,.35);
+      --dBorder: rgba(255,215,0,.30); --dGlow: rgba(255,193,7,.35);
+      --thrA: rgba(255,255,220,.98); --thrB: rgba(255,193,7,.80);
+    }
 
     .droneInner{
       position:absolute; inset:0;
@@ -2177,10 +2219,17 @@
 
   /* ===== Drone cosmetics (ONLY drones) ===== */
   const DRONE_SKINS = [
-    { id:"default", name:"Default Drone", css:"", cost:0, desc:"Standard hull + classic glow." },
-    { id:"carbon",  name:"Stealth Carbon", css:"skin-carbon", cost:260, desc:"Dark carbon body + green bio-LEDs." },
-    { id:"neon",    name:"Neon Pulse", css:"skin-neon", cost:420, desc:"Cyan/violet glow + extra punchy beam." },
-    { id:"solar",   name:"Solar Alloy", css:"skin-solar", cost:680, desc:"Gold alloy + warm thruster flame." },
+    { id:"default",    name:"Default Drone",   css:"",               cost:0,      desc:"Standard hull + classic blue glow." },
+    { id:"carbon",     name:"Stealth Carbon",  css:"skin-carbon",    cost:260,    desc:"Dark carbon body + green bio-LEDs." },
+    { id:"neon",       name:"Neon Pulse",       css:"skin-neon",      cost:420,    desc:"Cyan/violet glow + extra punchy beam." },
+    { id:"solar",      name:"Solar Alloy",      css:"skin-solar",     cost:680,    desc:"Gold alloy hull + warm thruster flame." },
+    { id:"toxic",      name:"Toxic Waste",      css:"skin-toxic",     cost:5000,   desc:"Acid green hull + dripping glow.",       unlockMR:15 },
+    { id:"void",       name:"Void Phantom",     css:"skin-void",      cost:25000,  desc:"Void energy hull + shimmer effect.",     unlockMR:20 },
+    { id:"magma",      name:"Magma Core",       css:"skin-magma",     cost:0,      desc:"Molten lava hull + orange ember glow.",  unlockMR:20, unlockOre:{id:"obsidian",amt:20} },
+    { id:"cryo",       name:"Cryo Shell",       css:"skin-cryo",      cost:80000,  desc:"Ice blue hull + frost particle glow.",   unlockMR:25 },
+    { id:"storm",      name:"Storm Rig",        css:"skin-storm",     cost:50000,  desc:"Electric hull + lightning arc glow.",    unlockPrestige:1 },
+    { id:"reaper",     name:"Void Reaper",      css:"skin-reaper",    cost:200000, desc:"Dark void body + blood red energy.",     unlockPrestige:3 },
+    { id:"ascendant",  name:"Ascendant",        css:"skin-ascendant", cost:0,      desc:"Pure gold hull. For the worthy only.",   unlockMR:30 },
   ];
 
   function defaultState(){
@@ -3072,6 +3121,8 @@
     const comboMult = 1 + Math.floor(comboCount / 5) * 0.5; // x1 → x1.5 → x2 → x2.5 at 5/10/15/20
 
     const baseRegolith = crit ? P().laserPower*4 : P().laserPower;
+    // Bio credit boost during surge
+    const bioSurgeCredMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? (1 + skillBonus("bioSurgeCreditMult")) : 1;
     const regolith = Math.round(baseRegolith * comboMult * planetCreditMult()
       * (1 + skillBonus("laserCreditMult"))
       * (1 + skillBonus("globalCreditMult"))
@@ -3106,9 +3157,6 @@
         spawnParticles(28);
       }
     }
-    // Bio credit boost during surge
-    const bioSurgeCredMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? (1 + skillBonus("bioSurgeCreditMult")) : 1;
-
     // Bio Surge — only on bio planet
     if(state.currentPlanet === "bio"){
       const bioSurgeChance = (PLANETS.bio.bioSurgeChance || 0.06) + skillBonus("bioSurgeChance") + (state.bioupgrades?.mycelium?0.02:0);
@@ -4563,13 +4611,37 @@
   }
 
   /* ===== Cosmetics: 3 Drone skins ===== */
+  function skinUnlockable(skin){
+    if(skin.unlockMR && state.minerRank < skin.unlockMR) return false;
+    const presTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
+    if(skin.unlockPrestige && presTotal < skin.unlockPrestige) return false;
+    return true;
+  }
+  function canAffordSkin(skin){
+    if(!skinUnlockable(skin)) return false;
+    if(skin.cost > 0 && state.credits < skin.cost) return false;
+    if(skin.unlockOre && (state.cargo[skin.unlockOre.id]||0) < skin.unlockOre.amt) return false;
+    return true;
+  }
+  function skinCostText(skin){
+    if(state.cosmetics.owned[skin.id]) return "Owned";
+    const parts = [];
+    if(skin.cost > 0) parts.push(fmt(skin.cost)+" credits");
+    if(skin.unlockOre) parts.push(skin.unlockOre.amt+" "+skin.unlockOre.id);
+    if(skin.unlockMR) parts.push("MR "+skin.unlockMR);
+    if(skin.unlockPrestige) parts.push(skin.unlockPrestige+"× Prestige");
+    return parts.join(" · ") || "Free";
+  }
+
   function buyOrEquipDroneSkin(skinId){
     const skin = DRONE_SKINS.find(s=>s.id===skinId);
     if(!skin) return;
 
     if(!state.cosmetics.owned[skinId]){
-      if(state.credits < skin.cost) return toast("Not enough credits.");
-      state.credits -= skin.cost;
+      if(!skinUnlockable(skin)) return toast("Requirements not met.");
+      if(!canAffordSkin(skin)) return toast("Not enough resources.");
+      state.credits -= (skin.cost||0);
+      if(skin.unlockOre) state.cargo[skin.unlockOre.id] = Math.max(0,(state.cargo[skin.unlockOre.id]||0)-skin.unlockOre.amt);
       state.cosmetics.owned[skinId] = true;
       toast(`${skin.name} unlocked.`);
       pingCard(`skin_${skinId}`);
@@ -5073,10 +5145,10 @@
       id:`skin_${skin.id}`, tab:"cos", name:skin.name, icon:ICONS.skin,
       desc:skin.desc+" (Drones only)",
       hideBuy:false,
-      costText:()=> state.cosmetics.owned[skin.id] ? "Owned" : `${fmt(skin.cost)} credits`,
-      canBuy:()=> state.cosmetics.owned[skin.id] ? true : (state.credits >= skin.cost),
+      costText:()=> skinCostText(skin),
+      canBuy:()=> state.cosmetics.owned[skin.id] ? true : canAffordSkin(skin),
       chips:()=>[
-        {text:state.cosmetics.owned[skin.id]?"Owned":"Not owned",kind:state.cosmetics.owned[skin.id]?"good":"bad"},
+        {text:state.cosmetics.owned[skin.id]?"Owned":skinUnlockable(skin)?"Not owned":"Locked",kind:state.cosmetics.owned[skin.id]?"good":skinUnlockable(skin)?"bad":""},
         {text:(state.cosmetics.droneSkin===skin.id)?"Equipped":"—",kind:(state.cosmetics.droneSkin===skin.id)?"good":""}
       ],
       current:()=>(state.cosmetics.droneSkin===skin.id)?"Active drone look":"Not equipped",
