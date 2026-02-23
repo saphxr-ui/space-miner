@@ -127,6 +127,10 @@
       100%{transform:translate(0,0) rotate(0deg);}
     }
 
+    /* GPU compositing hints */
+    .drone{ will-change:transform; }
+    .asteroid{ will-change:transform; }
+    #clickArea{ touch-action:none; }
     .laser{position:absolute;width:200px;height:2px;background:linear-gradient(90deg, transparent, rgba(43,212,255,.9), transparent);
       opacity:0;transform-origin:left center;filter:drop-shadow(0 0 10px rgba(43,212,255,.45));pointer-events:none;}
     .laser.laser-plasma{ height:4px; background:linear-gradient(90deg, transparent, rgba(239,68,68,.7) 20%, rgba(251,146,60,.95) 55%, rgba(255,200,80,.8) 85%, transparent); filter:drop-shadow(0 0 12px rgba(239,68,68,.55)); }
@@ -195,7 +199,7 @@
     }
 
     /* ---------- Drone System ---------- */
-    #droneLayer{position:absolute; inset:0; pointer-events:none;}
+    #droneLayer{position:absolute; inset:0; pointer-events:none; will-change:transform;}
 
     .droneOrbit{
       position:absolute; inset:0;
@@ -2695,6 +2699,10 @@
   const closeCodexBtn = el("closeCodex");
 
   const toastEl = el("toast");
+  const minerHudEl = el("minerHud");
+  const cargoHudEl = el("cargoHud");
+  const comboBarEl = el("comboBar");
+  const stellarDustHudEl = el("stellarDustHud");
   function toast(msg){
     toastEl.textContent = msg;
     toastEl.classList.add("show");
@@ -6306,7 +6314,7 @@
     minerRankEl.textContent = state.minerRank;
     xpNowEl.textContent = Math.floor(state.miningXP);
     xpNeedEl.textContent = state.miningNeed;
-    el("stellarDustHud").textContent = fmt(state.stellarDust || 0);
+    if(stellarDustHudEl) stellarDustHudEl.textContent = fmt(state.stellarDust || 0);
     xpBarEl.style.width = `${Math.min(100, (state.miningXP/state.miningNeed)*100)}%`;
     rankPerkTextEl.textContent = currentRankBonusText();
     nextUnlockTextEl.textContent = nextUnlockText();
@@ -6314,7 +6322,7 @@
     const active = now() < state.boostUntil;
 
     // Combo bar
-    const comboBar = document.getElementById("comboBar");
+    const comboBar = comboBarEl;
     if(comboBar){
       const tier = Math.floor(comboCount/5);
       if(tier>0){
@@ -6330,15 +6338,13 @@
     const totalMiners=Object.values(state.planets).reduce((t,p)=>t+(p.minersDeployed||0),0);
     const reactorBonus=1+(state.station?.reactor||0)*0.25;
     const orePerMin=Object.entries(state.planets).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*reactorBonus,0);
-    const minerHud=document.getElementById("minerHud");
-    if(minerHud) minerHud.textContent=totalMiners>0?`⛏ ${orePerMin.toFixed(1)} ore/min`:"⛏ No miners";
+    if(minerHudEl) minerHudEl.textContent=totalMiners>0?`⛏ ${orePerMin.toFixed(1)} ore/min`:"⛏ No miners";
 
     // Cargo fill indicator
-    const cargoHud=document.getElementById("cargoHud");
-    if(cargoHud){
+    if(cargoHudEl){
       const u=totalCargoUnits(), cap=state.cargoCap, pct=Math.round(u/cap*100);
-      cargoHud.textContent=`📦 ${u}/${cap}`;
-      cargoHud.style.color=pct>=100?"#ef4444":pct>=80?"#f59e0b":"var(--muted)";
+      cargoHudEl.textContent=`📦 ${u}/${cap}`;
+      cargoHudEl.style.color=pct>=100?"#ef4444":pct>=80?"#f59e0b":"var(--muted)";
     }
 
     applyPlanetVisuals();
@@ -6732,8 +6738,7 @@
     if(tab === "skill"){
       upgradesListEl.innerHTML = "";
       upgradeNodes.clear();
-      renderSkillTree();
-      // render skill tree inside the upgrades panel
+      // Create wrapper first, then render once
       const wrapper = document.createElement("div");
       wrapper.id = "skillTreeEl";
       wrapper.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px;";
@@ -6749,12 +6754,16 @@
   let lastSecond = -1;
   let comboCount = 0;
   let lastComboTime = 0;
+  let _lastSave = 0;
+  let _tickFrame = 0;
+  let _lastAffordCheck = 0;
   let cargoDelegationMounted = false;
 
   function tick(){
     const t = now();
     const dt = (t - lastTick)/1000;
     lastTick = t;
+    _tickFrame++;
 
     try{
       if(state.trades && state.trades.nextReroll && t >= state.trades.nextReroll){
@@ -6769,18 +6778,28 @@
       const sec = Math.floor(t/1000);
       if(sec !== lastSecond){
         lastSecond = sec;
-        state.lastSeen = t;  // update every second so offline gap is accurate
+        state.lastSeen = t;
         autoSellOverflowSweep();
         updateTradeTimerTextOnly();
-        if((state.smeltSlots||[]).some(s=>s)) setCargoDirty("station"); // refresh smelter progress bars
+        if((state.smeltSlots||[]).some(s=>s)) setCargoDirty("station");
         renderCargoPanelsIfDirty(false);
         applyStats(state);
         renderCodexIfDirty();
       }
 
       updateHUD();
-      updateUpgradeAffordability();
-      save();
+
+      // Throttle affordability check to every 6 frames (~10/s) — saves big on mobile
+      if(_tickFrame % 6 === 0){
+        updateUpgradeAffordability();
+      }
+
+      // Throttle save to every 5 seconds — localStorage writes are expensive
+      if(t - _lastSave > 5000){
+        save();
+        _lastSave = t;
+      }
+
     }catch(err){
       console.error("Tick error:", err);
     }
