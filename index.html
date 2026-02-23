@@ -1283,6 +1283,24 @@
         radial-gradient(360px 200px at 72% 9%, rgba(134,239,172,.16), transparent 60%);
       border-color: rgba(74,222,128,.20);
     }
+    .clickArea.planet-bio{
+      background:
+        radial-gradient(220px 170px at 52% 46%, rgba(74,222,128,.22), rgba(255,255,255,.02)),
+        radial-gradient(380px 220px at 70% 10%, rgba(134,239,172,.12), transparent 60%);
+    }
+    .asteroid.planet-bio{
+      background:radial-gradient(circle at 30% 28%,
+        rgba(255,255,255,.9) 0 7px, transparent 9px),
+        radial-gradient(circle at 40% 35%, #a3e4b0 0%, #4a9a60 20%, #1f5c30 50%, #0d3018 78%, #06150c 100%);
+      box-shadow:0 0 0 10px rgba(74,222,128,.10), 0 34px 70px rgba(0,0,0,.42), 0 0 60px rgba(22,163,74,.14);
+    }
+    .asteroid.planet-bio .cracks{
+      background:
+        radial-gradient(60px 40px at 65% 42%, rgba(134,239,172,.28) 0%, transparent 70%),
+        radial-gradient(80px 60px at 35% 65%, rgba(74,222,128,.20) 0%, transparent 72%),
+        radial-gradient(40px 30px at 50% 50%, rgba(200,255,200,.15) 0%, transparent 65%);
+      opacity:1;
+    }
 
     .clickArea.planet-void::after{
       background:repeating-linear-gradient(
@@ -2144,11 +2162,11 @@
       droneAI: 0,
       laserPower: 1,
       rps: 0,
-      costLaser:    planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
-      costDrones:   planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
-      costDroneAI:  planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
+      costLaser:    planetId === "bio" ? 4000  : planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
+      costDrones:   planetId === "bio" ? 15000 : planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
+      costDroneAI:  planetId === "bio" ? 28000 : planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
       prospectLvl:  0,
-      costProspect: planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
+      costProspect: planetId === "bio" ? 18000 : planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
       // Miner system
       minersDeployed: 0,
       maxMiners: 2,             // base slots
@@ -2292,6 +2310,14 @@
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
       if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
+      // Fix bio planet costs if they were initialized with wrong (iron belt) values
+      if(s.planets.bio && s.planets.bio.costLaser < 1000){
+        s.planets.bio.costLaser    = 4000;
+        s.planets.bio.costDrones   = 15000;
+        s.planets.bio.costDroneAI  = 28000;
+        s.planets.bio.costProspect = 18000;
+        s.planets.bio.costMiner    = 5400;
+      }
       if(s.rankMinerSlots === undefined) s.rankMinerSlots = 0;
       if(s.tutorialDone === undefined) s.tutorialDone = true; // existing players skip tutorial
       if(s.rankCargoBonus === undefined){
@@ -2406,10 +2432,12 @@
     const ironDrones   = state.planets?.iron?.dronesLvl   || 0;
     const vulcanDrones = state.planets?.vulcan?.dronesLvl || 0;
     const voidDrones   = state.planets?.void?.dronesLvl   || 0;
+    const bioDrones    = state.planets?.bio?.dronesLvl    || 0;
 
-    btnIron.innerHTML   = `<span class="planetDot iron"></span>Iron Belt${ironDrones>0 ? ` <span style="color:var(--good);font-size:11px;">(${ironDrones}🛸)</span>` : ""}`;
+    btnIron.innerHTML   = `<span class="planetDot iron"></span>Iron Belt${ironDrones>0 ? ` <span style="color:#a8ccff;font-size:11px;">(${ironDrones}🛸)</span>` : ""}`;
     btnVulcan.innerHTML = `<span class="planetDot vulcan"></span>Vulcan Core${vulcanDrones>0 ? ` <span style="color:#ffb060;font-size:11px;">(${vulcanDrones}🛸)</span>` : ""}`;
     if(btnVoid) btnVoid.innerHTML = `<span class="planetDot void"></span>Void Expanse${voidDrones>0 ? ` <span style="color:#c084fc;font-size:11px;">(${voidDrones}🛸)</span>` : ""}`;
+    if(btnBio) btnBio.innerHTML = `<span class="planetDot bio"></span>Bio Sphere${bioDrones>0 ? ` <span style="color:#4ade80;font-size:11px;">(${bioDrones}🛸)</span>` : ""}`;
 
     const isVoid = p === "void";
     btnIron.classList.toggle("active-iron", !isVulcan && !isVoid);
