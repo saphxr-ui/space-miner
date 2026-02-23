@@ -1261,6 +1261,9 @@
     /* ===== Void Expanse Planet ===== */
     .planetDot.void{
       background:radial-gradient(circle, #c084fc, #7c3aed);
+   }
+    .planetDot.bio{
+      background:radial-gradient(circle, #86efac, #16a34a);
       box-shadow:0 0 6px rgba(192,132,252,.6);
     }
     .planetBtn.active-void{
@@ -1274,6 +1277,13 @@
         radial-gradient(360px 200px at 75% 8%, rgba(168,85,247,.18), transparent 60%);
       border-color: rgba(167,139,250,.22);
     }
+    .planet-bio{
+      background:
+        radial-gradient(200px 160px at 48% 45%, rgba(74,222,128,.26), rgba(22,163,74,.04)),
+        radial-gradient(360px 200px at 72% 9%, rgba(134,239,172,.16), transparent 60%);
+      border-color: rgba(74,222,128,.20);
+    }
+
     .clickArea.planet-void::after{
       background:repeating-linear-gradient(
         0deg, transparent, transparent 3px,
@@ -1288,13 +1298,24 @@
                  0 0 50px rgba(124,58,237,.28),
                  inset 0 0 30px rgba(88,28,135,.35);
     }
+    .bio-banner{
+      background:linear-gradient(135deg,
+        rgba(5,46,22,.90) 0%,
+        rgba(20,83,45,.75) 40%,
+        rgba(5,46,22,.90) 100%);
+    }
     .void-banner{
       background:linear-gradient(135deg,
         rgba(60,20,100,.85) 0%,
         rgba(40,10,80,.70) 40%,
         rgba(15,5,40,.85) 100%);
     }
-    .planetOrb.void-orb{
+    .planetOrb.bio-orb{
+      background:radial-gradient(circle at 35% 30%,
+        #dcfce7 0%, #4ade80 20%, #166534 60%, #052e16 100%);
+      box-shadow: 0 0 60px rgba(74,222,128,.5), 0 0 120px rgba(22,163,74,.3);
+    }
+    .void-orb{
       background:radial-gradient(circle at 35% 30%,
         #e9d5ff 0%, #a855f7 20%, #6d28d9 50%, #2e1065 80%, #0f0520 100%);
       box-shadow:0 0 0 2px rgba(167,139,250,.25),
@@ -1312,6 +1333,12 @@
       100%{ filter:brightness(1)   drop-shadow(0 0 0px rgba(192,132,252,0)); }
     }
     .asteroid.void-surge{ animation: voidSurgeAnim 0.55s ease-out forwards; }
+    .bio-surge{ animation: bioSurgeAnim 0.55s ease-out forwards; }
+    @keyframes bioSurgeAnim {
+      0%  { filter: brightness(1) drop-shadow(0 0 0px #4ade80); }
+      40% { filter: brightness(2.2) drop-shadow(0 0 40px #4ade80); }
+      100%{ filter: brightness(1) drop-shadow(0 0 0px #4ade80); }
+    }
     #openSettingsBtn{ opacity:.8; transition:opacity .2s; }
     #openSettingsBtn:hover{ opacity:1; }
 
@@ -1498,6 +1525,9 @@
           </button>
           <button class="planetBtn" id="btnPlanetVoid" data-planet="void">
             <span class="planetDot void"></span>Void Expanse
+          </button>
+          <button class="planetBtn" id="btnPlanetBio" data-planet="bio">
+            <span class="planetDot bio"></span>Bio Sphere
           </button>
           <button class="btn secondary" id="openPlanetsBtn" style="margin-left:auto;padding:5px 10px;font-size:11px;border-radius:10px;flex-shrink:0;">🪐 Explore</button>
         </div>
@@ -2002,6 +2032,9 @@
     { id:"obsidian", name:"Obsidian",  value: 380, rarity: 0.06,  unlockMR: 10, color:"rgba(255,80,30,.95)",   planet:"vulcan" },
     { id:"voidShard",   name:"Void Shard",   value: 600, rarity: 0.22,  unlockMR: 15, color:"rgba(167,139,250,.95)", planet:"void" },
     { id:"darkMatter",  name:"Dark Matter",  value: 2000, rarity: 0.04,  unlockMR: 15, color:"rgba(216,180,254,.98)", planet:"void" },
+    { id:"sporeDust",    name:"Spore Dust",    value: 180,  rarity: 0.40,  unlockMR: 20, color:"rgba(134,239,172,.95)", planet:"bio" },
+    { id:"mycelium",     name:"Mycelium",      value: 520,  rarity: 0.12,  unlockMR: 20, color:"rgba(167,139,250,.95)", planet:"bio" },
+    { id:"biolith",      name:"Biolith",       value: 1800, rarity: 0.025, unlockMR: 20, color:"rgba(74,222,128,.98)",  planet:"bio" },
   ];
 
   const PLANETS = {
@@ -2022,6 +2055,13 @@
       laserMult:1, creditMult:5, xpMult:2,
       prestigeBaseCost: 8000000,
       voidSurgeChance: 0.08,
+    },
+    bio: {
+      id:"bio", name:"Bio Sphere", icon:"🌿",
+      unlockMR: 20, unlockCredits: 500000,
+      laserMult:1, creditMult:3.5, xpMult:2.2,
+      prestigeBaseCost: 20000000,
+      bioSurgeChance: 0.06,
     }
   };
 
@@ -2097,7 +2137,7 @@
   }
 
   function defaultPlanetState(planetId){
-    const tier = planetId==="void" ? 3 : planetId==="vulcan" ? 2 : 1;
+    const tier = planetId==="bio" ? 4 : planetId==="void" ? 3 : planetId==="vulcan" ? 2 : 1;
     return {
       laserLvl: 0,
       dronesLvl: 0,
@@ -2112,7 +2152,7 @@
       // Miner system
       minersDeployed: 0,
       maxMiners: 2,             // base slots
-      costMiner: Math.floor(200 * Math.pow(3, tier-1)),  // 200 / 600 / 1800
+      costMiner: Math.floor(200 * Math.pow(3, tier-1)),  // 200 / 600 / 1800 / 5400
       minerSpeed: 1.0,          // ore/min base, upgraded by station
     };
   }
@@ -2251,6 +2291,7 @@
       if(!s.unlockedAch) s.unlockedAch=[];
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
+      if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
       if(s.rankMinerSlots === undefined) s.rankMinerSlots = 0;
       if(s.tutorialDone === undefined) s.tutorialDone = true; // existing players skip tutorial
       if(s.rankCargoBonus === undefined){
@@ -2345,14 +2386,18 @@
     asteroid.classList.toggle("planet-vulcan", isVulcan);
     clickArea.classList.toggle("planet-void", p === "void");
     asteroid.classList.toggle("planet-void", p === "void");
+    clickArea.classList.toggle("planet-bio", p === "bio");
+    asteroid.classList.toggle("planet-bio", p === "bio");
     const ring = asteroidWrap.querySelector(".ring");
     if(ring) ring.classList.toggle("planet-vulcan", isVulcan);
 
     const btnIron   = el("btnPlanetIron");
     const btnVulcan = el("btnPlanetVulcan");
     const btnVoid   = el("btnPlanetVoid");
+    const btnBio    = el("btnPlanetBio");
     const vulcanDef = PLANETS.vulcan;
     const voidDef   = PLANETS.void;
+    const bioDef    = PLANETS.bio;
     const vulcanRankLocked = state.minerRank < (vulcanDef.unlockMR||10);
     const voidRankLocked   = state.minerRank < (voidDef.unlockMR||15);
     const vulcanBought = !!(state.planetsBought?.vulcan);
@@ -2373,6 +2418,15 @@
     btnVulcan.disabled = vulcanRankLocked && !vulcanBought;
     btnVulcan.title = vulcanRankLocked ? `Requires MR ${vulcanDef.unlockMR}` : vulcanBought ? "Switch to Vulcan Core" : `Colonize for ${fmt(vulcanDef.unlockCredits)}c`;
     if(btnVoid){ btnVoid.disabled = voidRankLocked && !voidBought; btnVoid.title = voidRankLocked ? `Requires MR ${voidDef.unlockMR}` : voidBought ? "Switch to Void Expanse" : `Colonize for ${fmt(voidDef.unlockCredits)}c`; }
+    const isBio = p === "bio";
+    const bioBought = !!state.planetsBought?.bio;
+    const bioRankLocked = state.minerRank < bioDef.unlockMR;
+    if(btnBio){
+      btnBio.classList.toggle("active-bio", isBio);
+      btnIron.classList.toggle("active-iron", !isVulcan && !isVoid && !isBio);
+      btnBio.disabled = bioRankLocked && !bioBought;
+      btnBio.title = bioRankLocked ? `Requires MR ${bioDef.unlockMR}` : bioBought ? "Switch to Bio Sphere" : `Colonize for ${fmt(bioDef.unlockCredits)}c`;
+    }
   }
 
   function switchPlanet(planetId){
@@ -2445,7 +2499,8 @@
     const o = ORES.find(x=>x.id===id);
     if(!o) return 0;
     const sellBonus = 1 + skillBonus("sellMult");
-    return o.value * sellBonus;
+    const darkBonus = (id === "darkMatter") ? (1 + skillBonus("darkMatterMult")) : 1;
+    return o.value * sellBonus * darkBonus;
   }
 
   function dronePulsesPerSecondFor(p){
@@ -3000,11 +3055,12 @@
     const comboLabel = comboTier > 0 ? ` ×${(1 + comboTier*0.5).toFixed(1)}` : "";
     spawnPop(`+${fmt(gained)}${comboLabel}`, crit || comboTier > 0, 50, 52, miniIconWrap(ICONS.coin, 20));
 
-    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")));
+    const bioXpMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? 2.5 : 1;
+    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")) * bioXpMult);
 
     // Void Surge — only on void planet
     if(state.currentPlanet === "void"){
-      const surgeChance = (PLANETS.void.voidSurgeChance||0.08) * (1 + skillBonus("rareDropMult")*0.5);
+      const surgeChance = ((PLANETS.void.voidSurgeChance||0.08) + skillBonus("voidSurgeChance")) * (1 + skillBonus("rareDropMult")*0.5);
       if(Math.random() < surgeChance){
         const surgeGain = addCredits(regolith * 9);
         if(state._stats) state._stats.voidSurges=(state._stats.voidSurges||0)+1;
@@ -3015,6 +3071,20 @@
         asteroid.classList.add("void-surge");
         setTimeout(()=>asteroid.classList.remove("void-surge"), 600);
         spawnParticles(28);
+      }
+    }
+    // Bio Surge — only on bio planet
+    if(state.currentPlanet === "bio"){
+      const bioSurgeChance = PLANETS.bio.bioSurgeChance || 0.06;
+      if(Math.random() < bioSurgeChance){
+        state._bioSurgeUntil = Date.now() + 6000;
+        if(state._stats) state._stats.bioSurges=(state._stats.bioSurges||0)+1;
+        spawnPop(`BIO SURGE! XP ×2.5`, true, 50, 38, null);
+        asteroid.classList.remove("bio-surge");
+        void asteroid.offsetWidth;
+        asteroid.classList.add("bio-surge");
+        setTimeout(()=>asteroid.classList.remove("bio-surge"), 600);
+        spawnParticles(20);
       }
     }
     updateHUD();
@@ -3203,6 +3273,9 @@
         { id:"m7", name:"Seismic Array",      desc:"+20% Miner speed & +50 cargo",      cost:{ credits:55000, platinum:8, cobalt:25 }, effect:{ allDropChance:0.20, cargoCap:50 } },
         { id:"m8", name:"Forge Mastery",      desc:"+25% Alloy sell value",             cost:{ credits:130000,gold:20, platinum:10 },  effect:{ smeltSellMult:0.25 } },
         { id:"m9", name:"Void Attunement",    desc:"+25% credits on Void planet",       cost:{ credits:300000,obsidian:15 },           effect:{ voidCreditMult:0.25 }, unlockMR:15 },
+        { id:"m10", name:"Alloy Drill",         desc:"+40% Miner ore output",              cost:{ credits:80000,  steel:5, cobalteel:3 },  effect:{ allDropChance:0.40 }, unlockMR:10 },
+        { id:"m11", name:"Quantum Lens",        desc:"+30% crit chance",                   cost:{ credits:200000, aurite:3 },               effect:{ critMult:0.30 }, unlockMR:14 },
+        { id:"m12", name:"Void Extractor",      desc:"+60% Void ore drop chance",          cost:{ credits:600000, voidcore:2 },             effect:{ rareDropMult:0.60 }, unlockMR:18 },
       ]
     },
     economy: {
@@ -3217,6 +3290,9 @@
         { id:"e7", name:"Cargo Liner III",    desc:"+100 cargo capacity",               cost:{ credits:75000, gold:15, cobalt:30 },    effect:{ cargoCap:100 } },
         { id:"e8", name:"Market Mastery",     desc:"+30% all credit gains",             cost:{ credits:190000,platinum:12 },           effect:{ globalCreditMult:0.30 } },
         { id:"e9", name:"Stellar Economy",    desc:"+20% Stellar Dust from prestige",   cost:{ credits:420000,obsidian:20 },           effect:{ dustMult:0.20 }, unlockMR:10 },
+        { id:"e10", name:"Alloy Market",        desc:"+35% Alloy sell value",              cost:{ credits:100000, steel:8 },                effect:{ smeltSellMult:0.35 }, unlockMR:10 },
+        { id:"e11", name:"Dark Economy",        desc:"+50% Dark Matter ore value",         cost:{ credits:400000, platalloy:3 },             effect:{ darkMatterMult:0.50 }, unlockMR:16 },
+        { id:"e12", name:"Void Trade",          desc:"+40% all credit gains",              cost:{ credits:900000, voidcore:2 },              effect:{ globalCreditMult:0.40 }, unlockMR:20 },
       ]
     },
     exploration: {
@@ -3231,6 +3307,9 @@
         { id:"x7", name:"Pulse Amplifier",    desc:"+35% drone pulse speed",            cost:{ credits:68000, platinum:8, nickel:40 }, effect:{ dronePulseMult:0.35 } },
         { id:"x8", name:"Exotic Finder",      desc:"+40% rare Miner ore chance",        cost:{ credits:160000,platinum:15 },           effect:{ rareDropMult:0.40 } },
         { id:"x9", name:"Void Navigator",     desc:"+30% offline income efficiency",    cost:{ credits:380000,obsidian:10 },           effect:{ offlineMult:0.30 }, unlockMR:16 },
+        { id:"x10", name:"Alloy Chassis",       desc:"+150 cargo capacity",                cost:{ credits:120000, aurite:4 },               effect:{ cargoCap:150 }, unlockMR:12 },
+        { id:"x11", name:"Smelt Speed",         desc:"+40% Smelting speed",                cost:{ credits:250000, cobalteel:6 },             effect:{ smeltSpeed:0.40 }, unlockMR:14 },
+        { id:"x12", name:"Deep Scanner",        desc:"+50% offline income efficiency",     cost:{ credits:700000, platalloy:2, voidcore:1 }, effect:{ offlineMult:0.50 }, unlockMR:18 },
       ]
     },
     void: {
@@ -3241,6 +3320,9 @@
         { id:"v3", name:"Surge Amplifier",    desc:"+60% XP on Void planet",            cost:{ credits:280000, obsidian:25 },          effect:{ xpMult:0.60 }, unlockMR:16 },
         { id:"v4", name:"Void Drones",        desc:"+30% drone yield on Void",          cost:{ credits:500000, obsidian:40 },          effect:{ droneCreditMult:0.30 }, unlockMR:17 },
         { id:"v5", name:"Singularity Core",   desc:"+50% ALL credits on Void planet",   cost:{ credits:1200000,obsidian:80 },          effect:{ voidCreditMult:0.50 }, unlockMR:20 },
+        { id:"v6", name:"Alloy Resonance",     desc:"+3% Void Surge chance",              cost:{ credits:500000, voidcore:3 },              effect:{ voidSurgeChance:0.03 }, unlockMR:18 },
+        { id:"v7", name:"Stardust Core",       desc:"+40% Stellar Dust from prestige",    cost:{ credits:1000000,stardust_bar:1 },          effect:{ dustMult:0.40 }, unlockMR:22 },
+        { id:"v8", name:"Void Singularity",    desc:"+100% all credits on Void planet",   cost:{ credits:3000000,stardust_bar:2 },          effect:{ voidCreditMult:1.00 }, unlockMR:25 },
       ]
     },
   };
@@ -3276,9 +3358,15 @@
 
   function canAffordSkill(node){
     if((state.credits || 0) < (node.cost.credits || 0)) return false;
-    for(const [ore, amt] of Object.entries(node.cost)){
-      if(ore === "credits") continue;
-      if((state.cargo[ore]||0) < amt) return false;
+    const inv = smeltInventory(state);
+    const alloyIds = new Set(SMELT_RECIPES.map(r=>r.id));
+    for(const [k, amt] of Object.entries(node.cost)){
+      if(k === "credits") continue;
+      if(alloyIds.has(k)){
+        if((inv[k]||0) < amt) return false;
+      } else {
+        if((state.cargo[k]||0) < amt) return false;
+      }
     }
     return true;
   }
@@ -3292,9 +3380,15 @@
     if(!canAffordSkill(node)) return toast("Not enough resources.");
 
     state.credits -= (node.cost.credits||0);
-    for(const [ore, amt] of Object.entries(node.cost)){
-      if(ore === "credits") continue;
-      state.cargo[ore] = Math.max(0, (state.cargo[ore]||0) - amt);
+    const _inv = smeltInventory(state);
+    const _alloyIds = new Set(SMELT_RECIPES.map(r=>r.id));
+    for(const [k, amt] of Object.entries(node.cost)){
+      if(k === "credits") continue;
+      if(_alloyIds.has(k)){
+        _inv[k] = Math.max(0, (_inv[k]||0) - amt);
+      } else {
+        state.cargo[k] = Math.max(0, (state.cargo[k]||0) - amt);
+      }
     }
     state.skills.push(node.id);
     applyStats(state);
@@ -3328,9 +3422,12 @@
 
         if(nodeIdx>0){ const conn=document.createElement("div"); conn.className="skillConnector"; col.appendChild(conn); }
 
+        const _sinv = smeltInventory(state);
+        const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
         const costChips = Object.entries(node.cost).map(([k,v])=>{
-          const have = k==="credits" ? state.credits : (state.cargo[k]||0);
-          return `<span class="skillCostChip ${have>=v?"met":""}">${k==="credits"?fmt(v)+"c":v+" "+k}</span>`;
+          const have = k==="credits" ? state.credits : (_aids.has(k) ? (_sinv[k]||0) : (state.cargo[k]||0));
+          const label = k==="credits" ? fmt(v)+"c" : v+" "+(SMELT_RECIPES.find(r=>r.id===k)?.name||ORES.find(o=>o.id===k)?.name||k);
+          return `<span class="skillCostChip ${have>=v?"met":""}">${label}</span>`;
         }).join("");
 
         const nodeEl = document.createElement("div");
@@ -3700,6 +3797,17 @@
         { label:"Exclusive ores", kind:"ore" },
       ]
     },
+    bio: {
+      orb:"bio-orb", banner:"bio-banner",
+      subtitle:"A lush organic world teeming with alien life. Rich in XP and exotic biomaterials.",
+      ores:["sporeDust","mycelium","biolith"],
+      stats:[
+        { label:"Credits ×3.5",   kind:"good" },
+        { label:"XP ×2.2",        kind:"good" },
+        { label:"Bio Surge: 6%",  kind:"warn" },
+        { label:"Exclusive ores", kind:"ore" },
+      ]
+    },
     future: {
       orb:"future-orb", banner:"future-banner",
       subtitle:"Signal detected — location unknown. Further exploration required.",
@@ -3720,6 +3828,7 @@
       { ...PLANETS.iron,   id:"iron",   future:false },
       { ...PLANETS.vulcan, id:"vulcan", future:false },
       { ...PLANETS.void,   id:"void",   future:false },
+      { ...PLANETS.bio,    id:"bio",    future:false },
       { id:"future", name:"Unknown World", unlockMR:35, unlockCredits:null, future:true },
     ];
 
@@ -3939,7 +4048,7 @@
   async function lbFetch(){
     try {
       const res = await fetch(
-        `${SB_URL}/rest/v1/leaderboard?select=username,miner_rank,credits,score&order=score.desc&limit=25`,
+        `${SB_URL}/rest/v1/leaderboard?select=username,miner_rank,credits,score,title&order=score.desc&limit=25`,
         { headers: sbHeaders }
       );
       if(!res.ok) throw new Error(await res.text());
@@ -3954,7 +4063,7 @@
     const mr       = state.minerRank;
     const credits  = Math.floor(state.credits);
     const prestigeTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
-    const score    = prestigeTotal * 10000000 + mr * 100000 + credits;
+    const score    = prestigeTotal * 10000000000 + mr * 100000000 + credits;
     const pin_hash = await hashPin(pin);
     try {
       // First check if username exists
@@ -3969,7 +4078,7 @@
         const resIns = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
           method: "POST",
           headers: { ...sbHeaders, "Prefer": "return=minimal" },
-          body: JSON.stringify({ username, miner_rank: mr, credits, score, pin_hash, updated_at: new Date().toISOString() })
+          body: JSON.stringify({ username, miner_rank: mr, credits, score, pin_hash, title: playerTitle(state), updated_at: new Date().toISOString() })
         });
         if(!resIns.ok) throw new Error(await resIns.text());
         return { ok:true, msg:"new" };
@@ -3981,7 +4090,7 @@
         {
           method: "PATCH",
           headers: { ...sbHeaders, "Prefer": "return=representation" },
-          body: JSON.stringify({ miner_rank: mr, credits, score, updated_at: new Date().toISOString() })
+          body: JSON.stringify({ miner_rank: mr, credits, score, title: playerTitle(state), updated_at: new Date().toISOString() })
         }
       );
       if(!resUpdate.ok) throw new Error(await resUpdate.text());
@@ -4020,13 +4129,14 @@
       if(i===0) rowCls += " top1";
       else if(i===1) rowCls += " top2";
       else if(i===2) rowCls += " top3";
-      const myTitle = isMe ? `<div style="font-size:10px;color:var(--muted);margin-top:1px;">${playerTitle(state)}</div>` : "";
+      const titleText = isMe ? playerTitle(state) : (row.title || "");
+      const titleHtml = titleText ? `<div style="font-size:10px;color:var(--muted);margin-top:1px;">${escapeHtml(titleText)}</div>` : "";
       return `
         <div class="${rowCls}">
           ${lbRankIcon(i)}
           <div class="lbName">
             <div>${escapeHtml(row.username)}${isMe?" <span style=\'font-size:10px;color:var(--acc);\'>(you)</span>":""}</div>
-            ${myTitle}
+            ${titleHtml}
           </div>
           <div class="lbMR">MR ${row.miner_rank}</div>
           <div class="lbScore">${fmt(row.credits)}c</div>
@@ -4537,6 +4647,15 @@
     { id:"stardust",  name:"Compressed Stardust", icon:"✨", unlockSmelter:4, duration:240,
       inputs:{obsidian:8, platalloy:2}, output:{id:"stardust_bar",count:1,value:28000},
       desc:"8 Obsidian + 2 Platinum Alloy → Stardust Bar (28,000c)" },
+    { id:"mycoalloy",    name:"Myco Alloy",      icon:"🍄", unlockSmelter:3, duration:45,
+      inputs:{sporeDust:6, mycelium:3}, output:{id:"mycoalloy",count:1,value:2800},
+      desc:"6 Spore Dust + 3 Mycelium → Myco Alloy (2,800c)" },
+    { id:"biocore",      name:"Bio Core",         icon:"🌿", unlockSmelter:4, duration:90,
+      inputs:{mycelium:2, biolith:1}, output:{id:"biocore",count:1,value:9500},
+      desc:"2 Mycelium + 1 Biolith → Bio Core (9,500c)" },
+    { id:"livingcrystal",name:"Living Crystal",   icon:"💚", unlockSmelter:5, duration:180,
+      inputs:{biolith:4, biocore:1}, output:{id:"livingcrystal",count:1,value:35000},
+      desc:"4 Biolith + 1 Bio Core → Living Crystal (35,000c)" },
   ];
 
   /* Smelt inventory: holds processed alloys (separate from ore cargo) */
@@ -4555,7 +4674,7 @@
 
   function smeltSlotCount(){
     const lvl = state.station?.smelter||0;
-    return Math.min(lvl, 4); // 1 slot at lv1, +1 per level up to 4
+    return Math.min(lvl, 5); // 1 slot at lv1, +1 per level up to 5
   }
 
   function smeltSpeedMult(){
@@ -6378,6 +6497,7 @@
   el("btnPlanetIron").addEventListener("click", ()=>switchPlanet("iron"));
   el("btnPlanetVulcan").addEventListener("click", ()=>switchPlanet("vulcan"));
   if(el("btnPlanetVoid")) el("btnPlanetVoid").addEventListener("click", ()=>switchPlanet("void"));
+  if(el("btnPlanetBio"))  el("btnPlanetBio").addEventListener("click",  ()=>switchPlanet("bio"));
   el("reset").addEventListener("click", ()=>{
     if(!confirm("Wirklich alles zurücksetzen?")) return;
     state = defaultState();
