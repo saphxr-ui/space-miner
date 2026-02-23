@@ -2102,6 +2102,95 @@
          <path d="M15 7l1 1 1-1" fill="rgba(255,255,255,.70)"/>`
       );
     }
+    if(kind==="sporeDust"){
+      const sp = `url(#sp_${uid})`;
+      return `<svg viewBox="0 0 24 24" fill="none" filter="${f}">
+        <defs>
+          <radialGradient id="sp_${uid}" cx="40%" cy="35%" r="65%">
+            <stop offset="0"   stop-color="#f0fdf4"/>
+            <stop offset=".35" stop-color="#86efac"/>
+            <stop offset=".70" stop-color="#22c55e"/>
+            <stop offset="1"   stop-color="#14532d"/>
+          </radialGradient>
+          <filter id="f_${kind}_${uid}" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="1.5" flood-color="rgba(134,239,172,.4)"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="rgba(22,163,74,.2)"/>
+          </filter>
+        </defs>
+        <ellipse cx="12" cy="13" rx="7" ry="7.5" fill="${sp}"/>
+        <path d="M12 5.5 Q11 8 12 10" stroke="rgba(134,239,172,.8)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <path d="M7.5 10 Q12 5 16.5 10" stroke="rgba(134,239,172,.7)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <circle cx="9.5" cy="12" r="1"   fill="rgba(255,255,255,.55)"/>
+        <circle cx="14"  cy="11" r=".8"  fill="rgba(255,255,255,.45)"/>
+        <circle cx="12"  cy="15" r=".7"  fill="rgba(255,255,255,.40)"/>
+        <ellipse cx="10" cy="10.5" rx="2.2" ry="1.4" fill="rgba(255,255,255,.30)" transform="rotate(-20 10 10.5)"/>
+      </svg>`;
+    }
+    if(kind==="mycelium"){
+      const mg = `url(#mg_${uid})`;
+      return `<svg viewBox="0 0 24 24" fill="none" filter="${f}">
+        <defs>
+          <linearGradient id="mg_${uid}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#faf5ff"/>
+            <stop offset=".30" stop-color="#a78bfa"/>
+            <stop offset=".65" stop-color="#4ade80"/>
+            <stop offset="1" stop-color="#14532d"/>
+          </linearGradient>
+          <filter id="f_${kind}_${uid}" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="1.5" flood-color="rgba(167,139,250,.35)"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="rgba(74,222,128,.2)"/>
+          </filter>
+        </defs>
+        <path d="M12 12 L5 6"  stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L19 6" stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L4 14" stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L20 15" stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L9 20" stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L15 20" stroke="${mg}" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M12 12 L12 3" stroke="${mg}" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="5"  cy="6"  r="1.5" fill="rgba(167,139,250,.9)"/>
+        <circle cx="19" cy="6"  r="1.5" fill="rgba(74,222,128,.9)"/>
+        <circle cx="4"  cy="14" r="1.2" fill="rgba(167,139,250,.8)"/>
+        <circle cx="20" cy="15" r="1.2" fill="rgba(74,222,128,.8)"/>
+        <circle cx="9"  cy="20" r="1.2" fill="rgba(74,222,128,.7)"/>
+        <circle cx="15" cy="20" r="1.2" fill="rgba(167,139,250,.7)"/>
+        <circle cx="12" cy="3"  r="1.4" fill="rgba(255,255,255,.8)"/>
+        <circle cx="12" cy="12" r="3" fill="rgba(167,139,250,.85)" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+        <circle cx="11" cy="11" r="1" fill="rgba(255,255,255,.6)"/>
+      </svg>`;
+    }
+    if(kind==="biolith"){
+      const bg = `url(#bg_${uid})`;
+      const bi = `url(#bi_${uid})`;
+      return `<svg viewBox="0 0 24 24" fill="none" filter="${f}">
+        <defs>
+          <linearGradient id="bg_${uid}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0"   stop-color="#f0fdf4"/>
+            <stop offset=".25" stop-color="#4ade80"/>
+            <stop offset=".60" stop-color="#16a34a"/>
+            <stop offset="1"   stop-color="#052e16"/>
+          </linearGradient>
+          <radialGradient id="bi_${uid}" cx="38%" cy="32%" r="55%">
+            <stop offset="0" stop-color="rgba(255,255,255,.8)"/>
+            <stop offset="1" stop-color="rgba(74,222,128,.0)"/>
+          </radialGradient>
+          <filter id="f_${kind}_${uid}" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="1.5" flood-color="rgba(74,222,128,.5)"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="rgba(22,163,74,.3)"/>
+          </filter>
+        </defs>
+        <path d="M12 2 L17 8 L16 16 L12 21 L8 16 L7 8 Z" fill="${bg}" stroke="rgba(134,239,172,.6)" stroke-width="1.2" stroke-linejoin="round"/>
+        <path d="M12 2 L17 8 L16 16 L12 21 L8 16 L7 8 Z" fill="${bi}"/>
+        <path d="M12 2 L12 21"  stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-linecap="round"/>
+        <path d="M7 8 L17 8"    stroke="rgba(255,255,255,.30)" stroke-width="1" stroke-linecap="round"/>
+        <path d="M8 16 L16 16"  stroke="rgba(255,255,255,.20)" stroke-width="1" stroke-linecap="round"/>
+        <path d="M10 9 Q12 12 10 15" stroke="rgba(74,222,128,.55)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M14 9 Q12 12 14 15" stroke="rgba(74,222,128,.55)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M11 4 L13 4" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="1.8" fill="rgba(187,247,208,.9)"/>
+        <circle cx="12" cy="12" r=".8"  fill="rgba(255,255,255,.95)"/>
+      </svg>`;
+    }
     /* coin icon for labels */
     if(kind==="coin"){
       return `<svg viewBox="0 0 24 24" fill="none">
