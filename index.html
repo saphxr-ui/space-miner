@@ -2310,6 +2310,7 @@
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
       if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
+      if(!s.bioupgrades) s.bioupgrades = {};
       // Fix bio planet costs if they were initialized with wrong (iron belt) values
       if(s.planets.bio && s.planets.bio.costLaser < 1000){
         s.planets.bio.costLaser    = 4000;
@@ -2860,7 +2861,7 @@
 
       // Cargo capacity bonuses
       if(mr === 14){ state.rankCargoBonus = (state.rankCargoBonus||0) + 50;  applyStats(state); spawnPop(`+50 CARGO!`, true, 50, 55, null); }
-      if(mr === 20){ state.rankCargoBonus = (state.rankCargoBonus||0) + 100; state.perksUnlocked.stationDiscount20 = true; applyStats(state); spawnPop(`+100 CARGO!`, true, 50, 55, null); toast("MR 20 Bonus: +100 Cargo · Station costs −20%!"); }
+      if(mr === 20){ state.rankCargoBonus = (state.rankCargoBonus||0) + 100; state.perksUnlocked.stationDiscount20 = true; applyStats(state); spawnPop(`+100 CARGO!`, true, 50, 55, null); toast("MR 20 Bonus: +100 Cargo · Station costs −20%!"); spawnPop("BIO SPHERE UNLOCKED!", true, 50, 38, null); toast("Bio Sphere unlocked! Switch planets in the Zone bar."); }
       if(mr === 25){ state.rankCargoBonus = (state.rankCargoBonus||0) + 150; applyStats(state); spawnPop(`+150 CARGO!`, true, 50, 55, null); }
 
       // Planet unlocks
@@ -3073,7 +3074,8 @@
     const baseRegolith = crit ? P().laserPower*4 : P().laserPower;
     const regolith = Math.round(baseRegolith * comboMult * planetCreditMult()
       * (1 + skillBonus("laserCreditMult"))
-      * (1 + skillBonus("globalCreditMult")));
+      * (1 + skillBonus("globalCreditMult"))
+      * bioSurgeCredMult);
 
     fireLaserFX(crit, clientX, clientY);
     const gained = addCredits(regolith);
@@ -3083,8 +3085,11 @@
     const comboLabel = comboTier > 0 ? ` ×${(1 + comboTier*0.5).toFixed(1)}` : "";
     spawnPop(`+${fmt(gained)}${comboLabel}`, crit || comboTier > 0, 50, 52, miniIconWrap(ICONS.coin, 20));
 
-    const bioXpMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? 2.5 : 1;
-    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")) * bioXpMult);
+    const isBioPlanet = state.currentPlanet === "bio";
+    const bioSurgeActive = isBioPlanet && state._bioSurgeUntil && Date.now() < state._bioSurgeUntil;
+    const bioSurgeXpMult = bioSurgeActive ? 2.5 : 1;
+    const bioPassiveXpMult = isBioPlanet ? (1 + skillBonus("bioXpMult") + (state.bioupgrades?.spore?0.25:0) + (state.bioupgrades?.livingcore?0.50:0)) : 1;
+    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")) * bioSurgeXpMult * bioPassiveXpMult);
 
     // Void Surge — only on void planet
     if(state.currentPlanet === "void"){
@@ -3101,11 +3106,15 @@
         spawnParticles(28);
       }
     }
+    // Bio credit boost during surge
+    const bioSurgeCredMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? (1 + skillBonus("bioSurgeCreditMult")) : 1;
+
     // Bio Surge — only on bio planet
     if(state.currentPlanet === "bio"){
-      const bioSurgeChance = PLANETS.bio.bioSurgeChance || 0.06;
+      const bioSurgeChance = (PLANETS.bio.bioSurgeChance || 0.06) + skillBonus("bioSurgeChance") + (state.bioupgrades?.mycelium?0.02:0);
       if(Math.random() < bioSurgeChance){
-        state._bioSurgeUntil = Date.now() + 6000;
+        const bioSurgeDur = 6000 + (state.bioupgrades?.resonance?3000:0) + (skillBonus("bioSurgeDurationMult")*6000);
+        state._bioSurgeUntil = Date.now() + bioSurgeDur;
         if(state._stats) state._stats.bioSurges=(state._stats.bioSurges||0)+1;
         spawnPop(`BIO SURGE! XP ×2.5`, true, 50, 38, null);
         asteroid.classList.remove("bio-surge");
@@ -3351,6 +3360,16 @@
         { id:"v6", name:"Alloy Resonance",     desc:"+3% Void Surge chance",              cost:{ credits:500000, voidcore:3 },              effect:{ voidSurgeChance:0.03 }, unlockMR:18 },
         { id:"v7", name:"Stardust Core",       desc:"+40% Stellar Dust from prestige",    cost:{ credits:1000000,stardust_bar:1 },          effect:{ dustMult:0.40 }, unlockMR:22 },
         { id:"v8", name:"Void Singularity",    desc:"+100% all credits on Void planet",   cost:{ credits:3000000,stardust_bar:2 },          effect:{ voidCreditMult:1.00 }, unlockMR:25 },
+      ]
+    },
+    bio: {
+      label:"🌿 Bio Mastery", branch:"bio",
+      nodes:[
+        { id:"b1", name:"Bio Attunement",  desc:"+20% XP on Bio planet",              cost:{ credits:50000,  sporeDust:10 },          effect:{ bioXpMult:0.20 }, unlockMR:20 },
+        { id:"b2", name:"Surge Catalyst",  desc:"+2% Bio Surge chance",               cost:{ credits:150000, mycelium:5 },             effect:{ bioSurgeChance:0.02 }, unlockMR:20 },
+        { id:"b3", name:"Spore Cloud",     desc:"+30% XP on Bio planet",              cost:{ credits:400000, biolith:3 },              effect:{ bioXpMult:0.30 }, unlockMR:22 },
+        { id:"b4", name:"Living Network",  desc:"Bio Surge also gives +20% credits",  cost:{ credits:800000, biocore:2 },              effect:{ bioSurgeCreditMult:0.20 }, unlockMR:24 },
+        { id:"b5", name:"Genesis Core",    desc:"+50% XP + Bio Surge duration ×2",    cost:{ credits:2000000,livingcrystal:1 },        effect:{ bioXpMult:0.50, bioSurgeDurationMult:1.0 }, unlockMR:26 },
       ]
     },
   };
@@ -5065,6 +5084,76 @@
       buy:()=>buyOrEquipDroneSkin(skin.id),
       buttonText:()=>state.cosmetics.owned[skin.id]?((state.cosmetics.droneSkin===skin.id)?"Equipped":"Equip"):"Buy"
     }))
+
+    ,// ── Core tab: Bio Sphere upgrades (only visible on bio planet) ───
+    { id:"bioSpore",    tab:"core", name:"Spore Network",   icon:"🍄",
+      desc:"Enhances spore activity across Bio Sphere. +25% XP on Bio planet.",
+      hideBuy:false,
+      hidden:()=>state.currentPlanet !== "bio",
+      costText:()=>`${fmt(5000)} credits + 20 Spore Dust`,
+      canBuy:()=>state.credits >= 5000 && (state.cargo.sporeDust||0) >= 20 && !(state.bioupgrades?.spore),
+      chips:()=>[{text:state.bioupgrades?.spore?"Installed":"Not installed",kind:state.bioupgrades?.spore?"good":""}],
+      current:()=>state.bioupgrades?.spore?"+25% Bio XP":"Not installed",
+      next:()=>state.bioupgrades?.spore?"Already installed":"+25% Bio XP",
+      buy:()=>{
+        if(state.credits<5000||(state.cargo.sporeDust||0)<20||state.bioupgrades?.spore) return toast("Cannot buy.");
+        state.credits-=5000; state.cargo.sporeDust-=20;
+        if(!state.bioupgrades) state.bioupgrades={};
+        state.bioupgrades.spore=true;
+        toast("Spore Network installed! +25% Bio XP"); updateUpgradeTexts(); updateUpgradeAffordability(); save();
+      }
+    },
+    { id:"bioMycelium", tab:"core", name:"Mycelium Web",    icon:"🌐",
+      desc:"Dense mycelium network boosts Bio Surge trigger chance by +2%.",
+      hideBuy:false,
+      hidden:()=>state.currentPlanet !== "bio",
+      costText:()=>`${fmt(15000)} credits + 5 Mycelium`,
+      canBuy:()=>state.credits>=15000 && (state.cargo.mycelium||0)>=5 && !(state.bioupgrades?.mycelium),
+      chips:()=>[{text:state.bioupgrades?.mycelium?"Installed":"Not installed",kind:state.bioupgrades?.mycelium?"good":""}],
+      current:()=>state.bioupgrades?.mycelium?"+2% Bio Surge":"Not installed",
+      next:()=>state.bioupgrades?.mycelium?"Already installed":"+2% Bio Surge chance",
+      buy:()=>{
+        if(state.credits<15000||(state.cargo.mycelium||0)<5||state.bioupgrades?.mycelium) return toast("Cannot buy.");
+        state.credits-=15000; state.cargo.mycelium-=5;
+        if(!state.bioupgrades) state.bioupgrades={};
+        state.bioupgrades.mycelium=true;
+        toast("Mycelium Web installed! +2% Bio Surge"); updateUpgradeTexts(); updateUpgradeAffordability(); save();
+      }
+    },
+    { id:"bioResonance", tab:"core", name:"Bio Resonance",  icon:"💫",
+      desc:"Resonance extends Bio Surge duration by +3 seconds.",
+      hideBuy:false,
+      hidden:()=>state.currentPlanet !== "bio",
+      costText:()=>`${fmt(40000)} credits + 10 Mycelium`,
+      canBuy:()=>state.credits>=40000 && (state.cargo.mycelium||0)>=10 && !(state.bioupgrades?.resonance),
+      chips:()=>[{text:state.bioupgrades?.resonance?"Installed":"Not installed",kind:state.bioupgrades?.resonance?"good":""}],
+      current:()=>state.bioupgrades?.resonance?"+3s Bio Surge":"Not installed",
+      next:()=>state.bioupgrades?.resonance?"Already installed":"Bio Surge lasts 3s longer",
+      buy:()=>{
+        if(state.credits<40000||(state.cargo.mycelium||0)<10||state.bioupgrades?.resonance) return toast("Cannot buy.");
+        state.credits-=40000; state.cargo.mycelium-=10;
+        if(!state.bioupgrades) state.bioupgrades={};
+        state.bioupgrades.resonance=true;
+        toast("Bio Resonance installed! Surge +3s"); updateUpgradeTexts(); updateUpgradeAffordability(); save();
+      }
+    },
+    { id:"bioLivingCore", tab:"core", name:"Living Core",   icon:"💚",
+      desc:"A living crystalline core pulses through the planet. +50% XP on Bio planet.",
+      hideBuy:false,
+      hidden:()=>state.currentPlanet !== "bio",
+      costText:()=>`${fmt(100000)} credits + 3 Biolith`,
+      canBuy:()=>state.credits>=100000 && (state.cargo.biolith||0)>=3 && !(state.bioupgrades?.livingcore),
+      chips:()=>[{text:state.bioupgrades?.livingcore?"Installed":"Not installed",kind:state.bioupgrades?.livingcore?"good":""}],
+      current:()=>state.bioupgrades?.livingcore?"+50% Bio XP":"Not installed",
+      next:()=>state.bioupgrades?.livingcore?"Already installed":"+50% Bio XP",
+      buy:()=>{
+        if(state.credits<100000||(state.cargo.biolith||0)<3||state.bioupgrades?.livingcore) return toast("Cannot buy.");
+        state.credits-=100000; state.cargo.biolith-=3;
+        if(!state.bioupgrades) state.bioupgrades={};
+        state.bioupgrades.livingcore=true;
+        toast("Living Core installed! +50% Bio XP"); updateUpgradeTexts(); updateUpgradeAffordability(); save();
+      }
+    },
   ];
 ;
 
@@ -5072,7 +5161,7 @@
     upgradesListEl.innerHTML = "";
     upgradeNodes.clear();
 
-    const list = UPGRADE_DEFS.filter(u => u.tab === tab);
+    const list = UPGRADE_DEFS.filter(u => u.tab === tab && (!u.hidden || !u.hidden()));
     for(const u of list){
       const card = document.createElement("div");
       card.className = "uCard";
