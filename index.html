@@ -1618,6 +1618,35 @@
     .branch-complete .skillBranchHeader{background:rgba(50,213,131,.12)!important;}
     .skillBranchHeader{cursor:pointer;user-select:none;padding:14px 12px;text-align:center;font-weight:900;font-size:12px;flex:1;display:flex;flex-direction:column;justify-content:center;transition:opacity .15s;}
     .skillBranchHeader:hover{opacity:.85;}
+
+    /* Branch card hover */
+    .skillBranchHeader{ transition: transform .15s, box-shadow .15s, filter .15s, opacity .15s; }
+    .skillBranch:not(.branch-locked) .skillBranchHeader:hover{
+      transform: translateY(-2px) scale(1.02);
+      filter: brightness(1.18);
+    }
+    .skillBranch:not(.branch-locked) .skillBranchHeader:active{ transform: scale(.97); }
+
+    /* Affordable pulse on branch cards */
+    @keyframes branchPulse{
+      0%,100%{ box-shadow: inherit; }
+      50%{ filter: brightness(1.3); }
+    }
+    .skillBranch.has-affordable .skillBranchHeader{
+      animation: branchPulse 2.2s ease-in-out infinite;
+    }
+
+    /* Skill unlock burst */
+    @keyframes skillUnlockFlash{
+      0%  { box-shadow:0 0 0 0 rgba(50,213,131,.7); transform:scale(1); }
+      40% { box-shadow:0 0 0 18px rgba(50,213,131,0); transform:scale(1.04); }
+      100%{ box-shadow:0 0 0 0 rgba(50,213,131,0); transform:scale(1); }
+    }
+    .skillNode.just-unlocked{ animation: skillUnlockFlash .55s ease-out forwards; }
+
+    /* Skill node hover in modal */
+    .skillNode:not(.locked-node):not(.owned){ cursor:pointer; transition: transform .1s, box-shadow .1s; }
+    .skillNode.affordable:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(50,213,131,.25); }
 </style>
 </head>
 <body>
@@ -3828,7 +3857,10 @@
     body.querySelectorAll("[data-branch]").forEach(n=>{
       if(n.dataset.u!=="1") return;
       n.addEventListener("click",()=>{
+        const nodeEl = n;
         buySkill(n.dataset.branch, parseInt(n.dataset.idx));
+        nodeEl.classList.add("just-unlocked");
+        setTimeout(()=>nodeEl.classList.remove("just-unlocked"), 600);
         openSkillBranch(branchId);
         renderSkillTree();
       });
@@ -3862,6 +3894,14 @@
         `<div class="branchProgress" style="margin-top:8px;"><div class="branchProgressBar" style="width:${pctDone}%"></div></div>` +
         `<div style="font-size:10px;opacity:.65;margin-top:5px;font-family:monospace;">${bOwned}/${bTotal}${allDone?" ✓":""}</div>` +
         `</div>`;
+      // Mark card if branch has affordable skills
+      const hasAffordable = !locked && branch.nodes.some((n,i)=>{
+        const o = skillOwned(n.id);
+        const mr = !n.unlockMR||state.minerRank>=n.unlockMR;
+        const prev = i===0||skillOwned(branch.nodes[i-1].id);
+        return !o && mr && prev && canAffordSkill(n);
+      });
+      if(hasAffordable) card.classList.add("has-affordable");
       if(!locked) card.addEventListener("click", ()=>openSkillBranch(branchId));
       wrapper.appendChild(card);
     }
@@ -5199,8 +5239,11 @@
   function smeltInventory(s){ return s.smeltInv = s.smeltInv || {}; }
 
   function canSmelt(recipe, s){
+    const _sinv = smeltInventory(s);
+    const _alloyIds = new Set(SMELT_RECIPES.map(r=>r.id));
     for(const [oreId, need] of Object.entries(recipe.inputs)){
-      if((s.cargo[oreId]||0) < need) return false;
+      const have = _alloyIds.has(oreId) ? (_sinv[oreId]||0) : (s.cargo[oreId]||0);
+      if(have < need) return false;
     }
     return true;
   }
@@ -5239,9 +5282,13 @@
     if(!canSmelt(recipe, state))
       return toast("Not enough ores to smelt.");
 
-    // Consume ores immediately
-    for(const [oreId, need] of Object.entries(recipe.inputs)){
-      state.cargo[oreId] = (state.cargo[oreId]||0) - need;
+    // Consume ores/alloys immediately
+    { const _sinv = smeltInventory(state);
+      const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
+      for(const [oreId, need] of Object.entries(recipe.inputs)){
+        if(_aids.has(oreId)) _sinv[oreId] = (_sinv[oreId]||0) - need;
+        else state.cargo[oreId] = (state.cargo[oreId]||0) - need;
+      }
     }
     if(state._stats) state._stats.smeltCount=(state._stats.smeltCount||0)+1;
 
@@ -5296,8 +5343,12 @@
     // Refund ores
     const recipe = SMELT_RECIPES.find(r=>r.id===recipeId);
     if(recipe){
-      for(const [oreId, need] of Object.entries(recipe.inputs)){
-        state.cargo[oreId] = (state.cargo[oreId]||0) + need;
+      { const _sinv = smeltInventory(state);
+        const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
+        for(const [oreId, need] of Object.entries(recipe.inputs)){
+          if(_aids.has(oreId)) _sinv[oreId] = (_sinv[oreId]||0) + need;
+          else state.cargo[oreId] = (state.cargo[oreId]||0) + need;
+        }
       }
       toast(`Cancelled: ${recipe.name} — ores refunded.`);
     }
