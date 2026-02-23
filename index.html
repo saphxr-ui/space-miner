@@ -127,6 +127,43 @@
       100%{transform:translate(0,0) rotate(0deg);}
     }
 
+    /* ── Cosmetics section headers ── */
+    .cosSecHeader {
+      cursor: pointer;
+      user-select: none;
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 4px 12px;
+      position: sticky; top: 0;
+      background: var(--card2);
+      z-index: 2;
+    }
+    .cosSecHeader::before, .cosSecHeader::after {
+      content: ''; flex: 1; height: 1px;
+    }
+    .cosSecHeader::before { background: linear-gradient(90deg, transparent, var(--acc)); }
+    .cosSecHeader::after  { background: linear-gradient(270deg, transparent, var(--acc)); }
+    .cosSecLabel {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px; font-weight: 800;
+      letter-spacing: 2.5px; white-space: nowrap;
+      color: var(--acc);
+      text-transform: uppercase;
+      text-shadow: 0 0 12px var(--acc);
+      padding: 5px 14px;
+      border: 1px solid var(--acc);
+      border-radius: 99px;
+      background: rgba(0,0,0,.3);
+      transition: opacity .15s;
+    }
+    .cosSecHeader:hover .cosSecLabel { opacity: .8; }
+    .cosSecChevron {
+      font-size: 13px; color: var(--acc);
+      transition: transform .25s;
+      margin-left: -4px;
+    }
+    .cosSecHeader.cosCollapsed .cosSecChevron { transform: rotate(-90deg); }
+    .cosSecHeader.cosCollapsed .cosSecLabel { opacity: .55; }
+
     /* GPU compositing hints */
     .drone{ will-change:transform; }
     .asteroid{ will-change:transform; }
@@ -2366,6 +2403,17 @@
   }
 
   /* ===== Drone cosmetics (ONLY drones) ===== */
+  const PARTICLE_SKINS = [
+    { id:"default",   name:"Default",      icon:"✨", cost:0,      desc:"Cyan, white & gold particles.",         colors:["rgba(43,212,255,.95)","rgba(255,255,255,.9)","rgba(255,204,102,.95)"] },
+    { id:"ember",     name:"Ember",        icon:"🔥", cost:5000,   desc:"Hot orange & red sparks.",              colors:["rgba(251,146,60,.95)","rgba(239,68,68,.9)","rgba(255,200,80,.95)","rgba(255,80,20,.8)"] },
+    { id:"bio",       name:"Bio Spores",   icon:"🌿", cost:0,      desc:"Organic green spore burst.",            colors:["rgba(74,222,128,.95)","rgba(187,247,208,.9)","rgba(134,239,172,.85)"], unlockMR:20 },
+    { id:"void",      name:"Void Dust",    icon:"🔮", cost:0,      desc:"Swirling purple void energy.",          colors:["rgba(192,132,252,.95)","rgba(167,139,250,.9)","rgba(233,213,255,.8)","rgba(124,58,237,.85)"], unlockMR:15 },
+    { id:"frost",     name:"Frost",        icon:"❄️", cost:0,      desc:"White & ice-blue crystals.",            colors:["rgba(255,255,255,.95)","rgba(224,242,254,.9)","rgba(186,230,253,.85)"], unlockMR:25 },
+    { id:"lightning", name:"Lightning",    icon:"⚡", cost:50000,  desc:"Electric yellow bolt sparks.",          colors:["rgba(250,204,21,.98)","rgba(255,255,180,.9)","rgba(253,224,71,.95)","rgba(255,255,255,.8)"], unlockPrestige:1 },
+    { id:"prism",     name:"Prism",        icon:"🌈", cost:30000,  desc:"Full-spectrum rainbow burst.",          colors:["rgba(255,80,80,.9)","rgba(255,200,0,.9)","rgba(80,255,80,.9)","rgba(80,180,255,.9)","rgba(200,80,255,.9)"], unlockMR:25 },
+    { id:"solar",     name:"Solar Flare",  icon:"☀️", cost:0,      desc:"Blazing gold — giant bursts on crits.", colors:["rgba(255,220,50,.98)","rgba(255,255,200,.95)","rgba(255,180,0,.9)","rgba(255,255,255,.95)"], unlockMR:30 },
+  ];
+
   const LASER_SKINS = [
     { id:"default",  name:"Default Beam",  css:"laser-default",  cost:0,      desc:"Classic cyan laser beam." },
     { id:"plasma",   name:"Plasma Cutter", css:"laser-plasma",   cost:2000,   desc:"Wide red/orange scorching beam.",     unlockMR:10 },
@@ -2456,6 +2504,7 @@
       cosmetics: {
         droneSkin: "default",
         laserSkin: "default",
+        particleSkin: "default",
         activeTitle: "default",
         owned: { default:true, carbon:false, neon:false, solar:false }
       }
@@ -2521,6 +2570,7 @@
       if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
       if(!s.bioupgrades) s.bioupgrades = {};
       if(!s.cosmetics.laserSkin) s.cosmetics.laserSkin = 'default';
+      if(!s.cosmetics.particleSkin) s.cosmetics.particleSkin = 'default';
       // Ensure oreSettings exists for ALL ores (including bio/void added later)
       if(!s.oreSettings) s.oreSettings = defaultOreSettings();
       for(const o of ORES){
@@ -2882,11 +2932,11 @@
   function spawnParticles(count=12, atX=null, atY=null){
     const rect = stage.getBoundingClientRect();
     const ox = atX ?? rect.width/2, oy = atY ?? rect.height/2;
+    const palette = currentParticleColors();
     for(let i=0;i<count;i++){
       const p = document.createElement("div");
       p.className = "particle";
-      const r = Math.random();
-      const col = r<0.55 ? "rgba(43,212,255,.9)" : (r<0.85 ? "rgba(255,255,255,.85)" : "rgba(255,204,102,.95)");
+      const col = palette[Math.floor(Math.random()*palette.length)];
       p.style.background = col;
       const ang = Math.random()*Math.PI*2;
       const dist = 16 + Math.random()*48;
@@ -4836,6 +4886,47 @@
   }
 
   /* ===== Cosmetics: 3 Drone skins ===== */
+  function particleSkinUnlockable(skin){
+    if(skin.unlockMR && state.minerRank < skin.unlockMR) return false;
+    const presTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
+    if(skin.unlockPrestige && presTotal < skin.unlockPrestige) return false;
+    return true;
+  }
+  function canAffordParticleSkin(skin){
+    if(!particleSkinUnlockable(skin)) return false;
+    if(skin.cost > 0 && state.credits < skin.cost) return false;
+    return true;
+  }
+  function particleSkinCostText(skin){
+    if(state.cosmetics.owned['particle_'+skin.id]) return "Owned";
+    const parts = [];
+    if(skin.cost > 0) parts.push(fmt(skin.cost)+" credits");
+    if(skin.unlockMR) parts.push("MR "+skin.unlockMR);
+    if(skin.unlockPrestige) parts.push(skin.unlockPrestige+"× Prestige");
+    return parts.join(" · ") || "Free";
+  }
+  function buyOrEquipParticleSkin(skinId){
+    const skin = PARTICLE_SKINS.find(s=>s.id===skinId);
+    if(!skin) return;
+    const ownKey = 'particle_'+skinId;
+    if(!state.cosmetics.owned[ownKey]){
+      if(!particleSkinUnlockable(skin)) return toast("Requirements not met.");
+      if(!canAffordParticleSkin(skin)) return toast("Not enough credits.");
+      state.credits -= (skin.cost||0);
+      state.cosmetics.owned[ownKey] = true;
+      toast(skin.name+" unlocked.");
+      pingCard('pskin_'+skinId);
+    }
+    state.cosmetics.particleSkin = skinId;
+    toast("Equipped: "+skin.name);
+    updateUpgradeTexts(); updateUpgradeAffordability(); updateHUD(); save();
+  }
+  function currentParticleColors(){
+    const skinId = state.cosmetics?.particleSkin || 'default';
+    const skin = PARTICLE_SKINS.find(s=>s.id===skinId) || PARTICLE_SKINS[0];
+    return skin.colors;
+  }
+
   function laserSkinUnlockable(skin){
     if(skin.unlockMR && state.minerRank < skin.unlockMR) return false;
     const presTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
@@ -5417,7 +5508,10 @@
     },
 
     /* Cosmetic tab */
-    ...DRONE_SKINS.filter(s=>s.id!=="default").map(skin => ({
+    // Divider: Drone Skins
+    { id:"_div_drone", tab:"cos", name:"🛸 Drone Skins", _divider:true, _color:"rgba(147,197,253,.5)", _defaultOpen:true,
+      chips:()=>[], current:()=>"", next:()=>"", costText:()=>"", canBuy:()=>false, buy:()=>{}, hideBuy:true, icon:"" }
+    ,...DRONE_SKINS.filter(s=>s.id!=="default").map(skin => ({
       id:`skin_${skin.id}`, tab:"cos", name:skin.name, icon:ICONS.skin,
       desc:skin.desc+" (Drones only)",
       hideBuy:false,
@@ -5432,8 +5526,9 @@
       buy:()=>buyOrEquipDroneSkin(skin.id),
       buttonText:()=>state.cosmetics.owned[skin.id]?((state.cosmetics.droneSkin===skin.id)?"Equipped":"Equip"):"Buy"
     }))
-
-    // ── Cos tab: Laser skins ───────────────────────────────────────────
+    // Divider: Laser Skins
+    ,{ id:"_div_laser", tab:"cos", name:"🔫 Laser Skins", _divider:true, _color:"rgba(103,232,249,.5)",
+       chips:()=>[], current:()=>"", next:()=>"", costText:()=>"", canBuy:()=>false, buy:()=>{}, hideBuy:true, icon:"" }
     ,...LASER_SKINS.filter(s=>s.id!=="default").map(skin => ({
       id:`lskin_${skin.id}`, tab:"cos", name:skin.name, icon:"🔫",
       desc:skin.desc+" (Laser only)",
@@ -5451,6 +5546,28 @@
       buy:()=> buyOrEquipLaserSkin(skin.id),
       buttonText:()=> state.cosmetics.owned['laser_'+skin.id]
         ? ((state.cosmetics.laserSkin===skin.id)?"Equipped":"Equip")
+        : "Buy"
+    }))
+    // Divider: Particle Effects
+    ,{ id:"_div_particle", tab:"cos", name:"✨ Particle Effects", _divider:true, _color:"rgba(251,191,36,.5)",
+       chips:()=>[], current:()=>"", next:()=>"", costText:()=>"", canBuy:()=>false, buy:()=>{}, hideBuy:true, icon:"" }
+    ,...PARTICLE_SKINS.filter(s=>s.id!=="default").map(skin => ({
+      id:`pskin_${skin.id}`, tab:"cos", name:skin.name, icon:skin.icon,
+      desc:skin.desc,
+      hideBuy:false,
+      costText:()=> particleSkinCostText(skin),
+      canBuy:()=> state.cosmetics.owned['particle_'+skin.id] ? true : canAffordParticleSkin(skin),
+      chips:()=>[
+        {text:state.cosmetics.owned['particle_'+skin.id]?"Owned":particleSkinUnlockable(skin)?"Not owned":"Locked",
+         kind:state.cosmetics.owned['particle_'+skin.id]?"good":particleSkinUnlockable(skin)?"bad":""},
+        {text:(state.cosmetics.particleSkin===skin.id)?"Equipped":"—",
+         kind:(state.cosmetics.particleSkin===skin.id)?"good":""},
+      ],
+      current:()=> state.cosmetics.particleSkin===skin.id ? "Active particle skin" : "—",
+      next:()=> state.cosmetics.owned['particle_'+skin.id] ? "Equip anytime" : "Unlock + equip",
+      buy:()=> buyOrEquipParticleSkin(skin.id),
+      buttonText:()=> state.cosmetics.owned['particle_'+skin.id]
+        ? ((state.cosmetics.particleSkin===skin.id)?"Equipped":"Equip")
         : "Buy"
     }))
     ,// ── Core tab: Bio Sphere upgrades (only visible on bio planet) ───
@@ -5531,6 +5648,35 @@
 
     const list = UPGRADE_DEFS.filter(u => u.tab === tab && (!u.hidden || !u.hidden()));
     for(const u of list){
+      // Section divider — accordion header
+      if(u._divider){
+        const div = document.createElement("div");
+        div.className = "cosSecHeader";
+        div.style.cssText = `--acc:${u._color||"rgba(255,255,255,.15)"}`;
+        // Load saved open/closed state (default: first section open)
+        const savedOpen = localStorage.getItem('cosAcc_'+u.id);
+        const isOpen = savedOpen === null ? u._defaultOpen !== false : savedOpen === '1';
+        if(!isOpen) div.classList.add('cosCollapsed');
+        div.innerHTML = `<span class="cosSecLabel">${u.name}</span><span class="cosSecChevron">▾</span>`;
+        div.addEventListener('click', () => {
+          div.classList.toggle('cosCollapsed');
+          localStorage.setItem('cosAcc_'+u.id, div.classList.contains('cosCollapsed') ? '0' : '1');
+          // Show/hide following cards until next divider
+          let el = div.nextElementSibling;
+          while(el && !el.classList.contains('cosSecHeader')){
+            el.style.display = div.classList.contains('cosCollapsed') ? 'none' : '';
+            el = el.nextElementSibling;
+          }
+        });
+        upgradesListEl.appendChild(div);
+        // Store reference for initial hide
+        div._isCollapsed = () => div.classList.contains('cosCollapsed');
+        continue;
+      }
+
+      // After adding a normal card, check if it should be hidden (collapsed section)
+      // We'll handle this after the card is appended (see below)
+
       const card = document.createElement("div");
       card.className = "uCard";
       card.dataset.upg = u.id;
@@ -5593,6 +5739,13 @@
       }
 
       upgradesListEl.appendChild(card);
+
+      // Hide card if its section is collapsed
+      {
+        let prev = card.previousElementSibling;
+        while(prev && !prev.classList.contains('cosSecHeader')) prev = prev.previousElementSibling;
+        if(prev && prev._isCollapsed && prev._isCollapsed()) card.style.display = 'none';
+      }
 
       upgradeNodes.set(u.id, {
         card, btn,
@@ -6800,6 +6953,9 @@
     // ── Collector ─────────────────────────────────────────────────────
     {id:"a_col1",  cat:"fleet",   icon:"🗃️",  name:"Collector",         desc:"Unlock 5 cosmetic items total",          reward:5,  check:s=>Object.values(s.cosmetics?.owned||{}).filter(Boolean).length>=5},
     {id:"a_col2",  cat:"fleet",   icon:"💼", name:"Fashion Mogul",     desc:"Unlock 10 cosmetic items total",         reward:10, check:s=>Object.values(s.cosmetics?.owned||{}).filter(Boolean).length>=10},
+    {id:"a_par1",  cat:"fleet",   icon:"✨", name:"Particle Stylist",  desc:"Equip any non-default particle effect",  reward:2,  check:s=>s.cosmetics?.particleSkin && s.cosmetics.particleSkin!=="default"},
+    {id:"a_par2",  cat:"fleet",   icon:"🌈", name:"Prism Burst",       desc:"Unlock the Prism particle effect",       reward:5,  check:s=>!!(s.cosmetics?.owned?.["particle_prism"])},
+    {id:"a_par3",  cat:"fleet",   icon:"☀️",  name:"Solar Burst",       desc:"Unlock the Solar Flare particles",       reward:8,  check:s=>!!(s.cosmetics?.owned?.["particle_solar"])},
   ];
   function checkAchievements(){
     if(!state||!state._stats) return;
