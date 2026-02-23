@@ -168,6 +168,13 @@
       70% {opacity:.6;filter:drop-shadow(0 0 8px rgba(200,235,255,.6)) blur(.3px);}
       100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1);}
     }
+    @keyframes solar-crit{
+      0%  { filter: brightness(1); }
+      15% { filter: brightness(1.6) sepia(.4) saturate(2); }
+      100%{ filter: brightness(1); }
+    }
+    #stage.solar-crit-flash{ animation: solar-crit 300ms ease-out forwards; }
+
     @keyframes laser-solar{
       0%  {opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.4);}
       15% {opacity:1;filter:brightness(2.5) drop-shadow(0 0 18px rgba(255,220,50,.8));}
@@ -1079,6 +1086,14 @@
     .skillBranch.economy .skillNode.affordable{ border-color:rgba(255,204,102,.32); box-shadow:0 8px 22px rgba(255,204,102,.10); }
     .skillBranch.exploration .skillNode.affordable{ border-color:rgba(255,100,50,.35); box-shadow:0 8px 22px rgba(255,100,50,.10); }
 
+    .skillBranch.void .skillBranchHeader{ background:rgba(192,132,252,.10); border:1px solid rgba(192,132,252,.22); color:rgba(233,213,255,.95); }
+    .skillBranch.void .skillConnector{ background:rgba(192,132,252,.25); }
+    .skillBranch.void .skillNode.affordable{ border-color:rgba(192,132,252,.38); box-shadow:0 8px 22px rgba(192,132,252,.12); }
+
+    .skillBranch.bio .skillBranchHeader{ background:rgba(74,222,128,.10); border:1px solid rgba(74,222,128,.22); color:rgba(187,247,208,.95); }
+    .skillBranch.bio .skillConnector{ background:rgba(74,222,128,.25); }
+    .skillBranch.bio .skillNode.affordable{ border-color:rgba(74,222,128,.38); box-shadow:0 8px 22px rgba(74,222,128,.12); }
+
     .skillNodeName{ font-weight:900; font-size:12px; margin-bottom:3px; }
     .skillNodeDesc{ font-size:11px; color:var(--muted); line-height:1.35; }
     .skillNodeCost{ display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
@@ -1431,11 +1446,16 @@
       100%{ filter:brightness(1)   drop-shadow(0 0 0px rgba(192,132,252,0)); }
     }
     .asteroid.void-surge{ animation: voidSurgeAnim 0.55s ease-out forwards; }
-    .bio-surge{ animation: bioSurgeAnim 0.55s ease-out forwards; }
+    .bio-surge{ animation: bioSurgeAnim 0.80s ease-out forwards; }
     @keyframes bioSurgeAnim {
-      0%  { filter: brightness(1) drop-shadow(0 0 0px #4ade80); }
-      40% { filter: brightness(2.2) drop-shadow(0 0 40px #4ade80); }
-      100%{ filter: brightness(1) drop-shadow(0 0 0px #4ade80); }
+      0%  { filter: brightness(1)   drop-shadow(0 0 0px  #4ade80); transform: scale(1); }
+      30% { filter: brightness(2.4) drop-shadow(0 0 50px #4ade80); transform: scale(1.04); }
+      65% { filter: brightness(1.6) drop-shadow(0 0 28px #4ade80); transform: scale(.98); }
+      100%{ filter: brightness(1)   drop-shadow(0 0 0px  #4ade80); transform: scale(1); }
+    }
+    #stage.bio-surge-active {
+      box-shadow: 0 0 0 2px rgba(74,222,128,.25), 0 0 32px rgba(74,222,128,.12) !important;
+      transition: box-shadow .4s ease;
     }
     #openSettingsBtn{ opacity:.8; transition:opacity .2s; }
     #openSettingsBtn:hover{ opacity:1; }
@@ -1506,7 +1526,7 @@
     .achDesc{ font-size:11px; color:var(--muted); margin-top:2px; }
     .achReward{ font-size:11px; color:#c084fc; flex-shrink:0; font-weight:700; }
     /* ── Void skill branch ──────────────────────────────────── */
-    .skillBranch.void .skillBranchHeader{ background:rgba(192,132,252,.12); color:#c084fc; border-color:rgba(192,132,252,.2); }
+    .skillBranch
 
     /* ── Miner/Station ──────────────────────────────────── */
     .cargoOreRow{ display:flex; align-items:center; gap:8px; padding:7px 4px; border-bottom:1px solid rgba(255,255,255,.05); }
@@ -1596,6 +1616,7 @@
             <div class="orbitRing r2"></div>
             <div class="orbitRing r3"></div>
 
+            <div id="bioSurgeHud" style="position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:#4ade80;background:rgba(0,0,0,.55);padding:3px 10px;border-radius:99px;border:1px solid rgba(74,222,128,.3);opacity:0;transition:opacity .3s;pointer-events:none;letter-spacing:.5px;z-index:10;"></div>
             <div id="droneLayer"></div>
 
             <div class="asteroidWrap" id="asteroidWrap">
@@ -2839,6 +2860,25 @@
     spawnDronePopAt(x, y, text, kind, iconHTML);
   }
 
+  function spawnParticlesColored(count=12, atX=null, atY=null, colors=null){
+    const rect = stage.getBoundingClientRect();
+    const ox = atX ?? rect.width/2, oy = atY ?? rect.height/2;
+    const palette = colors || ["rgba(43,212,255,.9)","rgba(255,255,255,.85)","rgba(255,204,102,.95)"];
+    for(let i=0;i<count;i++){
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.background = palette[Math.floor(Math.random()*palette.length)];
+      const ang = Math.random()*Math.PI*2;
+      const dist = 18 + Math.random()*56;
+      p.style.setProperty("--dx", (Math.cos(ang)*dist).toFixed(1)+"px");
+      p.style.setProperty("--dy", (Math.sin(ang)*dist).toFixed(1)+"px");
+      p.style.left = (ox + (Math.random()*8-4)) + "px";
+      p.style.top  = (oy + (Math.random()*8-4)) + "px";
+      stage.appendChild(p);
+      setTimeout(()=>p.remove(), 700);
+    }
+  }
+
   function spawnParticles(count=12, atX=null, atY=null){
     const rect = stage.getBoundingClientRect();
     const ox = atX ?? rect.width/2, oy = atY ?? rect.height/2;
@@ -2882,10 +2922,22 @@
       asteroidWrap.classList.remove("shake");
       void asteroidWrap.offsetWidth;
       asteroidWrap.classList.add("shake");
-      cracks.style.filter = "drop-shadow(0 0 18px rgba(255,204,102,.16))";
-      asteroid.style.filter = "brightness(1.08) saturate(1.14)";
-      spawnParticles(18);
-      setTimeout(() => { asteroid.style.filter = ""; cracks.style.filter = ""; }, 220);
+
+      const isSolarFlare = (state.cosmetics?.laserSkin === "solar");
+      if(isSolarFlare){
+        // Solar Flare: blinding white-gold flash + more particles
+        asteroid.style.filter = "brightness(2.2) saturate(1.0) sepia(.3)";
+        cracks.style.filter = "drop-shadow(0 0 28px rgba(255,220,50,.55))";
+        stage.classList.add("solar-crit-flash");
+        setTimeout(()=> stage.classList.remove("solar-crit-flash"), 300);
+        spawnParticlesColored(28, null, null, ["rgba(255,220,50,.95)","rgba(255,255,180,.9)","rgba(255,255,255,.95)","rgba(255,180,0,.85)"]);
+        setTimeout(() => { asteroid.style.filter = ""; cracks.style.filter = ""; }, 280);
+      } else {
+        cracks.style.filter = "drop-shadow(0 0 18px rgba(255,204,102,.16))";
+        asteroid.style.filter = "brightness(1.08) saturate(1.14)";
+        spawnParticles(18);
+        setTimeout(() => { asteroid.style.filter = ""; cracks.style.filter = ""; }, 220);
+      }
     }
   }
 
@@ -3200,7 +3252,13 @@
       state.cargo[oreId] += 1;
       took += 1;
     }
-    if(took>0) setCargoDirtyAll();
+    // Track bio ore stats for achievements
+    if(took > 0 && state._stats){
+      if(oreId === "sporeDust") state._stats.sporeDustMined = (state._stats.sporeDustMined||0) + took;
+      if(oreId === "mycelium")  state._stats.myceliumMined  = (state._stats.myceliumMined||0)  + took;
+      if(oreId === "biolith")   state._stats.biolithMined   = (state._stats.biolithMined||0)   + took;
+      setCargoDirtyAll();
+    }
     return took;
   }
 
@@ -3328,12 +3386,15 @@
         const bioSurgeDur = 6000 + (state.bioupgrades?.resonance?3000:0) + (skillBonus("bioSurgeDurationMult")*6000);
         state._bioSurgeUntil = Date.now() + bioSurgeDur;
         if(state._stats) state._stats.bioSurges=(state._stats.bioSurges||0)+1;
-        spawnPop(`BIO SURGE! XP ×2.5`, true, 50, 38, null);
+        spawnPop(`🌿 BIO SURGE!`, true, 50, 38, null);
         asteroid.classList.remove("bio-surge");
         void asteroid.offsetWidth;
         asteroid.classList.add("bio-surge");
-        setTimeout(()=>asteroid.classList.remove("bio-surge"), 600);
-        spawnParticles(20);
+        const bioSurgeSec = Math.round((state._bioSurgeUntil - Date.now()) / 1000);
+        setTimeout(()=>asteroid.classList.remove("bio-surge"), 800);
+        spawnParticlesColored(28, null, null, ["rgba(74,222,128,.95)","rgba(187,247,208,.9)","rgba(134,239,172,.85)","rgba(255,255,255,.8)"]);
+        // Spawn extra spore particles with delay
+        setTimeout(()=>spawnParticlesColored(16, null, null, ["rgba(74,222,128,.7)","rgba(134,239,172,.6)"]), 180);
       }
     }
     updateHUD();
@@ -6468,6 +6529,25 @@
     }
 
     applyPlanetVisuals();
+
+    // Bio Surge active indicator
+    const surgeActive = state.currentPlanet === "bio" && Date.now() < (state._bioSurgeUntil||0);
+    const surgeEl = el("bioSurgeHud");
+    if(surgeEl){
+      if(surgeActive){
+        const secLeft = Math.ceil((state._bioSurgeUntil - Date.now()) / 1000);
+        surgeEl.textContent = `🌿 SURGE ${secLeft}s`;
+        surgeEl.style.opacity = "1";
+      } else {
+        surgeEl.style.opacity = "0";
+      }
+    }
+    // Green stage glow during surge
+    if(state.currentPlanet === "bio"){
+      stage.classList.toggle("bio-surge-active", surgeActive);
+    } else {
+      stage.classList.remove("bio-surge-active");
+    }
   }
 
   function renderStats(){
@@ -6693,6 +6773,33 @@
     {id:"a_sta1",  cat:"station", icon:"🛰", name:"Station Commander",desc:"Upgrade any station module",             reward:2,  check:s=>(s._stats?.stationUpgrades||0)>=1},
     {id:"a_sta2",  cat:"station", icon:"🌌", name:"Starbase",         desc:"Max out any station module",             reward:10, check:s=>STATION_MODULES.some(m=>(s.station?.[m.id]||0)>=m.maxLvl)},
     {id:"a_cmb1",  cat:"mining",  icon:"🔥", name:"On Fire",          desc:"Reach a ×2.5 combo multiplier",          reward:2,  check:s=>(s._stats?.maxCombo||0)>=10},
+
+    // ── Bio Sphere ────────────────────────────────────────────────────
+    {id:"a_bio1",  cat:"explore", icon:"🌿", name:"First Contact",     desc:"Unlock Bio Sphere",                      reward:8,  check:s=>!!(s.planetsBought?.bio)},
+    {id:"a_bio2",  cat:"mining",  icon:"🍄", name:"Spore Collector",   desc:"Mine 100 Spore Dust",                    reward:3,  check:s=>(s._stats?.sporeDustMined||0)>=100},
+    {id:"a_bio3",  cat:"mining",  icon:"🌐", name:"Network Node",      desc:"Mine 50 Mycelium",                       reward:4,  check:s=>(s._stats?.myceliumMined||0)>=50},
+    {id:"a_bio4",  cat:"mining",  icon:"💎", name:"Living Crystal",    desc:"Mine your first Biolith",                reward:5,  check:s=>(s._stats?.biolithMined||0)>=1},
+    {id:"a_bio5",  cat:"mining",  icon:"💚", name:"Bio Surge",         desc:"Trigger your first Bio Surge",           reward:3,  check:s=>(s._stats?.bioSurges||0)>=1},
+    {id:"a_bio6",  cat:"mining",  icon:"🧬", name:"Surge Addict",      desc:"Trigger 50 Bio Surges",                  reward:8,  check:s=>(s._stats?.bioSurges||0)>=50},
+    {id:"a_bio7",  cat:"explore", icon:"🌱", name:"Full Ecosystem",    desc:"Prestige Bio Sphere once",               reward:10, check:s=>(s.prestigeCount?.bio||0)>=1},
+
+    // ── Drone Skins ───────────────────────────────────────────────────
+    {id:"a_sk1",   cat:"fleet",   icon:"🎨", name:"Stylist",           desc:"Equip any non-default drone skin",       reward:2,  check:s=>s.cosmetics?.droneSkin && s.cosmetics.droneSkin!=="default"},
+    {id:"a_sk2",   cat:"fleet",   icon:"☢️",  name:"Hazmat",            desc:"Unlock the Toxic Waste drone skin",      reward:3,  check:s=>!!(s.cosmetics?.owned?.toxic)},
+    {id:"a_sk3",   cat:"fleet",   icon:"🔮", name:"Void Walker",       desc:"Unlock the Void Phantom drone skin",     reward:4,  check:s=>!!(s.cosmetics?.owned?.void)},
+    {id:"a_sk4",   cat:"fleet",   icon:"🌋", name:"Magma Rider",       desc:"Unlock the Magma Core drone skin",       reward:4,  check:s=>!!(s.cosmetics?.owned?.magma)},
+    {id:"a_sk5",   cat:"fleet",   icon:"👑", name:"Ascendant",         desc:"Unlock the Ascendant drone skin",        reward:15, check:s=>!!(s.cosmetics?.owned?.ascendant)},
+    {id:"a_sk6",   cat:"fleet",   icon:"💀", name:"Reaper",            desc:"Unlock the Void Reaper drone skin",      reward:10, check:s=>!!(s.cosmetics?.owned?.reaper)},
+
+    // ── Laser Skins ───────────────────────────────────────────────────
+    {id:"a_ls1",   cat:"mining",  icon:"🔫", name:"Laser Fashionista", desc:"Equip any non-default laser skin",       reward:2,  check:s=>s.cosmetics?.laserSkin && s.cosmetics.laserSkin!=="default"},
+    {id:"a_ls2",   cat:"mining",  icon:"🌈", name:"Prismatic",         desc:"Unlock the Prism laser skin",            reward:5,  check:s=>!!(s.cosmetics?.owned?.["laser_prism"])},
+    {id:"a_ls3",   cat:"mining",  icon:"☀️",  name:"Solar Flare",       desc:"Unlock the Solar Flare laser skin",      reward:8,  check:s=>!!(s.cosmetics?.owned?.["laser_solar"])},
+    {id:"a_ls4",   cat:"mining",  icon:"⚡", name:"Arc Welder",        desc:"Unlock the Arc Bolt laser skin",         reward:5,  check:s=>!!(s.cosmetics?.owned?.["laser_arc"])},
+
+    // ── Collector ─────────────────────────────────────────────────────
+    {id:"a_col1",  cat:"fleet",   icon:"🗃️",  name:"Collector",         desc:"Unlock 5 cosmetic items total",          reward:5,  check:s=>Object.values(s.cosmetics?.owned||{}).filter(Boolean).length>=5},
+    {id:"a_col2",  cat:"fleet",   icon:"💼", name:"Fashion Mogul",     desc:"Unlock 10 cosmetic items total",         reward:10, check:s=>Object.values(s.cosmetics?.owned||{}).filter(Boolean).length>=10},
   ];
   function checkAchievements(){
     if(!state||!state._stats) return;
