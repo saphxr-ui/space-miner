@@ -129,11 +129,45 @@
 
     .laser{position:absolute;width:200px;height:2px;background:linear-gradient(90deg, transparent, rgba(43,212,255,.9), transparent);
       opacity:0;transform-origin:left center;filter:drop-shadow(0 0 10px rgba(43,212,255,.45));pointer-events:none;}
+    .laser.laser-plasma{ height:4px; background:linear-gradient(90deg, transparent, rgba(239,68,68,.7) 20%, rgba(251,146,60,.95) 55%, rgba(255,200,80,.8) 85%, transparent); filter:drop-shadow(0 0 12px rgba(239,68,68,.55)); }
+    .laser.laser-void{   background:linear-gradient(90deg, transparent, rgba(88,28,135,.6) 15%, rgba(167,139,250,.95) 55%, rgba(233,213,255,.7) 85%, transparent); filter:drop-shadow(0 0 12px rgba(124,58,237,.55)); }
+    .laser.laser-bio{    background:linear-gradient(90deg, transparent, rgba(22,163,74,.6) 20%, rgba(74,222,128,.95) 55%, rgba(187,247,208,.8) 85%, transparent); filter:drop-shadow(0 0 10px rgba(22,163,74,.50)); }
+    .laser.laser-arc{    background:linear-gradient(90deg, transparent, rgba(180,140,0,.5) 10%, rgba(250,204,21,.98) 50%, rgba(255,255,180,.9) 85%, transparent); filter:drop-shadow(0 0 12px rgba(250,204,21,.60)); }
+    .laser.laser-arc.fire{ animation:laser-arc 180ms ease-out forwards; }
+    .laser.laser-prism{  height:3px; background:linear-gradient(90deg, transparent, rgba(255,80,80,.8) 15%, rgba(255,200,0,.9) 35%, rgba(80,255,80,.9) 55%, rgba(80,200,255,.9) 75%, rgba(200,80,255,.8) 90%, transparent); filter:drop-shadow(0 0 10px rgba(200,100,255,.4)); }
+    .laser.laser-prism.fire{ animation:laser-prism 280ms ease-out forwards; }
+    .laser.laser-cryo{   background:linear-gradient(90deg, transparent, rgba(186,230,253,.6) 20%, rgba(240,249,255,.98) 55%, rgba(255,255,255,.95) 80%, transparent); filter:drop-shadow(0 0 10px rgba(200,235,255,.55)); }
+    .laser.laser-cryo.fire{ animation:laser-cryo 260ms ease-out forwards; }
+    .laser.laser-solar{  height:3px; background:linear-gradient(90deg, transparent, rgba(200,130,0,.6) 10%, rgba(255,200,30,.95) 45%, rgba(255,255,200,.99) 75%, rgba(255,255,255,.95) 90%, transparent); filter:drop-shadow(0 0 14px rgba(255,180,0,.65)); }
+    .laser.laser-solar.fire{ animation:laser-solar 200ms ease-out forwards; }
     .laser.fire{animation:laser 220ms ease-out forwards;}
     @keyframes laser{
       0%{opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.6);}
       30%{opacity:1;}
       100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.15);}
+    }
+    @keyframes laser-arc{
+      0%  {opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.3) skewY(-6deg);}
+      20% {opacity:1;transform:translate(-60px,0) rotate(0deg) scaleX(.7) skewY(4deg);}
+      60% {opacity:.8;transform:translate(30px,0) rotate(0deg) scaleX(1) skewY(-3deg);}
+      100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.15) skewY(0deg);}
+    }
+    @keyframes laser-prism{
+      0%  {opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.4);filter:hue-rotate(0deg) drop-shadow(0 0 10px rgba(200,100,255,.4));}
+      30% {opacity:1;filter:hue-rotate(90deg) drop-shadow(0 0 14px rgba(255,100,100,.5));}
+      70% {filter:hue-rotate(240deg) drop-shadow(0 0 14px rgba(100,200,255,.5));}
+      100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.15);filter:hue-rotate(360deg);}
+    }
+    @keyframes laser-cryo{
+      0%  {opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.3);}
+      20% {opacity:.9;}
+      70% {opacity:.6;filter:drop-shadow(0 0 8px rgba(200,235,255,.6)) blur(.3px);}
+      100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1);}
+    }
+    @keyframes laser-solar{
+      0%  {opacity:0;transform:translate(-130px,0) rotate(0deg) scaleX(.4);}
+      15% {opacity:1;filter:brightness(2.5) drop-shadow(0 0 18px rgba(255,220,50,.8));}
+      100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.2);filter:brightness(1);}
     }
 
     .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;opacity:0;
@@ -253,10 +287,10 @@
       --thrA: rgba(255,220,150,.95); --thrB: rgba(251,146,60,.75);
     }
     .skin-cryo{
-      --dA: rgba(224,242,254,.96); --dB: rgba(14,116,144,.60);
-      --dC: rgba(34,211,238,.92);  --dD: rgba(6,182,212,.28);
-      --dBorder: rgba(186,230,253,.22); --dGlow: rgba(34,211,238,.22);
-      --thrA: rgba(224,242,254,.95); --thrB: rgba(56,189,248,.65);
+      --dA: rgba(255,255,255,.99); --dB: rgba(180,220,240,.55);
+      --dC: rgba(255,255,255,.85);  --dD: rgba(200,235,255,.45);
+      --dBorder: rgba(255,255,255,.45); --dGlow: rgba(200,235,255,.35);
+      --thrA: rgba(255,255,255,.99); --thrB: rgba(180,220,255,.55);
     }
     .skin-storm{
       --dA: rgba(255,255,200,.95); --dB: rgba(60,60,20,.65);
@@ -2218,6 +2252,17 @@
   }
 
   /* ===== Drone cosmetics (ONLY drones) ===== */
+  const LASER_SKINS = [
+    { id:"default",  name:"Default Beam",  css:"laser-default",  cost:0,      desc:"Classic cyan laser beam." },
+    { id:"plasma",   name:"Plasma Cutter", css:"laser-plasma",   cost:2000,   desc:"Wide red/orange scorching beam.",     unlockMR:10 },
+    { id:"void",     name:"Void Ray",      css:"laser-void",     cost:0,      desc:"Deep purple void energy beam.",       unlockMR:15 },
+    { id:"bio",      name:"Bio Pulse",     css:"laser-bio",      cost:0,      desc:"Organic green living energy beam.",   unlockMR:20 },
+    { id:"arc",      name:"Arc Bolt",      css:"laser-arc",      cost:50000,  desc:"Electric yellow jagged discharge.",   unlockPrestige:1 },
+    { id:"prism",    name:"Prism",         css:"laser-prism",    cost:50000,  desc:"Full spectrum prismatic rainbow.",    unlockMR:25 },
+    { id:"cryo",     name:"Cryo Beam",     css:"laser-cryo",     cost:0,      desc:"Pale white frost beam.",              unlockMR:25 },
+    { id:"solar",    name:"Solar Flare",   css:"laser-solar",    cost:0,      desc:"Blazing gold/white · Blinding crits.", unlockMR:30 },
+  ];
+
   const DRONE_SKINS = [
     { id:"default",    name:"Default Drone",   css:"",               cost:0,      desc:"Standard hull + classic blue glow." },
     { id:"carbon",     name:"Stealth Carbon",  css:"skin-carbon",    cost:260,    desc:"Dark carbon body + green bio-LEDs." },
@@ -2296,6 +2341,7 @@
 
       cosmetics: {
         droneSkin: "default",
+        laserSkin: "default",
         activeTitle: "default",
         owned: { default:true, carbon:false, neon:false, solar:false }
       }
@@ -2360,6 +2406,7 @@
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
       if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
       if(!s.bioupgrades) s.bioupgrades = {};
+      if(!s.cosmetics.laserSkin) s.cosmetics.laserSkin = 'default';
       // Fix bio planet costs if they were initialized with wrong (iron belt) values
       if(s.planets.bio && s.planets.bio.costLaser < 1000){
         s.planets.bio.costLaser    = 4000;
@@ -4611,6 +4658,56 @@
   }
 
   /* ===== Cosmetics: 3 Drone skins ===== */
+  function laserSkinUnlockable(skin){
+    if(skin.unlockMR && state.minerRank < skin.unlockMR) return false;
+    const presTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
+    if(skin.unlockPrestige && presTotal < skin.unlockPrestige) return false;
+    return true;
+  }
+  function canAffordLaserSkin(skin){
+    if(!laserSkinUnlockable(skin)) return false;
+    if(skin.cost > 0 && state.credits < skin.cost) return false;
+    return true;
+  }
+  function laserSkinCostText(skin){
+    if(state.cosmetics.owned['laser_'+skin.id]) return "Owned";
+    const parts = [];
+    if(skin.cost > 0) parts.push(fmt(skin.cost)+" credits");
+    if(skin.unlockMR) parts.push("MR "+skin.unlockMR);
+    if(skin.unlockPrestige) parts.push(skin.unlockPrestige+"× Prestige");
+    return parts.join(" · ") || "Free";
+  }
+  function buyOrEquipLaserSkin(skinId){
+    const skin = LASER_SKINS.find(s=>s.id===skinId);
+    if(!skin) return;
+    const ownKey = 'laser_'+skinId;
+    if(!state.cosmetics.owned[ownKey]){
+      if(!laserSkinUnlockable(skin)) return toast("Requirements not met.");
+      if(!canAffordLaserSkin(skin)) return toast("Not enough credits.");
+      state.credits -= (skin.cost||0);
+      state.cosmetics.owned[ownKey] = true;
+      toast(skin.name+" unlocked.");
+      pingCard('lskin_'+skinId);
+    }
+    state.cosmetics.laserSkin = skinId;
+    applyLaserSkin();
+    toast("Equipped: "+skin.name);
+    updateUpgradeTexts(); updateUpgradeAffordability(); updateHUD(); save();
+  }
+  function applyLaserSkin(){
+    const skinId = state.cosmetics.laserSkin || 'default';
+    const skin = LASER_SKINS.find(s=>s.id===skinId) || LASER_SKINS[0];
+    // Remove all laser skin classes
+    LASER_SKINS.forEach(s => {
+      if(laser1) laser1.classList.remove(s.css);
+      if(laser2) laser2.classList.remove(s.css);
+    });
+    if(skinId !== 'default'){
+      if(laser1) laser1.classList.add(skin.css);
+      if(laser2) laser2.classList.add(skin.css);
+    }
+  }
+
   function skinUnlockable(skin){
     if(skin.unlockMR && state.minerRank < skin.unlockMR) return false;
     const presTotal = Object.values(state.prestigeCount||{}).reduce((a,b)=>a+b,0);
@@ -4650,6 +4747,7 @@
     state.cosmetics.droneSkin = skinId;
     toast(`Equipped: ${skin.name}`);
     syncSpawnedDrones();          // <-- apply instantly
+    applyLaserSkin();
     updateUpgradeTexts();
     updateUpgradeAffordability();
     updateHUD();
@@ -5157,6 +5255,26 @@
       buttonText:()=>state.cosmetics.owned[skin.id]?((state.cosmetics.droneSkin===skin.id)?"Equipped":"Equip"):"Buy"
     }))
 
+    // ── Cos tab: Laser skins ───────────────────────────────────────────
+    ,...LASER_SKINS.filter(s=>s.id!=="default").map(skin => ({
+      id:`lskin_${skin.id}`, tab:"cos", name:skin.name, icon:"🔫",
+      desc:skin.desc+" (Laser only)",
+      hideBuy:false,
+      costText:()=> laserSkinCostText(skin),
+      canBuy:()=> state.cosmetics.owned['laser_'+skin.id] ? true : canAffordLaserSkin(skin),
+      chips:()=>[
+        {text:state.cosmetics.owned['laser_'+skin.id]?"Owned":laserSkinUnlockable(skin)?"Not owned":"Locked",
+         kind:state.cosmetics.owned['laser_'+skin.id]?"good":laserSkinUnlockable(skin)?"bad":""},
+        {text:(state.cosmetics.laserSkin===skin.id)?"Equipped":"—",
+         kind:(state.cosmetics.laserSkin===skin.id)?"good":""},
+      ],
+      current:()=> state.cosmetics.laserSkin===skin.id ? "Active laser skin" : "—",
+      next:()=> state.cosmetics.owned['laser_'+skin.id] ? "Equip anytime" : "Unlock + equip",
+      buy:()=> buyOrEquipLaserSkin(skin.id),
+      buttonText:()=> state.cosmetics.owned['laser_'+skin.id]
+        ? ((state.cosmetics.laserSkin===skin.id)?"Equipped":"Equip")
+        : "Buy"
+    }))
     ,// ── Core tab: Bio Sphere upgrades (only visible on bio planet) ───
     { id:"bioSpore",    tab:"core", name:"Spore Network",   icon:"🍄",
       desc:"Enhances spore activity across Bio Sphere. +25% XP on Bio planet.",
