@@ -1604,7 +1604,20 @@
       0%  { transform:translateY(0) rotate(-8deg); }
       100%{ transform:translateY(-4px) rotate(8deg); }
     }
-  </style>
+  
+    .branchProgress{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;}
+    .branchProgressBar{height:100%;border-radius:2px;transition:width .3s;}
+    .skillBranch{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;}
+    .skillBranch.mining .branchProgressBar{background:rgba(43,212,255,.8);}
+    .skillBranch.economy .branchProgressBar{background:rgba(255,204,102,.8);}
+    .skillBranch.exploration .branchProgressBar{background:rgba(255,100,50,.8);}
+    .skillBranch.void .branchProgressBar{background:rgba(192,132,252,.8);}
+    .skillBranch.bio .branchProgressBar{background:rgba(74,222,128,.8);}
+    .branch-locked{opacity:.45;cursor:not-allowed!important;filter:grayscale(.4);}
+    .branch-complete .skillBranchHeader{background:rgba(50,213,131,.12)!important;}
+    .skillBranchHeader{cursor:pointer;user-select:none;padding:14px 12px;text-align:center;font-weight:900;font-size:12px;flex:1;display:flex;flex-direction:column;justify-content:center;transition:opacity .15s;}
+    .skillBranchHeader:hover{opacity:.85;}
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -1996,6 +2009,13 @@
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <div class="modalBackdrop" id="skillBranchBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" style="max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+      <div class="modalHeader"><div><div class="modalTitle" id="skillBranchTitle">Skills</div><div class="muted" style="font-size:12px;" id="skillBranchSub"></div></div><button class="btn secondary" id="closeSkillBranch">Close</button></div>
+      <div id="skillBranchBody" style="padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;"></div>
     </div>
   </div>
 
@@ -3769,50 +3789,80 @@
     save();
   }
 
+  function openSkillBranch(branchId){
+    const branch = SKILL_TREE[branchId];
+    if(!branch) return;
+    const bOwned = branch.nodes.filter(n=>skillOwned(n.id)).length;
+    el("skillBranchTitle").textContent = branch.label;
+    el("skillBranchSub").textContent = `${bOwned}/${branch.nodes.length} skills`;
+    const body = el("skillBranchBody");
+    const _sinv = smeltInventory(state);
+    const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
+    let html = "";
+    branch.nodes.forEach((node,nodeIdx)=>{
+      const owned  = skillOwned(node.id);
+      const mrOK   = !node.unlockMR||state.minerRank>=node.unlockMR;
+      const prevOK = nodeIdx===0||skillOwned(branch.nodes[nodeIdx-1].id);
+      const unlocked = mrOK&&prevOK;
+      const afford = unlocked&&!owned&&canAffordSkill(node);
+      if(nodeIdx>0) html+=`<div style="width:2px;height:10px;border-radius:999px;margin:0 auto;background:rgba(255,255,255,.12);"></div>`;
+      const costChips = Object.entries(node.cost||{}).map(([k,v])=>{
+        const have = k==="credits"?state.credits:(_aids.has(k)?(_sinv[k]||0):(state.cargo[k]||0));
+        const sr = SMELT_RECIPES.find(r=>r.id===k);
+        const or2 = ORES.find(o=>o.id===k);
+        const label = k==="credits"?fmt(v)+"c":v+" "+((sr&&sr.name)||(or2&&or2.name)||k);
+        return `<span class="skillCostChip ${have>=v?"met":""}">${label}</span>`;
+      }).join("");
+      const cls = `skillNode${owned?" owned":""}${!unlocked?" locked-node":""}${afford?" affordable":""}`;
+      html+=`<div class="${cls}" data-branch="${branchId}" data-idx="${nodeIdx}" data-u="${unlocked&&!owned?1:0}">`;
+      if(owned) html+=`<div class="skillOwnedBadge">✓</div>`;
+      html+=`<div class="skillNodeName">${escapeHtml(node.name)}</div>`;
+      html+=`<div class="skillNodeDesc">${escapeHtml(node.desc)}</div>`;
+      if(costChips&&!owned) html+=`<div class="skillNodeCost" style="margin-top:6px;">${costChips}</div>`;
+      if(node.unlockMR&&!mrOK) html+=`<div style="font-size:10px;color:#c084fc;margin-top:4px;">🔒 Requires MR ${node.unlockMR}</div>`;
+      else if(!prevOK) html+=`<div style="font-size:10px;color:var(--muted);margin-top:4px;">🔒 Unlock previous skill first</div>`;
+      html+=`</div>`;
+    });
+    body.innerHTML = html;
+    body.querySelectorAll("[data-branch]").forEach(n=>{
+      if(n.dataset.u!=="1") return;
+      n.addEventListener("click",()=>{
+        buySkill(n.dataset.branch, parseInt(n.dataset.idx));
+        openSkillBranch(branchId);
+        renderSkillTree();
+      });
+    });
+    el("skillBranchBackdrop").classList.add("show");
+  }
+
   function renderSkillTree(){
     const wrapper = el("skillTreeEl");
     if(!wrapper) return;
     wrapper.innerHTML = "";
-    wrapper.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px;";
+    wrapper.style.cssText = "display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;";
     const owned = state.skills.length;
     const total = Object.values(SKILL_TREE).reduce((a,b)=>a+b.nodes.length,0);
     el("skillSubLabel").textContent = `${owned}/${total} skills owned`;
-
     for(const [branchId, branch] of Object.entries(SKILL_TREE)){
-      const col = document.createElement("div");
-      col.className = `skillBranch ${branch.branch}`;
-      const voidLocked = branchId==="void" && state.minerRank<15;
-      col.innerHTML = `<div class="skillBranchHeader">${branch.label}${voidLocked?' <span style="font-size:9px;opacity:.6">(MR15)</span>':""}</div>`;
-
-      branch.nodes.forEach((node, nodeIdx) => {
-        const owned  = skillOwned(node.id);
-        const mrOK   = !node.unlockMR || state.minerRank >= node.unlockMR;
-        const prevOK = nodeIdx===0 || skillOwned(branch.nodes[nodeIdx-1].id);
-        const unlocked = mrOK && prevOK;
-
-        if(nodeIdx>0){ const conn=document.createElement("div"); conn.className="skillConnector"; col.appendChild(conn); }
-
-        const _sinv = smeltInventory(state);
-        const _aids = new Set(SMELT_RECIPES.map(r=>r.id));
-        const costChips = Object.entries(node.cost).map(([k,v])=>{
-          const have = k==="credits" ? state.credits : (_aids.has(k) ? (_sinv[k]||0) : (state.cargo[k]||0));
-          const label = k==="credits" ? fmt(v)+"c" : v+" "+(SMELT_RECIPES.find(r=>r.id===k)?.name||ORES.find(o=>o.id===k)?.name||k);
-          return `<span class="skillCostChip ${have>=v?"met":""}">${label}</span>`;
-        }).join("");
-
-        const nodeEl = document.createElement("div");
-        nodeEl.className = `skillNode${owned?" owned":""}${!unlocked?" locked-node":""}${unlocked&&!owned&&canAffordSkill(node)?" affordable":""}`;
-        nodeEl.innerHTML = `
-          ${owned?'<div class="skillOwnedBadge">✓</div>':""}
-          <div class="skillNodeName">${escapeHtml(node.name)}</div>
-          <div class="skillNodeDesc">${escapeHtml(node.desc)}</div>
-          ${node.unlockMR&&!mrOK?`<div style="font-size:10px;color:#c084fc;margin-top:3px;">🔒 MR${node.unlockMR}</div>`:""}
-          ${!owned&&mrOK?`<div class="skillNodeCost">${costChips}</div>`:""}
-        `;
-        if(!owned && unlocked) nodeEl.addEventListener("click",()=>buySkill(branchId,nodeIdx));
-        col.appendChild(nodeEl);
-      });
-      wrapper.appendChild(col);
+      const bOwned = branch.nodes.filter(n=>skillOwned(n.id)).length;
+      const bTotal = branch.nodes.length;
+      const allDone = bOwned===bTotal;
+      const locked = (branchId==="void"&&state.minerRank<15)||(branchId==="bio"&&state.minerRank<20);
+      const pctDone = Math.round(bOwned/bTotal*100);
+      const card = document.createElement("div");
+      card.className = `skillBranch ${branch.branch}${allDone?" branch-complete":""}${locked?" branch-locked":""}`;
+      const emoji = branch.label.split(" ")[0];
+      const name  = branch.label.split(" ").slice(1).join(" ");
+      card.innerHTML =
+        `<div class="skillBranchHeader">` +
+        `<div style="font-size:18px;margin-bottom:4px;">${emoji}</div>` +
+        `<div style="font-size:11px;font-weight:800;">${name}</div>` +
+        (locked ? `<div style="font-size:9px;opacity:.55;margin-top:2px;">🔒 MR${branchId==="void"?15:20}</div>` : "") +
+        `<div class="branchProgress" style="margin-top:8px;"><div class="branchProgressBar" style="width:${pctDone}%"></div></div>` +
+        `<div style="font-size:10px;opacity:.65;margin-top:5px;font-family:monospace;">${bOwned}/${bTotal}${allDone?" ✓":""}</div>` +
+        `</div>`;
+      if(!locked) card.addEventListener("click", ()=>openSkillBranch(branchId));
+      wrapper.appendChild(card);
     }
   }
 
@@ -7202,6 +7252,8 @@
   el("questBackdrop").addEventListener("click", (e)=>{ if(e.target===el("questBackdrop")) closeQuests(); });
 
   el("closeSkill").addEventListener("click", ()=>el("skillBackdrop").classList.remove("show"));
+  el("closeSkillBranch").addEventListener("click", ()=>el("skillBranchBackdrop").classList.remove("show"));
+  el("skillBranchBackdrop").addEventListener("click", (e)=>{ if(e.target===el("skillBranchBackdrop")) el("skillBranchBackdrop").classList.remove("show"); });
   el("skillBackdrop").addEventListener("click", (e)=>{ if(e.target===el("skillBackdrop")) el("skillBackdrop").classList.remove("show"); });
   el("btnPlanetIron").addEventListener("click", ()=>switchPlanet("iron"));
   el("btnPlanetVulcan").addEventListener("click", ()=>switchPlanet("vulcan"));
