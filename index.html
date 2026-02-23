@@ -2411,6 +2411,11 @@
       if(!s.planets.bio)  s.planets.bio  = defaultPlanetState("bio");
       if(!s.bioupgrades) s.bioupgrades = {};
       if(!s.cosmetics.laserSkin) s.cosmetics.laserSkin = 'default';
+      // Ensure oreSettings exists for ALL ores (including bio/void added later)
+      if(!s.oreSettings) s.oreSettings = defaultOreSettings();
+      for(const o of ORES){
+        if(!s.oreSettings[o.id]) s.oreSettings[o.id] = { locked:false, keep:0, autoSellMode:"off" };
+      }
       // Fix bio planet costs if they were initialized with wrong (iron belt) values
       if(s.planets.bio && s.planets.bio.costLaser < 1000){
         s.planets.bio.costLaser    = 4000;
@@ -2620,8 +2625,12 @@
     const o = ORES.find(x=>x.id===id);
     if(!o) return false;
     if(state.minerRank < o.unlockMR) return false;
-    const ctx = planetCtx || state.currentPlanet;
-    if(o.planet && o.planet !== "iron" && ctx !== o.planet) return false;
+    // Show ore if: planet was bought, or currently on that planet
+    // Iron Belt ores always shown (no planet restriction)
+    if(o.planet && o.planet !== "iron"){
+      const planetBought = state.planetsBought?.[o.planet] || state.currentPlanet === o.planet;
+      if(!planetBought) return false;
+    }
     return true;
   }
   function oreValue(id){
@@ -3133,18 +3142,29 @@
       if(!oreUnlocked(o.id)) continue;
       const set = state.oreSettings[o.id];
       if(!set || set.locked) continue;
-      if(set.autoSellMode !== "overflow") continue;
+
+      const mode = set.autoSellMode || "off";
+      if(mode === "off") continue;
 
       const have = state.cargo[o.id] || 0;
       const keep = Math.floor(set.keep || 0);
-      const sell = Math.max(0, have - keep);
-      if(sell>0){
-        state.cargo[o.id] -= sell;
-        total += sell * o.value;
+
+      let sell = 0;
+      if(mode === "drop"){
+        // Auto-sell everything above keep
+        sell = Math.max(0, have - keep);
+      } else if(mode === "overflow"){
+        // Only sell when above keep threshold
+        sell = Math.max(0, have - keep);
+      }
+
+      if(sell > 0){
+        state.cargo[o.id] = Math.max(0, have - sell);
+        total += sell * oreValue(o.id);
       }
     }
-    if(total>0){
-      state.credits += total;
+    if(total > 0){
+      addCredits(total);
       setCargoDirtyAll();
     }
     return total;
@@ -4788,9 +4808,9 @@
     return "";
   }
   function nextMode(m){
-    if(m==="off") return "drop";
-    if(m==="drop") return "overflow";
-    return "off";
+    if(m==="off")       return "overflow";   // Hold → On Overflow
+    if(m==="overflow")  return "drop";        // On Overflow → Auto-sell
+    return "off";                             // Auto-sell → Hold
   }
 
   /* ═══ Station Modules ═══ */
@@ -5686,7 +5706,7 @@
       const have = state.cargo[o.id]||0;
       const set  = state.oreSettings[o.id]||{locked:false,keep:0,autoSellMode:"off"};
       const mode = set.autoSellMode||"off";
-      const modeLabel = mode==="drop"?"Auto-sell":mode==="overflow"?"Overflow":"Hold";
+      const modeLabel = mode==="drop"?"Auto-sell":mode==="overflow"?"On Overflow":"Hold";
       const modeColor = mode==="drop"?"#32d583":mode==="overflow"?"#fbbf24":"var(--muted)";
       const maxSell = Math.max(0, (have)-(set.keep||0));
       const sellAmt = Math.min(state.sellPlan[o.id]||0, maxSell);
@@ -6273,7 +6293,17 @@
       }
     });
 
-    upgradesListEl.addEventListener("change", (e) => {
+    upgradesListEl.addEventListener("blur", (e) => {
+      const t = e.target;
+      if(!(t instanceof HTMLElement)) return;
+      const act = t.getAttribute("data-act");
+      if(act === "keepInput"){
+        setCargoDirty("cargo");
+        renderCargoPanelsIfDirty();
+      }
+    }, true); // capture=true so blur bubbles
+
+    upgradesListEl.addEventListener("input", (e) => {
       const t = e.target;
       if(!(t instanceof HTMLElement)) return;
 
@@ -6298,8 +6328,9 @@
         const maxSell = Math.max(0, have - v);
         state.sellPlan[ore] = clamp(state.sellPlan[ore]||0, 0, maxSell);
 
+        // Don't re-render while typing — just save state silently
+        // Re-render only on blur to avoid losing focus
         setCargoDirty("cargo");
-        renderCargoPanelsIfDirty();
         return;
       }
     });
