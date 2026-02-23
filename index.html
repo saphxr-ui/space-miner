@@ -162,7 +162,8 @@
       margin-left: -4px;
     }
     .cosSecHeader.cosCollapsed .cosSecChevron { transform: rotate(-90deg); }
-    .cosSecHeader.cosCollapsed .cosSecLabel { opacity: .55; }
+    .cosSecHeader.cosCollapsed .cosSecLabel { opacity: 1; }
+    .cosSecHeader.cosCollapsed { filter: brightness(1.25); text-shadow: 0 0 12px var(--acc); }
 
     /* GPU compositing hints */
     .drone{ will-change:transform; }
@@ -1091,9 +1092,9 @@
       padding:8px 10px; border-radius:12px; text-align:center; font-weight:900; font-size:12px;
       margin-bottom:2px;
     }
-    .skillBranch.mining .skillBranchHeader{ background:rgba(43,212,255,.10); border:1px solid rgba(43,212,255,.20); color:rgba(180,245,255,.95); }
-    .skillBranch.economy .skillBranchHeader{ background:rgba(255,204,102,.10); border:1px solid rgba(255,204,102,.20); color:rgba(255,245,200,.95); }
-    .skillBranch.exploration .skillBranchHeader{ background:rgba(255,90,50,.10); border:1px solid rgba(255,100,50,.20); color:rgba(255,210,180,.95); }
+    .skillBranch.mining .skillBranchHeader{ background:rgba(43,212,255,.14); border:1px solid rgba(43,212,255,.32); color:rgba(180,245,255,.98); box-shadow:0 0 26px rgba(43,212,255,.22), inset 0 1px 0 rgba(43,212,255,.18); text-shadow:0 0 16px rgba(43,212,255,.7); }
+    .skillBranch.economy .skillBranchHeader{ background:rgba(255,204,102,.14); border:1px solid rgba(255,204,102,.32); color:rgba(255,245,200,.98); box-shadow:0 0 26px rgba(255,204,102,.22), inset 0 1px 0 rgba(255,204,102,.18); text-shadow:0 0 16px rgba(255,204,102,.7); }
+    .skillBranch.exploration .skillBranchHeader{ background:rgba(255,100,50,.14); border:1px solid rgba(255,100,50,.32); color:rgba(255,210,180,.98); box-shadow:0 0 26px rgba(255,100,50,.22), inset 0 1px 0 rgba(255,100,50,.18); text-shadow:0 0 16px rgba(255,100,50,.7); }
 
     .skillConnector{
       width:2px; height:10px; border-radius:999px;
@@ -1109,7 +1110,7 @@
       border:1px solid rgba(255,255,255,.08);
       cursor:pointer;
       transition: transform .08s, border-color .14s, box-shadow .14s, opacity .14s;
-      position:relative; overflow:hidden;
+      position:relative;
     }
     .skillNode:hover:not(.locked-node){ transform:translateY(-1px); }
     .skillNode.owned{
@@ -1123,11 +1124,11 @@
     .skillBranch.economy .skillNode.affordable{ border-color:rgba(255,204,102,.32); box-shadow:0 8px 22px rgba(255,204,102,.10); }
     .skillBranch.exploration .skillNode.affordable{ border-color:rgba(255,100,50,.35); box-shadow:0 8px 22px rgba(255,100,50,.10); }
 
-    .skillBranch.void .skillBranchHeader{ background:rgba(192,132,252,.10); border:1px solid rgba(192,132,252,.22); color:rgba(233,213,255,.95); }
+    .skillBranch.void .skillBranchHeader{ background:rgba(192,132,252,.14); border:1px solid rgba(192,132,252,.32); color:rgba(233,213,255,.98); box-shadow:0 0 26px rgba(192,132,252,.22), inset 0 1px 0 rgba(192,132,252,.18); text-shadow:0 0 16px rgba(192,132,252,.7); }
     .skillBranch.void .skillConnector{ background:rgba(192,132,252,.25); }
     .skillBranch.void .skillNode.affordable{ border-color:rgba(192,132,252,.38); box-shadow:0 8px 22px rgba(192,132,252,.12); }
 
-    .skillBranch.bio .skillBranchHeader{ background:rgba(74,222,128,.10); border:1px solid rgba(74,222,128,.22); color:rgba(187,247,208,.95); }
+    .skillBranch.bio .skillBranchHeader{ background:rgba(74,222,128,.14); border:1px solid rgba(74,222,128,.32); color:rgba(187,247,208,.98); box-shadow:0 0 26px rgba(74,222,128,.22), inset 0 1px 0 rgba(74,222,128,.18); text-shadow:0 0 16px rgba(74,222,128,.7); }
     .skillBranch.bio .skillConnector{ background:rgba(74,222,128,.25); }
     .skillBranch.bio .skillNode.affordable{ border-color:rgba(74,222,128,.38); box-shadow:0 8px 22px rgba(74,222,128,.12); }
 
@@ -2013,9 +2014,9 @@
   </div>
 
   <div class="modalBackdrop" id="skillBranchBackdrop" role="dialog" aria-modal="true">
-    <div class="modal" style="max-width:480px;max-height:85vh;display:flex;flex-direction:column;">
+    <div class="modal" style="max-width:520px;width:95vw;max-height:92vh;height:auto;display:flex;flex-direction:column;">
       <div class="modalHeader"><div><div class="modalTitle" id="skillBranchTitle">Skills</div><div class="muted" style="font-size:12px;" id="skillBranchSub"></div></div><button class="btn secondary" id="closeSkillBranch">Close</button></div>
-      <div id="skillBranchBody" style="padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;"></div>
+      <div id="skillBranchBody" style="padding:14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:0;"></div>
     </div>
   </div>
 
