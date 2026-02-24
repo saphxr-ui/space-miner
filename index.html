@@ -1649,18 +1649,32 @@
     .skillNode.affordable:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(50,213,131,.25); }
 
     /* ── New Drone Skins ── */
-    .skin-nebula .droneBody{ background:linear-gradient(135deg,#4c1d95,#7c3aed,#a855f7); box-shadow:0 0 18px rgba(168,85,247,.7),0 0 40px rgba(168,85,247,.25); animation:nebulaPulse 3s ease-in-out infinite; }
-    @keyframes nebulaPulse{ 0%,100%{box-shadow:0 0 18px rgba(168,85,247,.7)} 50%{box-shadow:0 0 32px rgba(236,72,153,.9)} }
-    .skin-bio-core .droneBody{ background:linear-gradient(135deg,#14532d,#16a34a,#4ade80); box-shadow:0 0 18px rgba(74,222,128,.7),0 0 36px rgba(74,222,128,.2); animation:bioPulse 2s ease-in-out infinite; }
-    @keyframes bioPulse{ 0%,100%{box-shadow:0 0 18px rgba(74,222,128,.7)} 50%{box-shadow:0 0 30px rgba(34,197,94,1)} }
-    .skin-dark-star .droneBody{ background:linear-gradient(135deg,#000,#1e1b4b,#312e81); box-shadow:0 0 20px rgba(79,70,229,.8),0 0 50px rgba(0,0,0,.9); animation:darkPulse 4s ease-in-out infinite; }
-    @keyframes darkPulse{ 0%,100%{box-shadow:0 0 20px rgba(79,70,229,.8)} 50%{box-shadow:0 0 40px rgba(139,92,246,1),0 0 80px rgba(79,70,229,.4)} }
-    .skin-prism-rig .droneBody{ background:linear-gradient(135deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#a855f7); box-shadow:0 0 20px rgba(255,255,255,.5); animation:prismDrone 2s linear infinite; }
-    @keyframes prismDrone{ 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
-    .skin-mythic .droneBody{ background:linear-gradient(135deg,#78350f,#d97706,#fbbf24,#fef3c7); box-shadow:0 0 24px rgba(251,191,36,.9),0 0 60px rgba(217,119,6,.4); animation:mythicGlow 1.5s ease-in-out infinite; }
-    @keyframes mythicGlow{ 0%,100%{box-shadow:0 0 24px rgba(251,191,36,.9)} 50%{box-shadow:0 0 50px rgba(253,224,71,1),0 0 100px rgba(251,191,36,.5)} }
-    .skin-transcend .droneBody{ background:linear-gradient(135deg,#fff,#e0f2fe,#bfdbfe,#ddd6fe); box-shadow:0 0 30px rgba(255,255,255,1),0 0 80px rgba(224,242,254,.8); animation:transcendPulse 1s ease-in-out infinite; }
-    @keyframes transcendPulse{ 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.5) hue-rotate(30deg)} }
+    .skin-nebula{
+      --dA: rgba(168,85,247,.95); --dB: rgba(76,29,149,.80);
+      --dC: rgba(236,72,153,.90); --dD: rgba(124,58,237,.35);
+      --dBorder: rgba(168,85,247,.30); --dGlow: rgba(168,85,247,.35);
+      --thrA: rgba(255,255,255,.90); --thrB: rgba(168,85,247,.70);
+    }
+    .skin-nebula .droneInner{ animation: droneHover 1.6s ease-in-out infinite, nebulaPulse2 3s ease-in-out infinite; }
+    @keyframes nebulaPulse2{ 0%,100%{box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 22px rgba(168,85,247,.35)} 50%{box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 36px rgba(236,72,153,.6)} }
+
+    .skin-bio-core{
+      --dA: rgba(74,222,128,.95); --dB: rgba(20,83,45,.80);
+      --dC: rgba(134,239,172,.90); --dD: rgba(22,163,74,.35);
+      --dBorder: rgba(74,222,128,.30); --dGlow: rgba(74,222,128,.35);
+      --thrA: rgba(255,255,255,.90); --thrB: rgba(74,222,128,.70);
+    }
+    .skin-bio-core .droneInner{ animation: droneHover 1.6s ease-in-out infinite, bioPulse2 2s ease-in-out infinite; }
+    @keyframes bioPulse2{ 0%,100%{box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 22px rgba(74,222,128,.35)} 50%{box-shadow:0 10px 24px rgba(0,0,0,.30),0 0 32px rgba(34,197,94,.7)} }
+
+    .skin-prism-rig{
+      --dA: rgba(255,255,255,.95); --dB: rgba(168,85,247,.50);
+      --dC: rgba(251,146,60,.90);  --dD: rgba(59,130,246,.35);
+      --dBorder: rgba(255,255,255,.25); --dGlow: rgba(255,255,255,.20);
+      --thrA: rgba(255,255,255,.95); --thrB: rgba(251,146,60,.70);
+    }
+    .skin-prism-rig .droneInner{ animation: droneHover 1.6s ease-in-out infinite, prismDrone2 2s linear infinite; }
+    @keyframes prismDrone2{ 0%{filter:hue-rotate(0deg) drop-shadow(0 0 8px rgba(255,255,255,.4))} 100%{filter:hue-rotate(360deg) drop-shadow(0 0 8px rgba(255,255,255,.4))} }
 
     /* ── New Laser Skins ── */
     .laser-nebula{ background:linear-gradient(90deg, transparent, rgba(126,34,206,.5) 15%, rgba(168,85,247,.95) 50%, rgba(236,72,153,.8) 80%, transparent); filter:drop-shadow(0 0 14px rgba(168,85,247,.7)); animation:nebulaPulse 2s ease-in-out infinite; }
@@ -1672,7 +1686,7 @@
     @keyframes transcendLaser{ 0%,100%{filter:drop-shadow(0 0 22px rgba(255,255,255,1)) hue-rotate(0deg)} 50%{filter:drop-shadow(0 0 44px rgba(255,255,255,1)) hue-rotate(180deg)} }
 
     /* ── Custom Drone Models ── */
-    .drone.custom-model { background: none !important; overflow: visible; }
+    .drone.custom-model { background: none !important; overflow: visible; position: relative; }
     .drone.custom-model .droneInner { display: none; }
     .droneModel {
       width: 30px; height: 30px;
@@ -1726,9 +1740,10 @@
 
     /* Charge track for custom models */
     .drone.custom-model .chargeTrack {
-      position: absolute; bottom: -5px; left: 2px; right: 2px;
+      position: absolute; bottom: -4px; left: 1px; right: 1px;
       height: 2px; border-radius: 999px;
-      background: rgba(255,255,255,.12); overflow: hidden;
+      background: rgba(255,255,255,.10); overflow: hidden;
+      z-index: 2;
     }
     .drone.custom-model .chargeFill {
       height: 100%; border-radius: 999px; width: 0%;
@@ -1740,7 +1755,50 @@
       border-radius: 50%;
       border: 2px solid rgba(255,255,255,0);
       pointer-events: none;
+      z-index: 3;
     }
+    /* Hide the SVG-internal chargeTrack divs that don't render correctly */
+    .drone.custom-model svg ~ .chargeTrack { display: none; }
+    .drone.custom-model svg ~ .blastRing { display: none; }
+
+    /* Nebula Drifter model */
+    .drone.skin-nebula .droneModel {
+      animation: droneHover 1.6s ease-in-out infinite, nebulaFloat 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(168,85,247,.8)) drop-shadow(0 0 18px rgba(236,72,153,.4));
+    }
+    @keyframes nebulaFloat {
+      0%,100%{ transform: scaleX(1); filter: drop-shadow(0 0 8px rgba(168,85,247,.8)); }
+      50%{ transform: scaleX(1.08); filter: drop-shadow(0 0 16px rgba(236,72,153,.9)); }
+    }
+
+    /* Bio Core model */
+    .drone.skin-bio-core .droneModel {
+      animation: droneHover 1.6s ease-in-out infinite, bioBreath 2.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 7px rgba(74,222,128,.8)) drop-shadow(0 0 16px rgba(74,222,128,.3));
+    }
+    @keyframes bioBreath {
+      0%,100%{ transform: scale(1); filter: drop-shadow(0 0 7px rgba(74,222,128,.8)); }
+      50%{ transform: scale(1.06); filter: drop-shadow(0 0 14px rgba(134,239,172,1)); }
+    }
+
+    /* Prism Rig model */
+    .drone.skin-prism-rig .droneModel {
+      animation: droneHover 1.6s ease-in-out infinite, prismSpin 6s linear infinite;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,.6));
+    }
+    @keyframes prismSpin {
+      0%{ filter: drop-shadow(0 0 8px rgba(239,68,68,.7)) hue-rotate(0deg); }
+      100%{ filter: drop-shadow(0 0 8px rgba(239,68,68,.7)) hue-rotate(360deg); }
+    }
+
+    /* ===== Energy Cluster Planet Visuals ===== */
+    .planet-dynamo .asteroid{ background: radial-gradient(circle at 35% 32%, #fde68a, #d97706 50%, #78350f 85%); box-shadow: 0 0 40px rgba(250,204,21,.6), 0 0 80px rgba(250,204,21,.2); }
+    .planet-dynamo{ background: radial-gradient(300px 200px at 50% 40%, rgba(250,204,21,.12), rgba(217,119,6,.04)), #0a0d1a; }
+    .planet-arc .asteroid{ background: radial-gradient(circle at 35% 32%, #bae6fd, #0284c7 50%, #0c4a6e 85%); box-shadow: 0 0 40px rgba(56,189,248,.6), 0 0 80px rgba(56,189,248,.2); }
+    .planet-arc{ background: radial-gradient(300px 200px at 50% 40%, rgba(56,189,248,.12), rgba(2,132,199,.04)), #0a0d1a; }
+    .planet-storm .asteroid{ background: radial-gradient(circle at 35% 32%, #fef08a, #ca8a04 50%, #422006 85%); box-shadow: 0 0 50px rgba(250,204,21,.75), 0 0 100px rgba(234,179,8,.3); animation: stormPulse 0.8s ease-in-out infinite alternate; }
+    @keyframes stormPulse { from{ box-shadow: 0 0 50px rgba(250,204,21,.6), 0 0 90px rgba(234,179,8,.25); } to{ box-shadow: 0 0 70px rgba(250,204,21,.9), 0 0 130px rgba(234,179,8,.45); } }
+    .planet-storm{ background: radial-gradient(300px 200px at 50% 40%, rgba(250,204,21,.15), rgba(202,138,4,.06)), #0a0d1a; }
 </style>
 </head>
 <body>
@@ -1774,7 +1832,7 @@
                 <button class="btn secondary" id="openProfileBtn" style="padding:6px 10px;font-size:14px;border-radius:10px;" title="Profile">👤</button>
               </div>
               <div class="muted" style="font-size:12px;text-align:right;"><span id="xpNow">0</span>/<span id="xpNeed">60</span> XP · ✨ <span id="stellarDustHud">0</span></div>
-              <div style="display:flex;gap:10px;font-size:11px;margin-top:2px;"><span id="minerHud" style="color:var(--muted);">⛏ No miners</span><span id="cargoHud" style="color:var(--muted);">📦 0/120</span></div>
+              <div style="display:flex;gap:10px;font-size:11px;margin-top:2px;"><span id="minerHud" style="color:var(--muted);">⛏ No miners</span><span id="cpsHud" style="color:var(--muted);">🖱 0 cps</span><span id="cargoHud" style="color:var(--muted);">📦 0/120</span></div>
             </div>
           </div>
           <div class="bar" style="margin-top:8px;"><div id="xpBar"></div></div>
@@ -1805,6 +1863,7 @@
 
         <div class="grid">
           <button class="btn good" id="openQuestsBtn" style="position:relative;">📋 Daily Quests</button>
+          <button class="btn secondary" id="openGalaxyBtn" style="border-color:rgba(139,92,246,.4);color:rgba(167,139,250,.9);">🌌 Galaxy Map</button>
           <button class="btn secondary" id="reset">Reset</button>
         </div>
 
@@ -2143,6 +2202,20 @@
     </div>
   </div>
 
+  <!-- ===== Galaxy Map Modal ===== -->
+  <div class="modalBackdrop" id="galaxyBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" style="width:min(560px,96vw);max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden;border-radius:24px;">
+      <div style="padding:20px 24px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;">
+        <div>
+          <div style="font-weight:900;font-size:17px;">🌌 Galaxy Map</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="galaxySubLabel">Navigate between star systems</div>
+        </div>
+        <button class="btn secondary" id="closeGalaxy" style="padding:6px 14px;font-size:13px;">✕ Close</button>
+      </div>
+      <div id="galaxyBody" style="overflow-y:auto;padding:20px 24px;flex:1;min-height:0;display:flex;flex-direction:column;gap:20px;"></div>
+    </div>
+  </div>
+
 <script>
 (() => {
   const KEY_NEW = "space_miner_save_v20_quests_skilltree";
@@ -2424,6 +2497,17 @@
     { id:"sporeDust",    name:"Spore Dust",    value: 180,  rarity: 0.40,  unlockMR: 20, color:"rgba(134,239,172,.95)", planet:"bio" },
     { id:"mycelium",     name:"Mycelium",      value: 520,  rarity: 0.12,  unlockMR: 20, color:"rgba(167,139,250,.95)", planet:"bio" },
     { id:"biolith",      name:"Biolith",       value: 1800, rarity: 0.025, unlockMR: 20, color:"rgba(74,222,128,.98)",  planet:"bio" },
+    { id:"powerCell",  name:"Power Cell",   value:6000,  rarity:0.55, unlockMR:1, color:"rgba(250,204,21,.95)",  planet:"dynamo" },
+    { id:"voltite",    name:"Voltite",      value:18000, rarity:0.30, unlockMR:1, color:"rgba(253,224,71,.90)",  planet:"dynamo" },
+    { id:"conductite", name:"Conductite",   value:50000, rarity:0.12, unlockMR:1, color:"rgba(99,102,241,.92)",  planet:"dynamo" },
+    // ⚡ Arc Station
+    { id:"plasmaShard", name:"Plasma Shard",  value:120000, rarity:0.50, unlockMR:1, color:"rgba(56,189,248,.95)",  planet:"arc" },
+    { id:"hypercore",   name:"Hypercore",     value:350000, rarity:0.22, unlockMR:1, color:"rgba(99,102,241,.95)",  planet:"arc" },
+    { id:"voidCrystal", name:"Void Crystal",  value:900000, rarity:0.08, unlockMR:1, color:"rgba(192,132,252,.95)", planet:"arc" },
+    // 🌪️ Storm Giant
+    { id:"stormCrystal",name:"Storm Crystal", value:200000, rarity:0.45, unlockMR:1, color:"rgba(250,204,21,.95)",  planet:"storm" },
+    { id:"ionDust",     name:"Ion Dust",      value:80000,  rarity:0.60, unlockMR:1, color:"rgba(167,139,250,.90)", planet:"storm" },
+    { id:"thunderite",  name:"Thunderite",    value:600000, rarity:0.10, unlockMR:1, color:"rgba(253,224,71,.95)",  planet:"storm" },
   ];
 
   const PLANETS = {
@@ -2451,7 +2535,39 @@
       laserMult:1, creditMult:3.5, xpMult:2.2,
       prestigeBaseCost: 20000000,
       bioSurgeChance: 0.06,
-    }
+    },
+    dynamo: {
+      id:"dynamo", name:"Dynamo Prime", icon:"⚡",
+      galaxy:"energy",
+      laserMult:1.5, creditMult:4, xpMult:1.5,
+      prestigeBaseCost: 50000000,
+      unlockMR:0, unlockCredits:0,
+      droneMult:2.0,
+      desc:"Pure electrical storms. Drones are 2× more effective.",
+      color:"#fbbf24",
+    },
+    arc: {
+      id:"arc", name:"Arc Station", icon:"🔵",
+      galaxy:"energy",
+      laserMult:2.0, creditMult:8, xpMult:1.5,
+      prestigeBaseCost: 200000000,
+      unlockCredits: 1000000000,
+      droneMult:1.5,
+      passiveIncomeMult:3.0,
+      desc:"Passive income flows endlessly. Miners are king here.",
+      color:"#38bdf8",
+    },
+    storm: {
+      id:"storm", name:"Storm Giant", icon:"🌪️",
+      galaxy:"energy",
+      laserMult:3.0, creditMult:6, xpMult:3.0,
+      prestigeBaseCost: 500000000,
+      unlockCredits: 5000000000,
+      critChanceBonus:0.25,
+      critMultBonus:2.0,
+      desc:"Extreme crits, volatile swings. High risk, high reward.",
+      color:"#fbbf24",
+    },
   };
 
   const STELLAR_DUST_PER_PRESTIGE = 25;
@@ -2483,29 +2599,39 @@
     { id:"i2", cat:"industrial", name:"Station Veteran",  desc:"-15% Station Module costs",      cost:12, effect:{ stationDiscount:0.15 } },
     { id:"i3", cat:"industrial", name:"Cargo Titan",      desc:"+200 cargo capacity",            cost:18, effect:{ cargoCap:200 } },
     { id:"i4", cat:"industrial", name:"Deep Mining",        desc:"+60% Miner ore output",           cost:30, effect:{ allDropChance:0.60 } },
-    { id:"i5", cat:"industrial", name:"Quantum Smelter",    desc:"+50% alloy smelt speed",           cost:45, effect:{ smeltSellMult:0.50 }, unlockMR:35 },
-    { id:"i6", cat:"industrial", name:"Megaship Cargo",     desc:"+500 cargo capacity",              cost:60, effect:{ cargoCap:500 }, unlockMR:40 },
+    { id:"i5", cat:"industrial", name:"Quantum Smelter",    desc:"+50% alloy smelt speed",           cost:45, effect:{ smeltSellMult:0.50 } },
+    { id:"i6", cat:"industrial", name:"Megaship Cargo",     desc:"+500 cargo capacity",              cost:60, effect:{ cargoCap:500 } },
     // ⚡ Power Tier 2
-    { id:"p7",  cat:"power",  name:"Dark Star Core",       desc:"+75% laser credits globally",       cost:55, effect:{ laserCreditMult:0.75 }, unlockMR:40 },
-    { id:"p8",  cat:"power",  name:"Void Drill",           desc:"+80% Miner ore output globally",    cost:80, effect:{ allDropChance:0.80 }, unlockMR:50 },
-    { id:"p9",  cat:"power",  name:"Transcendent Strike",  desc:"+150% all mining income",           cost:120, effect:{ globalCreditMult:1.50 }, unlockMR:60 },
+    { id:"p7",  cat:"power",  name:"Dark Star Core",       desc:"+75% laser credits globally",       cost:55, effect:{ laserCreditMult:0.75 } },
+    { id:"p8",  cat:"power",  name:"Void Drill",           desc:"+80% Miner ore output globally",    cost:80, effect:{ allDropChance:0.80 } },
+    { id:"p9",  cat:"power",  name:"Transcendent Strike",  desc:"+150% all mining income",           cost:120, effect:{ globalCreditMult:1.50 } },
     // 🌌 Cosmic Tier 2
-    { id:"c7",  cat:"cosmic", name:"Galactic Market",      desc:"+100% credits from all sales",      cost:60, effect:{ sellMult:1.00 }, unlockMR:40 },
-    { id:"c8",  cat:"cosmic", name:"Stellar Swarm",        desc:"+80% drone credit yield",           cost:90, effect:{ droneCreditMult:0.80 }, unlockMR:50 },
-    { id:"c9",  cat:"cosmic", name:"Omniversal Trade",     desc:"+200% all credit gains",            cost:150, effect:{ globalCreditMult:2.00 }, unlockMR:60 },
+    { id:"c7",  cat:"cosmic", name:"Galactic Market",      desc:"+100% credits from all sales",      cost:60, effect:{ sellMult:1.00 } },
+    { id:"c8",  cat:"cosmic", name:"Stellar Swarm",        desc:"+80% drone credit yield",           cost:90, effect:{ droneCreditMult:0.80 } },
+    { id:"c9",  cat:"cosmic", name:"Omniversal Trade",     desc:"+200% all credit gains",            cost:150, effect:{ globalCreditMult:2.00 } },
     // 🔮 Arcane Tier 2
-    { id:"a7",  cat:"arcane", name:"Void Sight",           desc:"+100% rare ore drop chance",        cost:65, effect:{ rareDropMult:1.00 }, unlockMR:40 },
-    { id:"a8",  cat:"arcane", name:"Temporal Mining",      desc:"+100% offline income",              cost:95, effect:{ offlineMult:1.00 }, unlockMR:50 },
-    { id:"a9",  cat:"arcane", name:"Cosmic Ascension",     desc:"+5× all Stellar Dust earned",       cost:140, effect:{ dustMult:4.0 }, unlockMR:60 },
+    { id:"a7",  cat:"arcane", name:"Void Sight",           desc:"+100% rare ore drop chance",        cost:65, effect:{ rareDropMult:1.00 } },
+    { id:"a8",  cat:"arcane", name:"Temporal Mining",      desc:"+100% offline income",              cost:95, effect:{ offlineMult:1.00 } },
+    { id:"a9",  cat:"arcane", name:"Cosmic Ascension",     desc:"+5× all Stellar Dust earned",       cost:140, effect:{ dustMult:4.0 } },
     // 🌿 Bio & Void
-    { id:"bv1", cat:"biovoid", name:"Surge Amplifier",     desc:"Bio Surge credits ×2",              cost:20, effect:{ bioSurgeCreditMult:1.0 }, unlockMR:20 },
-    { id:"bv2", cat:"biovoid", name:"Void Resonance",      desc:"Void Surge duration +50%",          cost:20, effect:{ voidSurgeDurationMult:0.50 }, unlockMR:15 },
-    { id:"bv3", cat:"biovoid", name:"Living Catalyst",     desc:"Living Crystal value ×2",           cost:35, effect:{ smeltSellMult:1.00 }, unlockMR:25 },
-    { id:"bv4", cat:"biovoid", name:"Dark Matter Magnet",  desc:"Dark Matter drop rate ×2",          cost:35, effect:{ rareDropMult:0.75 }, unlockMR:20 },
-    { id:"bv5", cat:"biovoid", name:"Bio Network",         desc:"+100% XP on Bio Sphere",            cost:50, effect:{ xpMult:1.00 }, unlockMR:30 },
-    { id:"bv6", cat:"biovoid", name:"Void Ascendant",      desc:"All Void bonuses ×2",               cost:70, effect:{ globalCreditMult:0.50 }, unlockMR:40 },
-    { id:"bv7", cat:"biovoid", name:"Primal Surge",        desc:"Bio Surge triggers 3× as fast",     cost:90, effect:{ bioSurgeCreditMult:2.0 }, unlockMR:50 },
-    { id:"bv8", cat:"biovoid", name:"Singularity Void",    desc:"Void Surge hits all planets at once", cost:120, effect:{ globalCreditMult:1.00 }, unlockMR:60 },
+    { id:"bv1", cat:"biovoid", name:"Surge Amplifier",     desc:"Bio Surge credits ×2",              cost:20, effect:{ bioSurgeCreditMult:1.0 } },
+    { id:"bv2", cat:"biovoid", name:"Void Resonance",      desc:"Void Surge duration +50%",          cost:20, effect:{ voidSurgeDurationMult:0.50 } },
+    { id:"bv3", cat:"biovoid", name:"Living Catalyst",     desc:"Living Crystal value ×2",           cost:35, effect:{ smeltSellMult:1.00 } },
+    { id:"bv4", cat:"biovoid", name:"Dark Matter Magnet",  desc:"Dark Matter drop rate ×2",          cost:35, effect:{ rareDropMult:0.75 } },
+    { id:"bv5", cat:"biovoid", name:"Bio Network",         desc:"+100% XP on Bio Sphere",            cost:50, effect:{ xpMult:1.00 } },
+    { id:"bv6", cat:"biovoid", name:"Void Ascendant",      desc:"All Void bonuses ×2",               cost:70, effect:{ globalCreditMult:0.50 } },
+    { id:"bv7", cat:"biovoid", name:"Primal Surge",        desc:"Bio Surge triggers 3× as fast",     cost:90, effect:{ bioSurgeCreditMult:2.0 } },
+    { id:"bv8", cat:"biovoid", name:"Singularity Void",    desc:"Void Surge hits all planets at once", cost:120, effect:{ globalCreditMult:1.00 } },
+    // ⚡ Energy Cluster
+    { id:"e1", cat:"energy", name:"Power Surge",        desc:"+50% Dynamo Prime drone output",         cost:15,  effect:{ droneCreditMult:0.50 } },
+    { id:"e2", cat:"energy", name:"Voltite Resonance",  desc:"+30% all Energy ore values",             cost:20,  effect:{ sellMult:0.30 } },
+    { id:"e3", cat:"energy", name:"Arc Capacitor",      desc:"+75% laser credits on Dynamo Prime",     cost:30,  effect:{ laserCreditMult:0.75 } },
+    { id:"e4", cat:"energy", name:"Storm Grid",         desc:"+100% drone speed on all planets",       cost:50,  effect:{ dronePulseMult:1.00 } },
+    { id:"e5", cat:"energy", name:"Energy Nexus",       desc:"+100% Miner speed on Energy Cluster",    cost:75,  effect:{ allDropChance:1.00 } },
+    { id:"e6", cat:"energy", name:"Plasma Overdrive",   desc:"+200% global credit gains",              cost:120, effect:{ globalCreditMult:2.00 } },
+    { id:"e7", cat:"energy", name:"Arc Conductor",     desc:"+150% passive miner income on Arc Station",cost:40,  effect:{ allDropChance:1.50 } },
+    { id:"e8", cat:"energy", name:"Storm Amplifier",   desc:"+25% crit chance on all Energy planets",  cost:60,  effect:{ critChance:0.25 } },
+    { id:"e9", cat:"energy", name:"Hypercore Magnet",  desc:"+100% rare ore drops on Energy Cluster",  cost:80,  effect:{ rareDropMult:1.00 } },
   ];
 
   const PRESTIGE_CATS = {
@@ -2514,6 +2640,7 @@
     arcane:      { label:"🔮 Arcane",      color:"rgba(255,100,200," },
     industrial:  { label:"🏭 Industrial",  color:"rgba(251,146,60,"  },
     biovoid:     { label:"🌿 Bio & Void",  color:"rgba(74,222,128,"  },
+    energy:      { label:"⚡ Energy Cluster", color:"rgba(250,204,21,"  },
   };
 
   const MR_MILESTONES = {
@@ -2550,23 +2677,24 @@
   }
 
   function defaultPlanetState(planetId){
-    const tier = planetId==="bio" ? 4 : planetId==="void" ? 3 : planetId==="vulcan" ? 2 : 1;
+    const tier = planetId==="storm" ? 7 : planetId==="arc" ? 6 : planetId==="dynamo" ? 5 : planetId==="bio" ? 4 : planetId==="void" ? 3 : planetId==="vulcan" ? 2 : 1;
     return {
       laserLvl: 0,
       dronesLvl: 0,
       droneAI: 0,
       laserPower: 1,
       rps: 0,
-      costLaser:    planetId === "bio" ? 4000  : planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
-      costDrones:   planetId === "bio" ? 15000 : planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
-      costDroneAI:  planetId === "bio" ? 28000 : planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
+      costLaser:    planetId === "storm" ? 50000  : planetId === "arc" ? 25000  : planetId === "dynamo" ? 8000   : planetId === "bio" ? 4000  : planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
+      costDrones:   planetId === "storm" ? 200000 : planetId === "arc" ? 100000 : planetId === "dynamo" ? 30000  : planetId === "bio" ? 15000 : planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
+      costDroneAI:  planetId === "storm" ? 400000 : planetId === "arc" ? 200000 : planetId === "dynamo" ? 55000  : planetId === "bio" ? 28000 : planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
       prospectLvl:  0,
-      costProspect: planetId === "bio" ? 18000 : planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
+      costProspect: planetId === "storm" ? 250000 : planetId === "arc" ? 120000 : planetId === "dynamo" ? 35000  : planetId === "bio" ? 18000 : planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
       // Miner system
       minersDeployed: 0,
       maxMiners: 2,             // base slots
       costMiner: Math.floor(200 * Math.pow(3, tier-1)),  // 200 / 600 / 1800 / 5400
       minerSpeed: 1.0,          // ore/min base, upgraded by station
+      totalSpent: 0,            // credits spent on upgrades (for dust calc)
     };
   }
 
@@ -2777,7 +2905,7 @@
       if(!s.rankHistory) s.rankHistory=[];
       if(!s.smeltInv) s.smeltInv={};
       if(!s.smeltSlots) s.smeltSlots=[];
-      for(const pid of Object.keys(PLANETS)){
+      for(const pid of [...Object.keys(PLANETS), "arc", "storm"]){
         const pp=s.planets?.[pid]; if(!pp) continue;
         if(pp.minersDeployed===undefined) pp.minersDeployed=0;
         if(pp.maxMiners===undefined) pp.maxMiners=2;
@@ -2899,6 +3027,13 @@
       btnBio.disabled = bioRankLocked && !bioBought;
       btnBio.title = bioRankLocked ? `Requires MR ${bioDef.unlockMR}` : bioBought ? "Switch to Bio Sphere" : `Colonize for ${fmt(bioDef.unlockCredits)}c`;
     }
+    // Energy cluster visual classes
+    clickArea.classList.toggle("planet-dynamo", p === "dynamo");
+    asteroid.classList.toggle("planet-dynamo",  p === "dynamo");
+    clickArea.classList.toggle("planet-arc",    p === "arc");
+    asteroid.classList.toggle("planet-arc",     p === "arc");
+    clickArea.classList.toggle("planet-storm",  p === "storm");
+    asteroid.classList.toggle("planet-storm",   p === "storm");
   }
 
   function switchPlanet(planetId){
@@ -2974,32 +3109,35 @@
   function oreValue(id){
     const o = ORES.find(x=>x.id===id);
     if(!o) return 0;
-    const sellBonus = 1 + skillBonus("sellMult");
+    const sellBonus = 1 + skillBonus("sellMult") + rankBonus("sellMult") + rankBonus("oreValue");
     const darkBonus = (id === "darkMatter") ? (1 + skillBonus("darkMatterMult")) : 1;
     return o.value * sellBonus * darkBonus;
   }
 
-  function dronePulsesPerSecondFor(p){
+  function dronePulsesPerSecondFor(p, mr){
     const base = 0.22;
     const ai = (p.droneAI||0);
-    return Math.min(1.05, base + ai*0.05);
+    const speedMult = 1 + rankBonus("droneSpeed", mr);
+    return Math.min(1.05, (base + ai*0.05) * speedMult);
   }
   function droneCreditsPerPulseFor(p, planetId){
     const base = Math.max(1, Math.floor((p.laserPower||1) * 0.65));
     const ai = Math.floor((p.droneAI||0) / 3);
-    const mult = PLANETS[planetId]?.creditMult || 1;
-    return Math.round((base + ai) * mult);
+    const mult      = PLANETS[planetId]?.creditMult || 1;
+    const droneMult   = PLANETS[planetId]?.droneMult  || 1;
+    const droneRankMult = 1 + rankBonus("droneCredit");
+    return Math.round((base + ai) * mult * droneMult * droneRankMult);
   }
 
   function applyStatsPlanet(s, pid){
     const p = s.planets[pid];
     if(!p) return;
     p.laserPower = 1 + (p.laserLvl||0);
-    const speed = dronePulsesPerSecondFor(p);
+    const speed = dronePulsesPerSecondFor(p, s.minerRank);
     const cpp   = droneCreditsPerPulseFor(p, pid);
     p.rps = Math.round(((p.dronesLvl||0) * speed * cpp) * 10)/10;
     // Miner speed gets allDropChance skill bonus as speed multiplier
-    p.minerSpeed = 1.0 * (1 + skillBonusFlat("allDropChance", s));
+    p.minerSpeed = 1.0 * (1 + skillBonusFlat("allDropChance", s) + rankBonus("minerOutput", s.minerRank));
     // Hangar Bay + Rank rewards: maxMiners always derived from station + rank
     p.maxMiners = 2 + (s.station?.hangar||0) + (s.rankMinerSlots||0);
   }
@@ -3007,6 +3145,11 @@
   function applyStats(s){
     s.planets = s.planets || {};
     for(const pid of Object.keys(PLANETS)) applyStatsPlanet(s, pid);
+    // Ensure energy cluster planets also get state entries
+    for(const pid of ["dynamo","arc","storm"]){
+      if(!s.planets[pid]) s.planets[pid] = defaultPlanetState(pid);
+      applyStatsPlanet(s, pid);
+    }
     const ap = s.planets[s.currentPlanet];
     if(ap){ s.laserPower = ap.laserPower; s.rps = ap.rps; }
     const base = 120 + (s.cargoTier-1)*50;
@@ -3047,6 +3190,7 @@
 
   const toastEl = el("toast");
   const minerHudEl = el("minerHud");
+  const cpsHudEl   = el("cpsHud");
   const cargoHudEl = el("cargoHud");
   const comboBarEl = el("comboBar");
   const stellarDustHudEl = el("stellarDustHud");
@@ -3409,7 +3553,7 @@
   function rareBoostMult(){
     const perk = state.perksUnlocked.rareBoost ? 1.25 : 1;
     const upgrade = 1 + (P().prospectLvl * 0.06);
-    const skill = 1 + skillBonus("rareDropMult");
+    const skill = 1 + skillBonus("rareDropMult") + rankBonus("rareDrop");
     return perk * upgrade * skill;
   }
 
@@ -3559,13 +3703,16 @@
     questProgressUpdate("shots", 1);
     if(state._stats) state._stats.shots=(state._stats.shots||0)+1;
 
-    const crit = Math.random() < (0.05 * (1 + skillBonus("critMult")));
+    const stormCritChance = PLANETS[state.currentPlanet]?.critChanceBonus || 0;
+    const stormCritMult   = PLANETS[state.currentPlanet]?.critMultBonus   || 0;
+    const crit = Math.random() < (0.05 * (1 + skillBonus("critMult")) + stormCritChance + prestigeBonus("critChance") + rankBonus("critChance"));
     if(crit&&state._stats) state._stats.crits=(state._stats.crits||0)+1;
 
     // Combo multiplier
     const now2 = Date.now();
     if(now2 - lastComboTime > 2000) comboCount = 0;
     comboCount = Math.min(comboCount + 1, 20);
+    clickTimestamps.push(performance.now());
     lastComboTime = now2;
     if(state._stats) state._stats.maxCombo=Math.max(state._stats.maxCombo||0,comboCount);
     const comboMult = 1 + Math.floor(comboCount / 5) * 0.5; // x1 → x1.5 → x2 → x2.5 at 5/10/15/20
@@ -3574,8 +3721,8 @@
     // Bio credit boost during surge
     const bioSurgeCredMult = (state.currentPlanet==="bio" && state._bioSurgeUntil && Date.now()<state._bioSurgeUntil) ? (1 + skillBonus("bioSurgeCreditMult")) : 1;
     const regolith = Math.round(baseRegolith * comboMult * planetCreditMult()
-      * (1 + skillBonus("laserCreditMult"))
-      * (1 + skillBonus("globalCreditMult"))
+      * (1 + skillBonus("laserCreditMult") + rankBonus("laserCredit"))
+      * (1 + skillBonus("globalCreditMult") + rankBonus("globalCredit"))
       * bioSurgeCredMult);
 
     fireLaserFX(crit, clientX, clientY);
@@ -3590,7 +3737,7 @@
     const bioSurgeActive = isBioPlanet && state._bioSurgeUntil && Date.now() < state._bioSurgeUntil;
     const bioSurgeXpMult = bioSurgeActive ? 2.5 : 1;
     const bioPassiveXpMult = isBioPlanet ? (1 + skillBonus("bioXpMult") + (state.bioupgrades?.spore?0.25:0) + (state.bioupgrades?.livingcore?0.50:0)) : 1;
-    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult")) * bioSurgeXpMult * bioPassiveXpMult);
+    addMiningXP((crit ? 40 : 8) * planetXpMult() * (1 + skillBonus("xpMult") + rankBonus("xpGain")) * bioSurgeXpMult * bioPassiveXpMult);
 
     // Void Surge — only on void planet
     if(state.currentPlanet === "void"){
@@ -3684,9 +3831,7 @@
         <circle cx="15" cy="12" r="2.5" fill="rgba(255,255,200,.7)"/>
         <!-- Charge track -->
         <div class="chargeTrack" style="display:none"><div class="chargeFill"></div></div>
-      </svg>
-      <div class="chargeTrack ascendant-charge"><div class="chargeFill"></div></div>
-      <div class="blastRing"></div>`,
+      </svg>`,
 
     dark_star: `
       <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
@@ -3713,9 +3858,7 @@
         <!-- Singularity -->
         <circle cx="15" cy="15" r="3" fill="#000"/>
         <circle cx="15" cy="15" r="1.2" fill="rgba(139,92,246,.9)"/>
-      </svg>
-      <div class="chargeTrack"><div class="chargeFill"></div></div>
-      <div class="blastRing"></div>`,
+      </svg>`,
 
     mythic: `
       <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
@@ -3743,9 +3886,89 @@
         <circle cx="25" cy="15" r="1.2" fill="rgba(253,224,71,.9)"/>
         <circle cx="15" cy="25" r="1.2" fill="rgba(253,224,71,.9)"/>
         <circle cx="5"  cy="15" r="1.2" fill="rgba(253,224,71,.9)"/>
-      </svg>
-      <div class="chargeTrack"><div class="chargeFill"></div></div>
-      <div class="blastRing"></div>`,
+      </svg>`,
+
+    // Nebula Drifter — jellyfish/manta ray shape, flowing nebula wings
+    nebula: `
+      <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="nbg" cx="50%" cy="40%">
+            <stop offset="0%" stop-color="rgba(236,72,153,.9)"/>
+            <stop offset="50%" stop-color="rgba(168,85,247,.8)"/>
+            <stop offset="100%" stop-color="rgba(76,29,149,.4)"/>
+          </radialGradient>
+          <filter id="nbglow"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Left wing -->
+        <path d="M15,14 Q4,8 3,16 Q6,20 15,18 Z" fill="rgba(168,85,247,.6)" stroke="rgba(236,72,153,.5)" stroke-width="0.4"/>
+        <!-- Right wing -->
+        <path d="M15,14 Q26,8 27,16 Q24,20 15,18 Z" fill="rgba(168,85,247,.6)" stroke="rgba(236,72,153,.5)" stroke-width="0.4"/>
+        <!-- Body core -->
+        <ellipse cx="15" cy="15" rx="5" ry="6" fill="url(#nbg)" stroke="rgba(236,72,153,.6)" stroke-width="0.7" filter="url(#nbglow)"/>
+        <!-- Inner glow -->
+        <ellipse cx="15" cy="13" rx="2.5" ry="3" fill="rgba(255,200,255,.35)"/>
+        <!-- Trailing tendrils -->
+        <path d="M12,20 Q10,26 11,28" stroke="rgba(168,85,247,.5)" stroke-width="0.6" fill="none"/>
+        <path d="M15,21 Q15,26 15,29" stroke="rgba(236,72,153,.5)" stroke-width="0.6" fill="none"/>
+        <path d="M18,20 Q20,26 19,28" stroke="rgba(168,85,247,.5)" stroke-width="0.6" fill="none"/>
+      </svg>`,
+
+    // Bio Core — organic cell/spore shape, asymmetric living form
+    bio_core: `
+      <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="bcg" cx="45%" cy="40%">
+            <stop offset="0%" stop-color="rgba(187,247,208,.95)"/>
+            <stop offset="55%" stop-color="rgba(74,222,128,.8)"/>
+            <stop offset="100%" stop-color="rgba(20,83,45,.6)"/>
+          </radialGradient>
+          <filter id="bcglow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Outer membrane — organic blob -->
+        <path d="M15,3 Q21,4 24,9 Q27,14 24,20 Q21,26 15,27 Q9,26 6,20 Q3,14 6,9 Q9,4 15,3 Z"
+              fill="url(#bcg)" stroke="rgba(74,222,128,.6)" stroke-width="0.7" filter="url(#bcglow)"/>
+        <!-- Cell wall texture -->
+        <path d="M15,3 Q21,4 24,9" stroke="rgba(134,239,172,.3)" stroke-width="0.4" fill="none"/>
+        <path d="M24,20 Q21,26 15,27" stroke="rgba(134,239,172,.3)" stroke-width="0.4" fill="none"/>
+        <!-- Nucleus -->
+        <circle cx="14" cy="13" r="4" fill="rgba(20,83,45,.6)" stroke="rgba(74,222,128,.5)" stroke-width="0.6"/>
+        <circle cx="14" cy="13" r="2" fill="rgba(187,247,208,.7)"/>
+        <!-- Spore buds -->
+        <circle cx="22" cy="10" r="2" fill="rgba(74,222,128,.7)" stroke="rgba(134,239,172,.5)" stroke-width="0.4"/>
+        <circle cx="8"  cy="20" r="1.5" fill="rgba(74,222,128,.6)" stroke="rgba(134,239,172,.4)" stroke-width="0.4"/>
+        <circle cx="21" cy="22" r="1.2" fill="rgba(74,222,128,.5)" stroke="rgba(134,239,172,.3)" stroke-width="0.3"/>
+      </svg>`,
+
+    // Prism Rig — geometric gem/diamond multi-faceted shape
+    prism_rig: `
+      <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="prg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="rgba(239,68,68,.9)"/>
+            <stop offset="33%" stop-color="rgba(234,179,8,.9)"/>
+            <stop offset="66%" stop-color="rgba(34,197,94,.9)"/>
+            <stop offset="100%" stop-color="rgba(59,130,246,.9)"/>
+          </linearGradient>
+          <linearGradient id="prg2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(168,85,247,.7)"/>
+            <stop offset="100%" stop-color="rgba(59,130,246,.5)"/>
+          </linearGradient>
+          <filter id="prglow"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <!-- Outer hexagon -->
+        <polygon points="15,2 25,8 25,20 15,26 5,20 5,8"
+                 fill="url(#prg1)" stroke="rgba(255,255,255,.4)" stroke-width="0.6" filter="url(#prglow)"/>
+        <!-- Upper facet -->
+        <polygon points="15,2 25,8 15,12 5,8" fill="rgba(255,255,255,.25)"/>
+        <!-- Left facet -->
+        <polygon points="5,8 15,12 15,20 5,20" fill="rgba(0,0,0,.15)"/>
+        <!-- Right facet -->
+        <polygon points="25,8 15,12 15,20 25,20" fill="url(#prg2)" opacity="0.5"/>
+        <!-- Center gem -->
+        <polygon points="15,9 19,14 15,19 11,14" fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.3)" stroke-width="0.4"/>
+        <!-- Sparkle -->
+        <circle cx="15" cy="14" r="1.5" fill="rgba(255,255,255,.9)"/>
+      </svg>`,
 
     transcend: `
       <svg class="droneModel" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
@@ -3775,9 +3998,7 @@
         <line x1="26" y1="4"  x2="23" y2="7"  stroke="rgba(186,230,253,.5)" stroke-width="0.6"/>
         <line x1="4"  y1="26" x2="7"  y2="23" stroke="rgba(186,230,253,.5)" stroke-width="0.6"/>
         <line x1="26" y1="26" x2="23" y2="23" stroke="rgba(186,230,253,.5)" stroke-width="0.6"/>
-      </svg>
-      <div class="chargeTrack"><div class="chargeFill"></div></div>
-      <div class="blastRing"></div>`,
+      </svg>`,
   };
   
   function syncSpawnedDrones(){
@@ -3806,7 +4027,7 @@
 
       const customModel = DRONE_CUSTOM_MODELS[skinId];
       if(customModel){
-        d.innerHTML = customModel;
+        d.innerHTML = customModel + '<div class="chargeTrack"><div class="chargeFill"></div></div><div class="blastRing"></div>';
         d.classList.add('custom-model');
       } else {
         d.innerHTML = `
@@ -3887,8 +4108,9 @@
       const minersActive = pp.minersDeployed||0;
       if(minersActive > 0 && freeSpace() > 0){
         if(!minerAccum[pid]) minerAccum[pid]=0;
-        const reactorBonus = 1 + (state.station?.reactor||0)*0.25;
-        const orePerSec = (pp.minerSpeed||1) * reactorBonus * minersActive / 60;
+        const reactorBonus  = 1 + (state.station?.reactor||0)*0.25;
+        const passiveMult   = PLANETS[pid]?.passiveIncomeMult || 1;
+        const orePerSec = (pp.minerSpeed||1) * reactorBonus * passiveMult * minersActive / 60;
         minerAccum[pid] += orePerSec * dt;
         while(minerAccum[pid] >= 1 && freeSpace() > 0){
           minerAccum[pid] -= 1;
@@ -4180,9 +4402,17 @@
   }
 
   function dustEarnedFor(planetId){
-    const count = state.prestigeCount?.[planetId] || 0;
-    const base  = STELLAR_DUST_PER_PRESTIGE + count * 8;
-    const mult  = 1 + prestigeBonus("dustMult");
+    const pp      = state.planets[planetId];
+    const spent   = pp?.totalSpent || 0;
+    // Divisor per planet — lower = more dust per credit invested
+    const divisors = { iron:20000000, vulcan:40000000, void:120000000, bio:320000000, dynamo:800000000, arc:2000000000, storm:5000000000 };
+    const divisor  = divisors[planetId] || 2000;
+    const fromSpent = Math.floor(spent / divisor);
+    // Minimum guarantee scales with prestige count
+    const count   = state.prestigeCount?.[planetId] || 0;
+    const minimum = 1 + count * 2;  // tiny base if nothing invested
+    const base    = Math.max(minimum, fromSpent);
+    const mult    = 1 + prestigeBonus("dustMult") + rankBonus("dustMult");
     return Math.floor(base * mult);
   }
 
@@ -4253,6 +4483,7 @@
             <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
               <span class="chip warn">Cost: ${fmt(cost)}c</span>
               <span class="chip" style="border-color:rgba(180,130,255,.28);background:rgba(150,100,255,.10);color:rgba(220,190,255,.95);">+${dust2} ✨</span>
+              <span class="chip muted" style="font-size:10px;">from ${fmt(state.planets[pid]?.totalSpent||0)}c invested</span>
             </div>
           </div>
           <button class="btn ${afford?"warn":"secondary"}" data-prestige="${pid}"
@@ -4270,8 +4501,8 @@
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
       for(const upg of upgrades){
         const own2    = prestigeUpgradeOwned(upg.id);
-        const mrLocked = upg.unlockMR && state.minerRank < upg.unlockMR;
-        const afford2 = !own2 && !mrLocked && (state.stellarDust||0) >= upg.cost;
+        const mrLocked = false;
+        const afford2 = !own2 && (state.stellarDust||0) >= upg.cost;
         html += `
           <div class="skillNode${own2?" owned":""}${afford2?" affordable":""}"
             style="cursor:${own2?"default":"pointer"};position:relative;"
@@ -4279,7 +4510,7 @@
             ${own2?`<div class="skillOwnedBadge">✓ Owned</div>`:""}
             <div class="skillNodeName">${escapeHtml(upg.name)}</div>
             <div class="skillNodeDesc">${escapeHtml(upg.desc)}</div>
-            ${mrLocked?`<div style="font-size:10px;color:#c084fc;margin-top:4px;">🔒 Requires MR ${upg.unlockMR}</div>`:""}
+
             ${!own2&&!mrLocked?`<div class="skillNodeCost">
               <span class="skillCostChip ${afford2?"met":""}">✨ ${upg.cost}</span>
             </div>`:""}
@@ -5103,8 +5334,9 @@
       // Miner ores into cargo (pauses when full, efficiency applies)
       const minersActive = pp.minersDeployed || 0;
       if(minersActive > 0 && freeSpace() > 0){
-        const reactorBonus = 1 + (state.station?.reactor||0)*0.25;
-        const orePerSec = (pp.minerSpeed||1) * reactorBonus * minersActive / 60;
+        const reactorBonus  = 1 + (state.station?.reactor||0)*0.25;
+        const passiveMult   = PLANETS[pid]?.passiveIncomeMult || 1;
+        const orePerSec = (pp.minerSpeed||1) * reactorBonus * passiveMult * minersActive / 60;
         const totalOres = Math.floor(orePerSec * capped * efficiency);
         const actualOres = Math.min(totalOres, freeSpace());
 
@@ -5162,6 +5394,7 @@
   function buyLaser(){
     const p = P();
     if(state.credits < p.costLaser) return toast("Not enough credits.");
+    p.totalSpent = (p.totalSpent||0) + p.costLaser;
     state.credits -= p.costLaser;
     p.laserLvl += 1;
     p.costLaser = Math.floor(p.costLaser * 1.62 + 40);
@@ -5178,6 +5411,7 @@
     if(state.credits < p.costDrones) return toast("Not enough credits.");
     const oldCount = p.dronesLvl;
 
+    p.totalSpent = (p.totalSpent||0) + p.costDrones;
     state.credits -= p.costDrones;
     p.dronesLvl += 1;
     p.costDrones = Math.floor(p.costDrones * 1.58 + 120);
@@ -5204,6 +5438,7 @@
   function buyDroneAI(){
     const p = P();
     if(state.credits < p.costDroneAI) return toast("Not enough credits.");
+    p.totalSpent = (p.totalSpent||0) + p.costDroneAI;
     state.credits -= p.costDroneAI;
     p.droneAI += 1;
     p.costDroneAI = Math.floor(p.costDroneAI * 1.65 + 200);
@@ -5218,6 +5453,7 @@
   function buyProspect(){
     const p = P();
     if(state.credits < p.costProspect) return toast("Not enough credits.");
+    p.totalSpent = (p.totalSpent||0) + p.costProspect;
     state.credits -= p.costProspect;
     p.prospectLvl += 1;
     p.costProspect = Math.floor(p.costProspect * 1.68 + 150);
@@ -5678,7 +5914,7 @@
   function sellAlloys(){
     const inv = smeltInventory(state);
     let total = 0;
-    const smeltBonus = 1 + skillBonus("smeltSellMult");
+    const smeltBonus = 1 + skillBonus("smeltSellMult") + rankBonus("smeltValue");
     for(const recipe of SMELT_RECIPES){
       const have = inv[recipe.id]||0;
       if(have > 0){
@@ -5741,6 +5977,7 @@
     if((pp.minersDeployed||0) >= (pp.maxMiners||2)) return toast("Max miners deployed. Upgrade Hangar Bay.");
     const cost = pp.costMiner || 200;
     if(state.credits < cost) return toast("Not enough credits.");
+    pp.totalSpent = (pp.totalSpent||0) + cost;
     state.credits -= cost;
     pp.minersDeployed = (pp.minersDeployed||0)+1;
     pp.costMiner = Math.floor(cost * 2.5 + 300);
@@ -6166,78 +6403,129 @@
 
   // All milestones on the rank road
   const RANK_ROAD = [
-    { rank:1,  title:"Mining Begins",       rewards:[], note:"Your journey starts on the Iron Belt." },
-    { rank:2,  title:"Nickel Vein",         rewards:[{type:"ore", label:"Nickel ore unlocked", id:"nickel"}] },
-    { rank:3,  title:"Signal Boost",        rewards:[{type:"perk", label:"+Drone AI Efficiency"}] },
-    { rank:4,  title:"Cobalt Seam",         rewards:[{type:"ore", label:"Cobalt ore unlocked", id:"cobalt"}] },
-    { rank:5,  title:"Cargo Protocols",     rewards:[{type:"perk", label:"Advanced cargo modes enabled"}] },
-    { rank:6,  title:"Trade Terminal",      rewards:[{type:"trade", label:"Trade Terminal online"}, {type:"ore", label:"Gold ore unlocked", id:"gold"}] },
-    { rank:7,  title:"Deep Scan",           rewards:[{type:"perk", label:"+Prospecting efficiency"}] },
-    { rank:8,  title:"Platinum Core",       rewards:[{type:"ore", label:"Platinum ore unlocked", id:"platinum"}] },
-    { rank:9,  title:"System Expansion",    rewards:[{type:"perk", label:"Offline haul extended to 12h"}] },
-    { rank:10, title:"Vulcan Core",         rewards:[{type:"planet", label:"🌋 Vulcan Core unlocked", planet:"vulcan"}, {type:"perk", label:"+Cargo Capacity"}, {type:"ore", label:"Pyrolusite ore", id:"pyrite"}, {type:"ore", label:"Obsidian ore", id:"obsidian"}], major:true },
-    { rank:11, title:"Lava Drones",         rewards:[{type:"perk", label:"Vulcan drone tier available"}] },
-    { rank:12, title:"Magma Lens",          rewards:[{type:"perk", label:"+Laser power on Vulcan"}] },
-    { rank:13, title:"Deep Orbit",          rewards:[{type:"perk", label:"Drone orbit radius expands"}] },
-    { rank:14, title:"Void Signal",          rewards:[{type:"perk", label:"Deep-space signal detected"}, {type:"perk", label:"Overclock efficiency +10%"}] },
-    { rank:15, title:"Void Expanse",         rewards:[{type:"planet", label:"🌌 Void Expanse unlocked", planet:"void"}, {type:"ore", label:"Void Shard ore", id:"voidShard"}, {type:"ore", label:"Dark Matter ore", id:"darkMatter"}], major:true },
-    { rank:16, title:"Void Resonance",       rewards:[{type:"perk", label:"Void Surge chance +3%"}, {type:"perk", label:"+10% Void credits"}] },
-    { rank:17, title:"Dark Prospector",      rewards:[{type:"perk", label:"Rare drop rate +15% (all planets)"}] },
-    { rank:18, title:"Stellar Cartographer", rewards:[{type:"perk", label:"Stellar Dust gain +20%"}, {type:"perk", label:"Prestige cost -5%"}] },
-    { rank:19, title:"Event Horizon",        rewards:[{type:"perk", label:"Offline income extended to 24h"}] },
-    { rank:20, title:"Singularity",          rewards:[{type:"perk", label:"All planet multipliers +10%"}, {type:"perk", label:"Drone AI speed +25%"}], major:true },
-    { rank:21, title:"Quantum Tunneling",    rewards:[{type:"perk", label:"Laser pierces — double XP on crits"}] },
-    { rank:22, title:"Dark Matter Cache",    rewards:[{type:"perk", label:"Dark Matter drop rate +50%"}, {type:"perk", label:"Cargo capacity +100"}] },
-    { rank:23, title:"Warp Efficiency",      rewards:[{type:"perk", label:"Planet switching costs 0 credits"}] },
-    { rank:24, title:"Neural Override",      rewards:[{type:"perk", label:"Drone AI tier cap raised"}, {type:"perk", label:"+20% drone yields"}] },
-    { rank:25, title:"Void Master",          rewards:[{type:"perk", label:"All Void bonuses ×1.5"}, {type:"perk", label:"Prestige Dust ×1.2"}], major:true },
-    { rank:26, title:"Chronoshard Mining",   rewards:[{type:"perk", label:"Time-based bonus: +1% per hour online"}] },
-    { rank:27, title:"Exo-Rig Calibration",  rewards:[{type:"perk", label:"Laser power scales with MR (+2% per rank)"}] },
-    { rank:28, title:"Spectral Analysis",    rewards:[{type:"perk", label:"All ore values +15%"}, {type:"perk", label:"Trade sell rate +10%"}] },
-    { rank:29, title:"Graviton Drill",       rewards:[{type:"perk", label:"Every 5th laser shot free (no cooldown)"}] },
-    { rank:30, title:"Ascendant Miner",      rewards:[{type:"perk", label:"All multipliers stack additively +20%"}, {type:"perk", label:"Stellar Dust cap removed"}], major:true },
-    { rank:31, title:"Nebula Walker",        rewards:[{type:"perk", label:"Void Surge triggers on drones too"}] },
-    { rank:32, title:"Antimatter Core",      rewards:[{type:"perk", label:"Dark Matter value +30%"}, {type:"perk", label:"Crit chance +5%"}] },
-    { rank:33, title:"Deep Void Protocol",   rewards:[{type:"perk", label:"Offline haul quality matches online rate"}] },
-    { rank:34, title:"Stellar Architect",    rewards:[{type:"perk", label:"Prestige resets leave 5% upgrade bonus"}, {type:"perk", label:"MR never resets on prestige"}] },
-    { rank:35, title:"Biosphere Admiral",    rewards:[{type:"planet", label:"🌿 Bio Sphere unlocked", planet:"bio"}, {type:"perk", label:"Bio Surge unlocked"}, {type:"ore", label:"Spore Dust, Mycelium, Biolith"}], major:true },
-    { rank:36, title:"Living Architect",      rewards:[{type:"perk", label:"Bio ore values +20%"}, {type:"perk", label:"Myco Alloy output +1"}] },
-    { rank:37, title:"Spore Cartographer",    rewards:[{type:"perk", label:"Spore Dust drop rate +25%"}] },
-    { rank:38, title:"Mycelium Network",      rewards:[{type:"perk", label:"Drone yield +15% on Bio Sphere"}, {type:"perk", label:"Offline haul extended to 36h"}] },
-    { rank:39, title:"Biolith Sovereign",     rewards:[{type:"perk", label:"Living Crystal value +40%"}, {type:"perk", label:"Crit chance +3%"}] },
-    { rank:40, title:"Galactic Pioneer",      rewards:[{type:"perk", label:"All planet bonuses ×1.3"}, {type:"perk", label:"Stellar Dust gain ×1.5"}, {type:"perk", label:"All ore values +20%"}], major:true },
-    { rank:41, title:"Void Sovereign",        rewards:[{type:"perk", label:"Void Surge credits ×2"}, {type:"perk", label:"Dark Matter drop +30%"}] },
-    { rank:42, title:"Stellar Dominion",      rewards:[{type:"perk", label:"Laser crit multiplier +50%"}] },
-    { rank:43, title:"Deep Space Forger",     rewards:[{type:"perk", label:"Alloy smelt speed +30%"}, {type:"perk", label:"Cargo capacity +150"}] },
-    { rank:44, title:"Entropy Engineer",      rewards:[{type:"perk", label:"+2% income per prestige owned"}, {type:"perk", label:"Trade rates +15%"}] },
-    { rank:45, title:"Cosmic Overlord",       rewards:[{type:"perk", label:"All multipliers ×1.2"}, {type:"perk", label:"Prestige Dust ×1.5"}], major:true },
-    { rank:46, title:"Nebula Sovereign",      rewards:[{type:"perk", label:"Void Ray always crits on Void Expanse"}] },
-    { rank:47, title:"Dark Forge Master",     rewards:[{type:"perk", label:"Miner ore output +50% globally"}, {type:"perk", label:"Station module costs -20%"}] },
-    { rank:48, title:"Quantum Architect",     rewards:[{type:"perk", label:"Every prestige keeps 10% of credits"}, {type:"perk", label:"XP gain +30%"}] },
-    { rank:49, title:"Event Singularity",     rewards:[{type:"perk", label:"Bio Surge triggers 2× as often"}, {type:"perk", label:"Offline haul extended to 48h"}] },
-    { rank:50, title:"Interstellar Legend",   rewards:[{type:"perk", label:"All income ×2 permanently"}, {type:"perk", label:"Stellar Dust ×2"}, {type:"perk", label:"Unlocks Legendary drone skins"}], major:true },
-    { rank:51, title:"Stardust Warden",       rewards:[{type:"perk", label:"Rare ore drop rate +40%"}] },
-    { rank:52, title:"Void Imperator",        rewards:[{type:"perk", label:"Void Surge duration ×1.5"}, {type:"perk", label:"Dark Matter value +50%"}] },
-    { rank:53, title:"Plasma Titan",          rewards:[{type:"perk", label:"Laser base damage +75%"}, {type:"perk", label:"Crit chance +5%"}] },
-    { rank:54, title:"Galactic Sovereign",    rewards:[{type:"perk", label:"All planets earn simultaneously (passive)"}] },
-    { rank:55, title:"The Undying",           rewards:[{type:"perk", label:"Prestige resets leave 15% upgrade bonus"}, {type:"perk", label:"Max drones +5"}], major:true },
-    { rank:56, title:"Cosmic Shepherd",       rewards:[{type:"perk", label:"Drone AI speed ×1.5 globally"}] },
-    { rank:57, title:"Entropy Lord",          rewards:[{type:"perk", label:"All alloy values +60%"}, {type:"perk", label:"Smelt queue cap +10"}] },
-    { rank:58, title:"Singularity Walker",    rewards:[{type:"perk", label:"Credits earned offline match online rate"}] },
-    { rank:59, title:"Nebula Emperor",        rewards:[{type:"perk", label:"Bio Surge stage 3 permanently active on Bio Sphere"}, {type:"perk", label:"XP gain ×2"}] },
-    { rank:60, title:"Star Forger",           rewards:[{type:"perk", label:"All income ×2.5"}, {type:"perk", label:"Stellar Dust cap ×3"}, {type:"perk", label:"Unlocks Mythic cosmetics"}], major:true },
-    { rank:61, title:"Primordial Miner",      rewards:[{type:"perk", label:"Ore drop rates ×1.5 globally"}] },
-    { rank:62, title:"Void Emperor",          rewards:[{type:"perk", label:"Void Surge triggers on every planet"}, {type:"perk", label:"Dark Matter value ×2"}] },
-    { rank:63, title:"Living Crystal Oracle", rewards:[{type:"perk", label:"Living Crystal auto-smelts every 5 min"}, {type:"perk", label:"Bio ore values ×1.5"}] },
-    { rank:64, title:"Galactic Tyrant",       rewards:[{type:"perk", label:"All multipliers +50% additively"}, {type:"perk", label:"Prestige Dust ×2"}] },
-    { rank:65, title:"The Eternal",           rewards:[{type:"perk", label:"Offline haul: no time limit"}, {type:"perk", label:"All income ×3"}], major:true },
-    { rank:66, title:"Quantum God",           rewards:[{type:"perk", label:"Crit chance +10%"}, {type:"perk", label:"Crit damage ×3"}] },
-    { rank:67, title:"Nebula God",            rewards:[{type:"perk", label:"All drone yields ×2"}, {type:"perk", label:"Cargo capacity +500"}] },
-    { rank:68, title:"Cosmic Deity",          rewards:[{type:"perk", label:"All prestige upgrades cost -30%"}, {type:"perk", label:"Stellar Dust ×3"}] },
-    { rank:69, title:"Void God",              rewards:[{type:"perk", label:"Void Surge: infinite duration"}, {type:"perk", label:"All Void bonuses ×3"}] },
-    { rank:70, title:"Transcendent",          rewards:[{type:"perk", label:"⚡ TRANSCENDENCE: All income ×5"}, {type:"perk", label:"Stellar Dust ×5"}, {type:"perk", label:"👑 Mythic Title: The Transcendent unlocked"}], major:true },
+    { rank:1,  title:"Mining Begins",        rewards:[], note:"Your journey starts on the Iron Belt." },
+    { rank:2,  title:"Nickel Vein",           rewards:[{type:"ore",   label:"Nickel ore unlocked"}] },
+    { rank:3,  title:"Signal Boost",          rewards:[{type:"perk",  label:"+10% Drone AI efficiency"}] },
+    { rank:4,  title:"Cobalt Seam",           rewards:[{type:"ore",   label:"Cobalt ore unlocked"}] },
+    { rank:5,  title:"Cargo Protocols",       rewards:[{type:"perk",  label:"+1 Miner slot"}] },
+    { rank:6,  title:"Trade Terminal",        rewards:[{type:"trade", label:"Trade Terminal online"}, {type:"ore", label:"Gold ore unlocked"}] },
+    { rank:7,  title:"Deep Scan",             rewards:[{type:"perk",  label:"+10% XP gain"}] },
+    { rank:8,  title:"Platinum Core",         rewards:[{type:"ore",   label:"Platinum ore unlocked"}, {type:"perk", label:"+25% rare ore drop chance"}] },
+    { rank:9,  title:"System Expansion",      rewards:[{type:"perk",  label:"Offline haul extended to 12h"}] },
+    { rank:10, title:"Vulcan Core",           rewards:[{type:"planet", label:"🌋 Vulcan Core unlocked"}, {type:"perk", label:"+Cargo Capacity"}, {type:"ore", label:"Pyrolusite & Obsidian unlocked"}], major:true },
+    { rank:11, title:"Lava Drones",           rewards:[{type:"perk",  label:"+10% drone yield on Vulcan"}] },
+    { rank:12, title:"Magma Lens",            rewards:[{type:"perk",  label:"+1 Miner slot"}] },
+    { rank:13, title:"Deep Orbit",            rewards:[{type:"perk",  label:"+15% laser credits globally"}] },
+    { rank:14, title:"Void Signal",           rewards:[{type:"perk",  label:"+50 Cargo capacity"}] },
+    { rank:15, title:"Void Expanse",          rewards:[{type:"planet", label:"🌌 Void Expanse unlocked"}, {type:"ore", label:"Void Shard & Dark Matter unlocked"}], major:true },
+    { rank:16, title:"Void Resonance",        rewards:[{type:"perk",  label:"+10% credits on Void Expanse"}] },
+    { rank:17, title:"Dark Prospector",       rewards:[{type:"perk",  label:"+15% rare ore drop rate globally"}] },
+    { rank:18, title:"Stellar Cartographer",  rewards:[{type:"perk",  label:"+1 Miner slot"}, {type:"perk", label:"+20% Stellar Dust gain"}] },
+    { rank:19, title:"Event Horizon",         rewards:[{type:"perk",  label:"Offline income extended to 24h"}] },
+    { rank:20, title:"Singularity",           rewards:[{type:"perk",  label:"+100 Cargo capacity"}, {type:"perk", label:"Station costs −20%"}], major:true },
+    { rank:21, title:"Quantum Tunneling",     rewards:[{type:"perk",  label:"+10% XP on crits"}] },
+    { rank:22, title:"Dark Matter Cache",     rewards:[{type:"perk",  label:"+25% Dark Matter drop rate"}] },
+    { rank:23, title:"Warp Efficiency",       rewards:[{type:"perk",  label:"+15% drone credits globally"}] },
+    { rank:24, title:"Neural Override",       rewards:[{type:"perk",  label:"+20% drone yields"}] },
+    { rank:25, title:"Void Master",           rewards:[{type:"perk",  label:"+150 Cargo capacity"}, {type:"perk", label:"+1 Miner slot"}], major:true },
+    { rank:26, title:"Chronoshard Mining",    rewards:[{type:"perk",  label:"+20% miner ore output globally"}] },
+    { rank:27, title:"Exo-Rig Calibration",   rewards:[{type:"perk",  label:"+15% laser power globally"}] },
+    { rank:28, title:"Spectral Analysis",     rewards:[{type:"perk",  label:"+15% all ore values"}] },
+    { rank:29, title:"Graviton Drill",        rewards:[{type:"perk",  label:"+5% crit chance"}] },
+    { rank:30, title:"Ascendant Miner",       rewards:[{type:"perk",  label:"+20% all income"}, {type:"perk", label:"+200 Cargo capacity"}], major:true },
+    { rank:31, title:"Nebula Walker",         rewards:[{type:"perk",  label:"+25% drone speed globally"}] },
+    { rank:32, title:"Antimatter Core",       rewards:[{type:"perk",  label:"+30% Dark Matter value"}] },
+    { rank:33, title:"Deep Void Protocol",    rewards:[{type:"perk",  label:"+20% offline income quality"}] },
+    { rank:34, title:"Stellar Architect",     rewards:[{type:"perk",  label:"+25% Stellar Dust gain"}] },
+    { rank:35, title:"Biosphere Admiral",     rewards:[{type:"planet", label:"🌿 Bio Sphere unlocked"}, {type:"perk", label:"Bio Surge unlocked"}, {type:"ore", label:"Spore Dust, Mycelium & Biolith"}], major:true },
+    { rank:36, title:"Living Architect",      rewards:[{type:"perk",  label:"+20% Bio ore values"}] },
+    { rank:37, title:"Spore Cartographer",    rewards:[{type:"perk",  label:"+25% Spore Dust drop rate"}] },
+    { rank:38, title:"Mycelium Network",      rewards:[{type:"perk",  label:"+15% drone yield on Bio Sphere"}, {type:"perk", label:"Offline haul extended to 36h"}] },
+    { rank:39, title:"Biolith Sovereign",     rewards:[{type:"perk",  label:"+5% crit chance"}] },
+    { rank:40, title:"Galactic Pioneer",      rewards:[{type:"perk",  label:"+30% all income"}, {type:"perk", label:"+30% Stellar Dust gain"}], major:true },
+    { rank:41, title:"Void Sovereign",        rewards:[{type:"perk",  label:"+50% Dark Matter drop rate"}] },
+    { rank:42, title:"Stellar Dominion",      rewards:[{type:"perk",  label:"+50% laser crit multiplier"}] },
+    { rank:43, title:"Deep Space Forger",     rewards:[{type:"perk",  label:"+30% alloy smelt speed"}, {type:"perk", label:"+150 Cargo capacity"}] },
+    { rank:44, title:"Entropy Engineer",      rewards:[{type:"perk",  label:"+15% trade rates"}] },
+    { rank:45, title:"Cosmic Overlord",       rewards:[{type:"perk",  label:"+20% all income"}, {type:"perk", label:"+50% Stellar Dust gain"}], major:true },
+    { rank:46, title:"Nebula Sovereign",      rewards:[{type:"perk",  label:"+30% credits on Void Expanse"}] },
+    { rank:47, title:"Dark Forge Master",     rewards:[{type:"perk",  label:"+50% miner ore output globally"}] },
+    { rank:48, title:"Quantum Architect",     rewards:[{type:"perk",  label:"+30% XP gain"}] },
+    { rank:49, title:"Event Singularity",     rewards:[{type:"perk",  label:"Offline haul extended to 48h"}] },
+    { rank:50, title:"Interstellar Legend",   rewards:[{type:"perk",  label:"+100% all income"}, {type:"perk", label:"+100% Stellar Dust gain"}, {type:"perk", label:"+500 Cargo capacity"}], major:true },
+    { rank:51, title:"Stardust Warden",       rewards:[{type:"perk",  label:"+40% rare ore drop rate globally"}] },
+    { rank:52, title:"Void Imperator",        rewards:[{type:"perk",  label:"+50% Dark Matter value"}] },
+    { rank:53, title:"Plasma Titan",          rewards:[{type:"perk",  label:"+75% laser credits globally"}] },
+    { rank:54, title:"Galactic Sovereign",    rewards:[{type:"perk",  label:"+30% passive drone income"}] },
+    { rank:55, title:"The Undying",           rewards:[{type:"perk",  label:"+25% Stellar Dust gain"}, {type:"perk", label:"+250 Cargo capacity"}], major:true },
+    { rank:56, title:"Cosmic Shepherd",       rewards:[{type:"perk",  label:"+50% drone AI speed globally"}] },
+    { rank:57, title:"Entropy Lord",          rewards:[{type:"perk",  label:"+60% alloy values"}] },
+    { rank:58, title:"Singularity Walker",    rewards:[{type:"perk",  label:"+40% offline income quality"}] },
+    { rank:59, title:"Nebula Emperor",        rewards:[{type:"perk",  label:"+100% XP gain"}] },
+    { rank:60, title:"Star Forger",           rewards:[{type:"perk",  label:"+150% all income"}, {type:"perk", label:"+200% Stellar Dust gain"}], major:true },
+    { rank:61, title:"Primordial Miner",      rewards:[{type:"perk",  label:"+50% ore drop rates globally"}] },
+    { rank:62, title:"Void Emperor",          rewards:[{type:"perk",  label:"+100% Dark Matter value"}] },
+    { rank:63, title:"Living Crystal Oracle", rewards:[{type:"perk",  label:"+50% Bio ore values"}] },
+    { rank:64, title:"Galactic Tyrant",       rewards:[{type:"perk",  label:"+50% all income"}] },
+    { rank:65, title:"The Eternal",           rewards:[{type:"perk",  label:"+100% all income"}, {type:"perk", label:"Offline haul extended to 72h"}], major:true },
+    { rank:66, title:"Quantum God",           rewards:[{type:"perk",  label:"+10% crit chance"}, {type:"perk", label:"+100% crit damage"}] },
+    { rank:67, title:"Nebula God",            rewards:[{type:"perk",  label:"+100% drone yields globally"}] },
+    { rank:68, title:"Cosmic Deity",          rewards:[{type:"perk",  label:"+200% Stellar Dust gain"}] },
+    { rank:69, title:"Void God",              rewards:[{type:"perk",  label:"+200% Dark Matter value"}] },
+    { rank:70, title:"Transcendent",          rewards:[{type:"perk",  label:"⚡ TRANSCENDENCE: +400% all income"}, {type:"perk", label:"+500% Stellar Dust gain"}, {type:"perk", label:"👑 Mythic Title: The Transcendent"}], major:true },
   ];
 
+  // ── Rank Bonus System ─────────────────────────────────────────
+  const RANK_PERK_MAP = [
+    { match:"Cargo capacity",        type:"cargo",        val:(l)=>parseInt(l.match(/\+(\d+)/)?.[1]||0) },
+    { match:"Miner slot",            type:"minerSlot",    val:(l)=>1 },
+    { match:"rare ore drop",         type:"rareDrop",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"Dark Matter drop",      type:"rareDrop",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"Dark Matter value",     type:"oreValue",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"alloy values",          type:"smeltValue",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"smelt speed",           type:"smeltSpeed",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"all ore values",        type:"oreValue",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"Bio ore values",        type:"oreValue",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"miner ore output",      type:"minerOutput",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"laser credits",         type:"laserCredit",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"laser power",           type:"laserCredit",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"laser crit multiplier", type:"critMult",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"crit chance",           type:"critChance",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"crit damage",           type:"critMult",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"drone yield",           type:"droneCredit",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"drone yields",          type:"droneCredit",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"drone AI speed",        type:"droneSpeed",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"drone speed",           type:"droneSpeed",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"ore drop rates",        type:"rareDrop",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"XP gain",               type:"xpGain",       val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"XP on crits",           type:"xpGain",       val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"Stellar Dust gain",     type:"dustMult",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"Stellar Dust",          type:"dustMult",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"trade rates",           type:"sellMult",     val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"all income",            type:"globalCredit", val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"all multipliers",       type:"globalCredit", val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"credits on Void",       type:"voidCredit",   val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+    { match:"passive drone",         type:"droneCredit",  val:(l)=>parseFloat(l.match(/\+([\d.]+)%/)?.[1]||0)/100 },
+  ];
+
+  function rankBonus(type, mr){
+    // mr passed directly to avoid TDZ; falls back to state when available
+    if(mr === undefined){ try{ mr = state.minerRank; }catch(e){ return 0; } }
+    if(!mr) return 0;
+    let total = 0;
+    for(const row of RANK_ROAD){
+      if(row.rank > mr) break;
+      for(const r of (row.rewards||[])){
+        if(r.type !== "perk") continue;
+        for(const pm of RANK_PERK_MAP){
+          if(r.label.includes(pm.match) && pm.type === type){
+            total += pm.val(r.label);
+          }
+        }
+      }
+    }
+    return total;
+  }
   const roadmapBackdrop = el("roadmapBackdrop");
   const roadmapList     = el("roadmapList");
   const roadmapSub      = el("roadmapSub");
@@ -7071,6 +7359,14 @@
     const reactorBonus=1+(state.station?.reactor||0)*0.25;
     const orePerMin=Object.entries(state.planets).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*reactorBonus,0);
     if(minerHudEl) minerHudEl.textContent=totalMiners>0?`⛏ ${orePerMin.toFixed(1)} ore/min`:"⛏ No miners";
+    if(cpsHudEl){
+      const nowMs = performance.now();
+      // Keep only clicks in the last 3 seconds
+      while(clickTimestamps.length && nowMs - clickTimestamps[0] > 3000) clickTimestamps.shift();
+      const cps = (clickTimestamps.length / 3).toFixed(1);
+      cpsHudEl.textContent = `🖱 ${cps} cps`;
+      cpsHudEl.style.color = clickTimestamps.length > 0 ? 'rgba(43,212,255,.85)' : 'var(--muted)';
+    }
 
     // Cargo fill indicator
     if(cargoHudEl){
@@ -7550,6 +7846,8 @@
   let lastTick = now();
   let lastSecond = -1;
   let comboCount = 0;
+  const clickTimestamps = []; // rolling window for CPS
+
   let lastComboTime = 0;
   let _lastSave = 0;
   let _tickFrame = 0;
@@ -7608,6 +7906,9 @@
   clickArea.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
   clickArea.addEventListener("pointerdown", (e) => { e.preventDefault(); doShot(e.clientX, e.clientY); });
   el("openPlanetsBtn").addEventListener("click", openPlanetOverview);
+  el("openGalaxyBtn").addEventListener("click", function(){ renderGalaxyModal(); el("galaxyBackdrop").classList.add("show"); });
+  el("closeGalaxy").addEventListener("click", function(){ el("galaxyBackdrop").classList.remove("show"); });
+  el("galaxyBackdrop").addEventListener("click", function(e){ if(e.target===el("galaxyBackdrop")) el("galaxyBackdrop").classList.remove("show"); });
   el("closePlanets").addEventListener("click", closePlanetOverview);
   el("planetsBackdrop").addEventListener("click", (e)=>{ if(e.target===el("planetsBackdrop")) closePlanetOverview(); });
 
@@ -7746,6 +8047,7 @@
   applyStats(state);
   state.planetsBought = state.planetsBought || {};
   if(!state.skills) state.skills = [];
+  if(!state.currentGalaxy) state.currentGalaxy = 'nebula';
   if(!state.quests) state.quests = { date:"", list:[] };
 
   if(!state.trades || !state.trades.offers || state.trades.offers.length===0){
@@ -7768,6 +8070,157 @@
   const offResult = simulateOffline();
   if(offResult && offResult.credits > 0){
     setTimeout(()=>showOfflineModal(offResult), 800);
+  }
+
+
+  // ── Galaxy System ─────────────────────────────────
+  var GALAXIES = {
+    nebula: {
+      id:"nebula", name:"Starter Nebula", icon:"🌌",
+      desc:"The birthplace of your mining empire.",
+      color:"rgba(43,212,255,",
+      planets:["iron","vulcan","void","bio"],
+      unlocked:true
+    },
+    energy: {
+      id:"energy", name:"Energy Cluster", icon:"⚡",
+      desc:"A system pulsing with raw electrical energy. Drone fleets dominate here.",
+      color:"rgba(250,204,21,",
+      planets:["dynamo","arc","storm"],
+      unlockResets:8,
+      unlockCredits:500000000
+    }
+  };
+
+  var GALAXY_PLANETS_DATA = {
+    dynamo:{ id:"dynamo", name:"Dynamo Prime",  icon:"⚡", galaxy:"energy" },
+    arc:   { id:"arc",    name:"Arc Station",   icon:"🔵", galaxy:"energy" },
+    storm: { id:"storm",  name:"Storm Giant",   icon:"🌪️", galaxy:"energy" }
+  };
+
+  function galaxyTotalResets(galaxyId){
+    var gal = GALAXIES[galaxyId];
+    if(!gal) return 0;
+    return gal.planets.reduce(function(t,pid){ return t+(state.prestigeCount?.[pid]||0); }, 0);
+  }
+
+  function galaxyUnlocked(galaxyId){
+    var gal = GALAXIES[galaxyId];
+    if(!gal) return false;
+    if(gal.unlocked) return true;
+    return galaxyTotalResets("nebula") >= gal.unlockResets && state.credits >= gal.unlockCredits;
+  }
+
+  function switchGalaxy(galaxyId){
+    var gal = GALAXIES[galaxyId];
+    if(!gal) return;
+    if(!galaxyUnlocked(galaxyId)){
+      toast("Requires "+gal.unlockResets+" planet resets + "+fmt(gal.unlockCredits)+"c");
+      return;
+    }
+    state.currentGalaxy = galaxyId;
+    state.currentPlanet = gal.planets[0];
+    applyPlanetVisuals();
+    applyStats(state);
+    syncSpawnedDrones();
+    setCargoDirtyAll();
+    renderCargoPanelsIfDirty();
+    buildTab(state.shopTab);
+    renderGalaxyModal();
+    save();
+    toast("Warped to "+gal.name+"!");
+    spawnParticles(24);
+  }
+
+  function renderGalaxyModal(){
+    var body = el("galaxyBody");
+    if(!body) return;
+    var nebulaResets = galaxyTotalResets("nebula");
+    var curGalId = state.currentGalaxy || "nebula";
+
+    var subLabel = el("galaxySubLabel");
+    if(subLabel) subLabel.textContent = "Currently in: "+(GALAXIES[curGalId]||{name:"Unknown"}).name;
+
+    var html = "";
+    var galIds = Object.keys(GALAXIES);
+    for(var gi=0; gi<galIds.length; gi++){
+      var galId = galIds[gi];
+      var gal = GALAXIES[galId];
+      var isUnlocked = galaxyUnlocked(galId);
+      var isCurrent  = galId === curGalId;
+      var col        = gal.color;
+
+      var borderCol = col+(isCurrent?".35)":"0.15)");
+      var bgCol     = "linear-gradient(135deg,"+col+".06),rgba(0,0,0,.2))";
+      var opacity   = isUnlocked ? "" : "opacity:.6;filter:grayscale(.4);";
+
+      html += "<div style='border-radius:20px;border:1px solid "+borderCol+";background:"+bgCol+";padding:18px 20px;position:relative;overflow:hidden;"+opacity+"'>";
+
+      if(isCurrent){
+        html += "<div style='position:absolute;top:12px;right:14px;font-size:10px;font-weight:900;letter-spacing:1px;background:"+col+".18);border:1px solid "+col+".3);border-radius:6px;padding:2px 8px;color:"+col+".95);'>● ACTIVE</div>";
+      } else if(!isUnlocked){
+        html += "<div style='position:absolute;top:12px;right:14px;font-size:10px;font-weight:900;color:rgba(255,255,255,.4);'>🔒 LOCKED</div>";
+      }
+
+      html += "<div style='font-size:22px;margin-bottom:6px;'>"+gal.icon+"</div>";
+      html += "<div style='font-weight:900;font-size:16px;color:"+col+".95);'>"+gal.name+"</div>";
+      html += "<div style='font-size:12px;color:rgba(255,255,255,.55);margin:4px 0 10px;'>"+gal.desc+"</div>";
+
+      // Planet chips
+      html += "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;'>";
+      for(var pi=0; pi<gal.planets.length; pi++){
+        var pid = gal.planets[pi];
+        var pd = PLANETS[pid] || GALAXY_PLANETS_DATA[pid] || {};
+        var isHere = state.currentPlanet === pid && isCurrent;
+        var chipBg = isHere ? col+".18)" : "rgba(255,255,255,.06)";
+        var chipBorder = isHere ? col+".3)" : "rgba(255,255,255,.1)";
+        var chipColor = isHere ? col+".95)" : "rgba(255,255,255,.7)";
+        var cursor = isUnlocked ? "pointer" : "default";
+        var dataPlanet = isUnlocked ? "data-goto-planet='"+pid+"' data-goto-galaxy='"+galId+"'" : "";
+        html += "<div style='padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;background:"+chipBg+";border:1px solid "+chipBorder+";cursor:"+cursor+";color:"+chipColor+";' "+dataPlanet+">"+(pd.icon||"🪨")+" "+(pd.name||pid)+(isHere?" ●":"")+"</div>";
+      }
+      html += "</div>";
+
+      // Unlock requirements or travel button
+      if(!isUnlocked){
+        var needResets = gal.unlockResets - nebulaResets;
+        var needCredits = gal.unlockCredits - state.credits;
+        html += "<div style='display:flex;gap:8px;flex-wrap:wrap;'>";
+        html += "<span style='padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);'>"+(needResets>0 ? "🔄 "+needResets+" more resets" : "✓ Resets")+"</span>";
+        html += "<span style='padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);'>"+(needCredits>0 ? "💰 "+fmt(needCredits)+"c needed" : "✓ Credits")+"</span>";
+        html += "</div>";
+      } else if(!isCurrent){
+        html += "<button class='btn' data-switch-galaxy='"+galId+"' style='padding:8px 20px;font-size:13px;background:linear-gradient(135deg,"+col+".25),"+col+".1));border-color:"+col+".35);'>🚀 Travel to "+gal.name+"</button>";
+      }
+
+      html += "</div>";
+    }
+
+    body.innerHTML = html;
+
+    // Planet click handlers
+    var planetBtns = body.querySelectorAll("[data-goto-planet]");
+    for(var i=0; i<planetBtns.length; i++){
+      (function(btn){
+        btn.addEventListener("click", function(){
+          var pid = btn.getAttribute("data-goto-planet");
+          var gid = btn.getAttribute("data-goto-galaxy");
+          state.currentGalaxy = gid;
+          switchPlanet(pid);
+          el("galaxyBackdrop").classList.remove("show");
+        });
+      })(planetBtns[i]);
+    }
+
+    // Galaxy travel buttons
+    var travelBtns = body.querySelectorAll("[data-switch-galaxy]");
+    for(var j=0; j<travelBtns.length; j++){
+      (function(btn){
+        btn.addEventListener("click", function(){
+          switchGalaxy(btn.getAttribute("data-switch-galaxy"));
+        });
+      })(travelBtns[j]);
+    }
   }
 
   setTab(state.shopTab || "core");
