@@ -166,7 +166,7 @@
     .cosSecHeader.cosCollapsed { filter: brightness(1.25); text-shadow: 0 0 12px var(--acc); }
 
     /* GPU compositing hints */
-    .drone{ will-change:transform; }
+    .drone{ will-change:transform; contain:layout style; }
     .asteroid{ will-change:transform; }
     #clickArea{ touch-action:none; }
     .laser{position:absolute;width:200px;height:2px;background:linear-gradient(90deg, transparent, rgba(43,212,255,.9), transparent);
@@ -219,7 +219,7 @@
       100%{opacity:0;transform:translate(130px,0) rotate(0deg) scaleX(1.2);filter:brightness(1);}
     }
 
-    .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;opacity:0;
+    .particle{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;opacity:0;will-change:transform,opacity;
       filter:drop-shadow(0 0 12px rgba(255,204,102,.18));animation:particle 520ms ease-out forwards;}
     @keyframes particle{
       0%{opacity:0;transform:translate(0,0) scale(.9);}
@@ -1399,6 +1399,26 @@
       background:radial-gradient(circle, #86efac, #16a34a);
       box-shadow:0 0 6px rgba(192,132,252,.6);
     }
+    .planetDot.dynamo{ background:radial-gradient(circle at 35% 30%, #fde68a, #d97706); box-shadow:0 0 5px rgba(251,191,36,.5); }
+    .planetDot.arc{    background:radial-gradient(circle at 35% 30%, #7dd3fc, #0369a1); box-shadow:0 0 5px rgba(56,189,248,.5); }
+    .planetDot.storm{  background:radial-gradient(circle at 35% 30%, #d8b4fe, #7c3aed); box-shadow:0 0 5px rgba(168,85,247,.5); }
+
+    .planetBtn.active-bio{
+      background:rgba(22,163,74,.16); border-color:rgba(134,239,172,.35);
+      color:#bbf7d0; box-shadow:0 0 12px rgba(22,163,74,.18);
+    }
+    .planetBtn.active-dynamo{
+      background:rgba(217,119,6,.16); border-color:rgba(251,191,36,.40);
+      color:#fde68a; box-shadow:0 0 12px rgba(251,191,36,.22);
+    }
+    .planetBtn.active-arc{
+      background:rgba(3,105,161,.16); border-color:rgba(56,189,248,.40);
+      color:#bae6fd; box-shadow:0 0 12px rgba(56,189,248,.22);
+    }
+    .planetBtn.active-storm{
+      background:rgba(124,58,237,.16); border-color:rgba(168,85,247,.40);
+      color:#e9d5ff; box-shadow:0 0 12px rgba(168,85,247,.22);
+    }
     .planetBtn.active-void{
       background:rgba(124,58,237,.18);
       border-color:rgba(192,132,252,.35);
@@ -1870,19 +1890,23 @@
         <div class="planetBar">
           <span style="font-size:12px;font-weight:800;color:var(--muted);flex:0 0 auto;">Zone:</span>
           <button class="planetBtn active-iron" id="btnPlanetIron" data-planet="iron">
-            <span class="planetDot iron"></span>Iron Belt
+            <span class="planetDot iron"></span>🟤 Iron Belt
           </button>
           <button class="planetBtn" id="btnPlanetVulcan" data-planet="vulcan">
-            <span class="planetDot vulcan"></span>Vulcan Core
+            <span class="planetDot vulcan"></span>🌋 Vulcan Core
           </button>
           <button class="planetBtn" id="btnPlanetVoid" data-planet="void">
-            <span class="planetDot void"></span>Void Expanse
+            <span class="planetDot void"></span>🌌 Void Expanse
           </button>
           <button class="planetBtn" id="btnPlanetBio" data-planet="bio">
-            <span class="planetDot bio"></span>Bio Sphere
+            <span class="planetDot bio"></span>🌿 Bio Sphere
           </button>
+          <button class="planetBtn" id="btnPlanetDynamo" data-planet="dynamo" style="display:none;"><span class="planetDot dynamo"></span>⚡ Dynamo Prime</button>
+          <button class="planetBtn" id="btnPlanetArc" data-planet="arc" style="display:none;"><span class="planetDot arc"></span>🔵 Arc Station</button>
+          <button class="planetBtn" id="btnPlanetStorm" data-planet="storm" style="display:none;"><span class="planetDot storm"></span>🌪️ Storm Giant</button>
           <button class="btn secondary" id="openPlanetsBtn" style="margin-left:auto;padding:5px 10px;font-size:11px;border-radius:10px;flex-shrink:0;">🪐 Explore</button>
         </div>
+        <div id="planetFocusStrip" style="display:none;font-size:10px;color:rgba(255,255,255,.5);padding:4px 6px 2px;line-height:1.5;max-width:100%;"></div>
 
         <!-- Daily Quest preview strip -->
         <div id="questStrip" style="margin-top:10px;display:flex;flex-direction:column;gap:5px;"></div>
@@ -2473,6 +2497,108 @@
         <path d="M4 8v8c0 2.8 3.6 5 8 5s8-2.2 8-5V8" stroke="rgba(43,212,255,.9)" stroke-width="2" stroke-linecap="round"/>
       </svg>`;
     }
+    // ⚡ Energy Cluster Ores
+    if(kind==="powerCell"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="pcg_${uid}" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="rgba(253,224,71,.95)"/>
+          <stop offset="60%" stop-color="rgba(250,204,21,.8)"/>
+          <stop offset="100%" stop-color="rgba(161,98,7,.6)"/>
+        </radialGradient></defs>
+        <path d="M13 3L5 13h7l-1 8 8-10h-7l1-8Z" fill="url(#pcg_${uid})" stroke="rgba(253,224,71,.7)" stroke-width="0.8"/>
+        <circle cx="12" cy="12" r="2" fill="rgba(255,255,255,.6)"/>
+      </svg>`;
+    }
+    if(kind==="voltite"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="vtg_${uid}" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="rgba(255,248,180,.95)"/>
+          <stop offset="55%" stop-color="rgba(234,179,8,.85)"/>
+          <stop offset="100%" stop-color="rgba(120,80,4,.6)"/>
+        </radialGradient></defs>
+        <polygon points="12,2 22,8 22,16 12,22 2,16 2,8" fill="url(#vtg_${uid})" stroke="rgba(253,224,71,.6)" stroke-width="0.7"/>
+        <polygon points="12,6 18,10 18,14 12,18 6,14 6,10" fill="rgba(255,248,180,.35)"/>
+        <circle cx="12" cy="12" r="1.5" fill="rgba(255,255,255,.8)"/>
+      </svg>`;
+    }
+    if(kind==="plasmaShard"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="psg_${uid}" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="rgba(186,230,253,.95)"/>
+          <stop offset="50%" stop-color="rgba(56,189,248,.85)"/>
+          <stop offset="100%" stop-color="rgba(12,74,110,.7)"/>
+        </radialGradient></defs>
+        <path d="M12 2L19 9 17 14 12 22 7 14 5 9Z" fill="url(#psg_${uid})" stroke="rgba(56,189,248,.7)" stroke-width="0.8"/>
+        <path d="M9 9l6 6M15 9l-6 6" stroke="rgba(186,230,253,.4)" stroke-width="0.8"/>
+        <circle cx="12" cy="12" r="1.8" fill="rgba(255,255,255,.7)"/>
+      </svg>`;
+    }
+    if(kind==="hypercore"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="hcg_${uid}" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="rgba(196,181,253,.95)"/>
+          <stop offset="50%" stop-color="rgba(99,102,241,.85)"/>
+          <stop offset="100%" stop-color="rgba(30,27,75,.7)"/>
+        </radialGradient></defs>
+        <circle cx="12" cy="12" r="9" fill="url(#hcg_${uid})" stroke="rgba(99,102,241,.7)" stroke-width="0.8"/>
+        <circle cx="12" cy="12" r="5" fill="none" stroke="rgba(196,181,253,.5)" stroke-width="0.8" stroke-dasharray="2 2"/>
+        <circle cx="12" cy="12" r="2" fill="rgba(255,255,255,.85)"/>
+        <circle cx="12" cy="4"  r="1" fill="rgba(196,181,253,.7)"/>
+        <circle cx="20" cy="12" r="1" fill="rgba(196,181,253,.7)"/>
+        <circle cx="12" cy="20" r="1" fill="rgba(196,181,253,.7)"/>
+        <circle cx="4"  cy="12" r="1" fill="rgba(196,181,253,.7)"/>
+      </svg>`;
+    }
+    if(kind==="voidCrystal"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="vcg_${uid}" cx="40%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="rgba(233,213,255,.95)"/>
+          <stop offset="55%" stop-color="rgba(192,132,252,.85)"/>
+          <stop offset="100%" stop-color="rgba(59,7,100,.7)"/>
+        </radialGradient></defs>
+        <path d="M12 2L20 7V17L12 22L4 17V7Z" fill="url(#vcg_${uid})" stroke="rgba(192,132,252,.7)" stroke-width="0.8"/>
+        <path d="M12 2L12 22M4 7L20 17M20 7L4 17" stroke="rgba(233,213,255,.2)" stroke-width="0.5"/>
+        <circle cx="12" cy="12" r="2.5" fill="rgba(255,255,255,.75)"/>
+      </svg>`;
+    }
+    if(kind==="stormCrystal"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="scg_${uid}" cx="40%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="rgba(254,240,138,.95)"/>
+          <stop offset="55%" stop-color="rgba(250,204,21,.85)"/>
+          <stop offset="100%" stop-color="rgba(113,63,18,.7)"/>
+        </radialGradient></defs>
+        <path d="M12 2L15 9H22L16 14L18 21L12 17L6 21L8 14L2 9H9Z" fill="url(#scg_${uid})" stroke="rgba(250,204,21,.7)" stroke-width="0.8"/>
+        <circle cx="12" cy="12" r="2" fill="rgba(255,255,200,.8)"/>
+      </svg>`;
+    }
+    if(kind==="ionDust"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="idg_${uid}" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="rgba(233,213,255,.9)"/>
+          <stop offset="60%" stop-color="rgba(167,139,250,.75)"/>
+          <stop offset="100%" stop-color="rgba(67,56,202,.5)"/>
+        </radialGradient></defs>
+        <circle cx="12" cy="12" r="8" fill="url(#idg_${uid})" stroke="rgba(167,139,250,.6)" stroke-width="0.7" stroke-dasharray="3 2"/>
+        <circle cx="8"  cy="9"  r="1.2" fill="rgba(255,255,255,.6)"/>
+        <circle cx="15" cy="8"  r="0.9" fill="rgba(255,255,255,.5)"/>
+        <circle cx="14" cy="15" r="1.4" fill="rgba(255,255,255,.65)"/>
+        <circle cx="9"  cy="15" r="0.8" fill="rgba(255,255,255,.45)"/>
+        <circle cx="12" cy="12" r="0.7" fill="rgba(255,255,255,.9)"/>
+      </svg>`;
+    }
+    if(kind==="thunderite"){
+      return `<svg viewBox="0 0 24 24" fill="none">
+        <defs><radialGradient id="tig_${uid}" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="rgba(255,255,180,.95)"/>
+          <stop offset="50%" stop-color="rgba(253,224,71,.9)"/>
+          <stop offset="100%" stop-color="rgba(120,53,15,.7)"/>
+        </radialGradient></defs>
+        <path d="M14 2L6 13h8l-4 9 10-12h-8l4-8Z" fill="url(#tig_${uid})" stroke="rgba(253,224,71,.8)" stroke-width="0.9"/>
+        <path d="M14 2L6 13h8" stroke="rgba(255,255,200,.5)" stroke-width="0.6"/>
+        <circle cx="12" cy="11" r="1.5" fill="rgba(255,255,255,.75)"/>
+      </svg>`;
+    }
     return `<svg viewBox="0 0 24 24" fill="none"><path d="M12 4l8 8-8 8-8-8 8-8Z" stroke="rgba(255,255,255,.8)" stroke-width="2"/></svg>`;
   }
   function oreIconHTML(id, size=16){
@@ -2494,9 +2620,9 @@
     { id:"obsidian", name:"Obsidian",  value: 380, rarity: 0.06,  unlockMR: 10, color:"rgba(255,80,30,.95)",   planet:"vulcan" },
     { id:"voidShard",   name:"Void Shard",   value: 600, rarity: 0.22,  unlockMR: 15, color:"rgba(167,139,250,.95)", planet:"void" },
     { id:"darkMatter",  name:"Dark Matter",  value: 2000, rarity: 0.04,  unlockMR: 15, color:"rgba(216,180,254,.98)", planet:"void" },
-    { id:"sporeDust",    name:"Spore Dust",    value: 180,  rarity: 0.40,  unlockMR: 20, color:"rgba(134,239,172,.95)", planet:"bio" },
-    { id:"mycelium",     name:"Mycelium",      value: 520,  rarity: 0.12,  unlockMR: 20, color:"rgba(167,139,250,.95)", planet:"bio" },
-    { id:"biolith",      name:"Biolith",       value: 1800, rarity: 0.025, unlockMR: 20, color:"rgba(74,222,128,.98)",  planet:"bio" },
+    { id:"sporeDust",    name:"Spore Dust",    value: 17500,  rarity: 0.40,  unlockMR: 20, color:"rgba(134,239,172,.95)", planet:"bio" },
+    { id:"mycelium",     name:"Mycelium",      value: 52500,  rarity: 0.12,  unlockMR: 20, color:"rgba(167,139,250,.95)", planet:"bio" },
+    { id:"biolith",      name:"Biolith",       value: 140000, rarity: 0.025, unlockMR: 20, color:"rgba(74,222,128,.98)",  planet:"bio" },
     { id:"powerCell",  name:"Power Cell",   value:6000,  rarity:0.55, unlockMR:1, color:"rgba(250,204,21,.95)",  planet:"dynamo" },
     { id:"voltite",    name:"Voltite",      value:18000, rarity:0.30, unlockMR:1, color:"rgba(253,224,71,.90)",  planet:"dynamo" },
     { id:"conductite", name:"Conductite",   value:50000, rarity:0.12, unlockMR:1, color:"rgba(99,102,241,.92)",  planet:"dynamo" },
@@ -2505,9 +2631,9 @@
     { id:"hypercore",   name:"Hypercore",     value:350000, rarity:0.22, unlockMR:1, color:"rgba(99,102,241,.95)",  planet:"arc" },
     { id:"voidCrystal", name:"Void Crystal",  value:900000, rarity:0.08, unlockMR:1, color:"rgba(192,132,252,.95)", planet:"arc" },
     // 🌪️ Storm Giant
-    { id:"stormCrystal",name:"Storm Crystal", value:200000, rarity:0.45, unlockMR:1, color:"rgba(250,204,21,.95)",  planet:"storm" },
-    { id:"ionDust",     name:"Ion Dust",      value:80000,  rarity:0.60, unlockMR:1, color:"rgba(167,139,250,.90)", planet:"storm" },
-    { id:"thunderite",  name:"Thunderite",    value:600000, rarity:0.10, unlockMR:1, color:"rgba(253,224,71,.95)",  planet:"storm" },
+    { id:"stormCrystal",name:"Storm Crystal", value:800000, rarity:0.45, unlockMR:1, color:"rgba(250,204,21,.95)",  planet:"storm" },
+    { id:"ionDust",     name:"Ion Dust",      value:320000,  rarity:0.60, unlockMR:1, color:"rgba(167,139,250,.90)", planet:"storm" },
+    { id:"thunderite",  name:"Thunderite",    value:2400000, rarity:0.10, unlockMR:1, color:"rgba(253,224,71,.95)",  planet:"storm" },
   ];
 
   const PLANETS = {
@@ -2515,12 +2641,14 @@
       id:"iron", name:"Iron Belt", icon:"🟤",
       laserMult:1, creditMult:1, xpMult:1,
       prestigeBaseCost: 500000,
+      focus:"balanced", focusIcon:"⚖️", focusTip:"Balanced start planet. Good for learning all mechanics.",
     },
     vulcan: {
       id:"vulcan", name:"Vulcan Core", icon:"🌋",
       unlockMR: 10, unlockCredits: 50000,
       laserMult:1, creditMult:2.5, xpMult:1.5,
       prestigeBaseCost: 2000000,
+      focus:"clicking", focusIcon:"🔥", focusTip:"Higher credit multiplier rewards active clicking. Good for grinding XP fast.",
     },
     void: {
       id:"void", name:"Void Expanse", icon:"🌌",
@@ -2528,45 +2656,54 @@
       laserMult:1, creditMult:5, xpMult:2,
       prestigeBaseCost: 8000000,
       voidSurgeChance: 0.08,
+      focus:"clicking", focusIcon:"⚡", focusTip:"Void Surges amplify clicks massively. Stack crit skills for huge bursts.",
     },
     bio: {
       id:"bio", name:"Bio Sphere", icon:"🌿",
       unlockMR: 20, unlockCredits: 500000,
-      laserMult:1, creditMult:3.5, xpMult:2.2,
+      laserMult:1, creditMult:1.5, xpMult:2.2,
       prestigeBaseCost: 20000000,
       bioSurgeChance: 0.06,
+      droneMult:5.0, passiveIncomeMult:0.6,
+      focus:"drones", focusIcon:"🤖", focusTip:"Deploy drones and go semi-AFK. Bio Surges boost drone yield 5×. Clicks and miners are weaker here.",
     },
     dynamo: {
       id:"dynamo", name:"Dynamo Prime", icon:"⚡",
       galaxy:"energy",
-      laserMult:1.5, creditMult:4, xpMult:1.5,
+      laserMult:1.0, creditMult:0.8, xpMult:1.5,
       prestigeBaseCost: 50000000,
       unlockMR:0, unlockCredits:0,
-      droneMult:2.0,
-      desc:"Pure electrical storms. Drones are 2× more effective.",
+      droneMult:7.0,
+      passiveIncomeMult:0.4,
+      focus:"drones", focusIcon:"🤖", focusTip:"Deploy all drones and go AFK. Electrical fields boost drones 7× — clicks and miners are very weak here.",
+      desc:"Electrical storms supercharge your drones 7×. Clicks and miners are suppressed.",
       color:"#fbbf24",
     },
     arc: {
       id:"arc", name:"Arc Station", icon:"🔵",
       galaxy:"energy",
-      laserMult:2.0, creditMult:8, xpMult:1.5,
+      laserMult:1.5, creditMult:3, xpMult:1.5,
       prestigeBaseCost: 200000000,
       unlockCredits: 1000000000,
-      droneMult:1.5,
-      passiveIncomeMult:3.0,
-      desc:"Passive income flows endlessly. Miners are king here.",
+      droneMult:0.3,
+      passiveIncomeMult:10.0,
+      focus:"mining", focusIcon:"⛏️", focusTip:"Stack miners and upgrade Reactor. Miners run 10× faster here — drones are jammed by EM fields.",
+      desc:"Perfect mining conditions — miners run 10× faster. Electromagnetic fields jam drones.",
       color:"#38bdf8",
     },
     storm: {
       id:"storm", name:"Storm Giant", icon:"🌪️",
       galaxy:"energy",
-      laserMult:3.0, creditMult:6, xpMult:3.0,
+      laserMult:2.5, creditMult:20, xpMult:3.0,
       prestigeBaseCost: 500000000,
-      unlockCredits: 5000000000,
-      critChanceBonus:0.25,
-      critMultBonus:2.0,
-      desc:"Extreme crits, volatile swings. High risk, high reward.",
-      color:"#fbbf24",
+      unlockCredits: 3000000000,
+      critChanceBonus:0.35,
+      critMultBonus:3.0,
+      droneMult:0.4,
+      passiveIncomeMult:1.0,
+      focus:"clicking", focusIcon:"🧨", focusTip:"Stay active and click fast. Storm energy gives 20× credits per click with massive crit multipliers.",
+      desc:"Storm energy gives 20× credits per click. Extreme crits, wild swings. Miners also benefit.",
+      color:"#a855f7",
     },
   };
 
@@ -2681,12 +2818,14 @@
     return {
       laserLvl: 0,
       dronesLvl: 0,
-      droneAI: 0,
+      droneSpeedLvl: 0,
+      droneYieldLvl: 0,
       laserPower: 1,
       rps: 0,
-      costLaser:    planetId === "storm" ? 50000  : planetId === "arc" ? 25000  : planetId === "dynamo" ? 8000   : planetId === "bio" ? 4000  : planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
-      costDrones:   planetId === "storm" ? 200000 : planetId === "arc" ? 100000 : planetId === "dynamo" ? 30000  : planetId === "bio" ? 15000 : planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
-      costDroneAI:  planetId === "storm" ? 400000 : planetId === "arc" ? 200000 : planetId === "dynamo" ? 55000  : planetId === "bio" ? 28000 : planetId === "void" ? 8000  : planetId === "vulcan" ? 2500 : 700,
+      costLaser:      planetId === "storm" ? 50000  : planetId === "arc" ? 25000  : planetId === "dynamo" ? 8000   : planetId === "bio" ? 4000  : planetId === "void" ? 1200  : planetId === "vulcan" ? 350  : 80,
+      costDrones:     planetId === "storm" ? 200000 : planetId === "arc" ? 100000 : planetId === "dynamo" ? 30000  : planetId === "bio" ? 15000 : planetId === "void" ? 4500  : planetId === "vulcan" ? 1200 : 320,
+      costDroneSpeed: planetId === "storm" ? 300000 : planetId === "arc" ? 150000 : planetId === "dynamo" ? 40000  : planetId === "bio" ? 20000 : planetId === "void" ? 6000  : planetId === "vulcan" ? 1800 : 500,
+      costDroneYield: planetId === "storm" ? 300000 : planetId === "arc" ? 150000 : planetId === "dynamo" ? 40000  : planetId === "bio" ? 20000 : planetId === "void" ? 6000  : planetId === "vulcan" ? 1800 : 500,
       prospectLvl:  0,
       costProspect: planetId === "storm" ? 250000 : planetId === "arc" ? 120000 : planetId === "dynamo" ? 35000  : planetId === "bio" ? 18000 : planetId === "void" ? 5500  : planetId === "vulcan" ? 1800 : 500,
       // Miner system
@@ -2761,6 +2900,10 @@
         iron:   defaultPlanetState("iron"),
         vulcan: defaultPlanetState("vulcan"),
         void:   defaultPlanetState("void"),
+        bio:    defaultPlanetState("bio"),
+        dynamo: defaultPlanetState("dynamo"),
+        arc:    defaultPlanetState("arc"),
+        storm:  defaultPlanetState("storm"),
       },
 
       laserPower: 1,
@@ -2805,7 +2948,7 @@
       // Prestige
       stellarDust: 0,
       prestigeUpgrades: [],        // owned prestige upgrade ids
-      prestigeCount: { iron:0, vulcan:0, void:0 },  // how many times each planet was prestiged
+      prestigeCount: { iron:0, vulcan:0, void:0, bio:0, dynamo:0, arc:0, storm:0 },  // how many times each planet was prestiged
 
       cosmetics: {
         droneSkin: "default",
@@ -2813,7 +2956,18 @@
         particleSkin: "default",
         activeTitle: "default",
         owned: { default:true, carbon:false, neon:false, solar:false }
-      }
+      },
+
+      // Lifetime stats (never reset)
+      _stats: {
+        shots:0, crits:0, maxCombo:0,
+        voidSurges:0, bioSurges:0,
+        totalEarned:0, clickCredits:0, droneCredits:0, oreCredits:0,
+        cargoSells:0, tradeDeals:0, stationUpgrades:0,
+        minerOres:0, minersDeployed:0, smeltCount:0,
+        sporeDustMined:0, myceliumMined:0, biolithMined:0,
+      },
+      unlockedAch: [],
     };
   }
 
@@ -2825,6 +2979,39 @@
       if(raw) return raw;
     }
     return null;
+  }
+
+  function migrateSaveState(s){
+    if(!s.planets) s.planets = {};
+    // Ensure all planet objects exist
+    for(const pid of ["iron","vulcan","void","bio","dynamo","arc","storm"]){
+      if(!s.planets[pid]) s.planets[pid] = defaultPlanetState(pid);
+    }
+    // Migrate droneAI → droneSpeedLvl/droneYieldLvl, ensure costs are valid
+    for(const pid of ["iron","vulcan","void","bio","dynamo","arc","storm"]){
+      const pp = s.planets[pid];
+      const def = defaultPlanetState(pid);
+      if(pp.droneAI != null){
+        const ai = pp.droneAI || 0;
+        if(pp.droneSpeedLvl == null) pp.droneSpeedLvl = Math.ceil(ai/2);
+        if(pp.droneYieldLvl == null) pp.droneYieldLvl = Math.floor(ai/2);
+        delete pp.droneAI;
+        delete pp.costDroneAI;
+      }
+      if(pp.droneSpeedLvl == null) pp.droneSpeedLvl = 0;
+      if(pp.droneYieldLvl == null) pp.droneYieldLvl = 0;
+      if(!pp.costDroneSpeed || pp.costDroneSpeed < 10) pp.costDroneSpeed = def.costDroneSpeed;
+      if(!pp.costDroneYield || pp.costDroneYield < 10) pp.costDroneYield = def.costDroneYield;
+    }
+    // Ensure _stats has all keys
+    if(!s._stats) s._stats = {};
+    const _defStats = {shots:0,crits:0,maxCombo:0,voidSurges:0,bioSurges:0,totalEarned:0,clickCredits:0,droneCredits:0,oreCredits:0,cargoSells:0,tradeDeals:0,stationUpgrades:0,minerOres:0,minersDeployed:0,smeltCount:0,sporeDustMined:0,myceliumMined:0,biolithMined:0};
+    for(const k of Object.keys(_defStats)){ if(!(k in s._stats)) s._stats[k] = _defStats[k]; }
+    // Ensure prestigeCount covers all planets
+    s.prestigeCount = s.prestigeCount || {};
+    for(const pid of ["iron","vulcan","void","bio","dynamo","arc","storm"]){ if(!(pid in s.prestigeCount)) s.prestigeCount[pid]=0; }
+    if(!s.unlockedAch) s.unlockedAch = [];
+    return s;
   }
 
   function load(){
@@ -2840,11 +3027,20 @@
       const parsed = JSON.parse(raw);
       const s = { ...base, ...parsed };
 
+      // Deep-merge _stats: keep all base keys, override with saved values
+      s._stats = { ...base._stats, ...(parsed._stats||{}) };
+      // Deep-merge planets: ensure all planet keys exist
+      s.planets = { ...base.planets, ...(parsed.planets||{}) };
+
       s.minerRank  = s.minerRank  ?? 1;
       s.miningXP   = s.miningXP   ?? 0;
       s.miningNeed = s.miningNeed ?? miningNeedFor(s.minerRank);
 
       s.cargo    = { ...base.cargo,    ...(s.cargo||{}) };
+      // Sanitize cargo: strip unknown keys, ensure all ore keys are valid numbers
+      const _validOreIds = new Set(ORES.map(o=>o.id));
+      for(const k of Object.keys(cargo)){ if(!_validOreIds.has(k)) delete cargo[k]; }
+      for(const o of ORES){ if(typeof cargo[o.id] !== "number" || isNaN(cargo[o.id])) cargo[o.id] = 0; }
       s.sellPlan = { ...base.sellPlan, ...(s.sellPlan||{}) };
       s.perksUnlocked = { ...base.perksUnlocked, ...(s.perksUnlocked||{}) };
       s.trades   = s.trades || base.trades;
@@ -2858,7 +3054,8 @@
       if(!parsed.planets && parsed.laserLvl !== undefined){
         s.planets.iron.laserLvl    = parsed.laserLvl    ?? 0;
         s.planets.iron.dronesLvl   = parsed.dronesLvl   ?? 0;
-        s.planets.iron.droneAI     = parsed.droneAI     ?? 0;
+        s.planets.iron.droneSpeedLvl = parsed.droneSpeedLvl ?? Math.ceil((parsed.droneAI||0)/2);
+        s.planets.iron.droneYieldLvl = parsed.droneYieldLvl ?? Math.floor((parsed.droneAI||0)/2);
         s.planets.iron.costLaser   = parsed.costLaser   ?? 25;
         s.planets.iron.costDrones  = parsed.costDrones  ?? 85;
         s.planets.iron.costDroneAI = parsed.costDroneAI ?? 140;
@@ -2870,6 +3067,15 @@
       { const qb={date:'',list:[],weeklyDate:'',weeklyList:[],streak:0,lastStreakDate:''}; s.quests={...qb,...(s.quests||{})}; if(!Array.isArray(s.quests.list))s.quests.list=[]; if(!Array.isArray(s.quests.weeklyList))s.quests.weeklyList=[]; if(typeof s.quests.streak!=='number')s.quests.streak=0; }
       s.skills = Array.isArray(s.skills) ? s.skills : [];
       if(!s._stats) s._stats={};
+      migrateSaveState(s);
+      // Ensure all stat keys exist for old saves
+      const _defStats = {shots:0,crits:0,maxCombo:0,voidSurges:0,bioSurges:0,totalEarned:0,clickCredits:0,droneCredits:0,oreCredits:0,cargoSells:0,tradeDeals:0,stationUpgrades:0,minerOres:0,minersDeployed:0,smeltCount:0,sporeDustMined:0,myceliumMined:0,biolithMined:0};
+      for(const k of Object.keys(_defStats)){ if(!(k in s._stats)) s._stats[k]=_defStats[k]; }
+      // Ensure energy planets exist in state.planets
+      for(const pid of ["bio","dynamo","arc","storm"]){ if(!s.planets[pid]) s.planets[pid]=defaultPlanetState(pid); }
+      // Ensure prestigeCount covers all planets
+      s.prestigeCount = s.prestigeCount || {};
+      for(const pid of ["iron","vulcan","void","bio","dynamo","arc","storm"]){ if(!(pid in s.prestigeCount)) s.prestigeCount[pid]=0; }
       if(!s.unlockedAch) s.unlockedAch=[];
       if(!s.station) s.station={hangar:0,reactor:0,smelter:0,tradeDock:0};
       if(!s.planets.void) s.planets.void = defaultPlanetState("void");
@@ -2886,7 +3092,8 @@
       if(s.planets.bio && s.planets.bio.costLaser < 1000){
         s.planets.bio.costLaser    = 4000;
         s.planets.bio.costDrones   = 15000;
-        s.planets.bio.costDroneAI  = 28000;
+        s.planets.bio.costDroneSpeed = 20000;
+        s.planets.bio.costDroneYield = 20000;
         s.planets.bio.costProspect = 18000;
         s.planets.bio.costMiner    = 5400;
       }
@@ -2935,17 +3142,20 @@
       s.recentUnlocks = s.recentUnlocks.filter(x => x && x.id && x.ts).slice(-10);
 
       s.planets.iron.dronesLvl   = Math.max(0, Math.min(24, Math.floor(s.planets.iron.dronesLvl||0)));
-      s.planets.iron.droneAI     = Math.max(0, Math.min(50, Math.floor(s.planets.iron.droneAI||0)));
+      s.planets.iron.droneSpeedLvl = Math.max(0, Math.floor(s.planets.iron.droneSpeedLvl||0));
+      s.planets.iron.droneYieldLvl = Math.max(0, Math.floor(s.planets.iron.droneYieldLvl||0));
       s.planets.vulcan.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.vulcan.dronesLvl||0)));
-      s.planets.vulcan.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.vulcan.droneAI||0)));
+      s.planets.vulcan.droneSpeedLvl = Math.max(0, Math.floor(s.planets.vulcan.droneSpeedLvl||0));
+      s.planets.vulcan.droneYieldLvl = Math.max(0, Math.floor(s.planets.vulcan.droneYieldLvl||0));
       // Balance migration: reset upgrade costs if they're from old low-cost version
       if(s.planets.iron && s.planets.iron.costLaser < 80)
-        s.planets.iron = { ...defaultPlanetState("iron"), laserLvl:s.planets.iron.laserLvl||0, dronesLvl:s.planets.iron.dronesLvl||0, droneAI:s.planets.iron.droneAI||0, prospectLvl:s.planets.iron.prospectLvl||0 };
+        s.planets.iron = { ...defaultPlanetState("iron"), laserLvl:s.planets.iron.laserLvl||0, dronesLvl:s.planets.iron.dronesLvl||0, droneSpeedLvl:s.planets.iron.droneSpeedLvl||0, droneYieldLvl:s.planets.iron.droneYieldLvl||0, prospectLvl:s.planets.iron.prospectLvl||0 };
       if(s.planets.vulcan && s.planets.vulcan.costLaser < 350)
-        s.planets.vulcan = { ...defaultPlanetState("vulcan"), laserLvl:s.planets.vulcan.laserLvl||0, dronesLvl:s.planets.vulcan.dronesLvl||0, droneAI:s.planets.vulcan.droneAI||0, prospectLvl:s.planets.vulcan.prospectLvl||0 };
+        s.planets.vulcan = { ...defaultPlanetState("vulcan"), laserLvl:s.planets.vulcan.laserLvl||0, dronesLvl:s.planets.vulcan.dronesLvl||0, droneSpeedLvl:s.planets.vulcan.droneSpeedLvl||0, droneYieldLvl:s.planets.vulcan.droneYieldLvl||0, prospectLvl:s.planets.vulcan.prospectLvl||0 };
       if(!s.planets.void){ s.planets.void = defaultPlanetState('void'); }
       s.planets.void.dronesLvl = Math.max(0, Math.min(24, Math.floor(s.planets.void.dronesLvl||0)));
-      s.planets.void.droneAI   = Math.max(0, Math.min(50, Math.floor(s.planets.void.droneAI||0)));
+      s.planets.void.droneSpeedLvl = Math.max(0, Math.floor(s.planets.void.droneSpeedLvl||0));
+      s.planets.void.droneYieldLvl = Math.max(0, Math.floor(s.planets.void.droneYieldLvl||0));
 
       if(s.trades && Array.isArray(s.trades.offers)){
         s.trades.offers = s.trades.offers.map(of => of ? ({ used:false, ...of }) : of);
@@ -3006,10 +3216,10 @@
     const voidDrones   = state.planets?.void?.dronesLvl   || 0;
     const bioDrones    = state.planets?.bio?.dronesLvl    || 0;
 
-    btnIron.innerHTML   = `<span class="planetDot iron"></span>Iron Belt${ironDrones>0 ? ` <span style="color:#a8ccff;font-size:11px;">(${ironDrones}🛸)</span>` : ""}`;
-    btnVulcan.innerHTML = `<span class="planetDot vulcan"></span>Vulcan Core${vulcanDrones>0 ? ` <span style="color:#ffb060;font-size:11px;">(${vulcanDrones}🛸)</span>` : ""}`;
-    if(btnVoid) btnVoid.innerHTML = `<span class="planetDot void"></span>Void Expanse${voidDrones>0 ? ` <span style="color:#c084fc;font-size:11px;">(${voidDrones}🛸)</span>` : ""}`;
-    if(btnBio) btnBio.innerHTML = `<span class="planetDot bio"></span>Bio Sphere${bioDrones>0 ? ` <span style="color:#4ade80;font-size:11px;">(${bioDrones}🛸)</span>` : ""}`;
+    btnIron.innerHTML   = `<span class="planetDot iron"></span>🟤 Iron Belt${ironDrones>0 ? ` <span style="color:#a8ccff;font-size:11px;">(${ironDrones}🛸)</span>` : ""}`;
+    btnVulcan.innerHTML = `<span class="planetDot vulcan"></span>🌋 Vulcan Core${vulcanDrones>0 ? ` <span style="color:#ffb060;font-size:11px;">(${vulcanDrones}🛸)</span>` : ""}`;
+    if(btnVoid) btnVoid.innerHTML = `<span class="planetDot void"></span>🌌 Void Expanse${voidDrones>0 ? ` <span style="color:#c084fc;font-size:11px;">(${voidDrones}🛸)</span>` : ""}`;
+    if(btnBio) btnBio.innerHTML = `<span class="planetDot bio"></span>🌿 Bio Sphere${bioDrones>0 ? ` <span style="color:#4ade80;font-size:11px;">(${bioDrones}🛸)</span>` : ""}`;
 
     const isVoid = p === "void";
     btnIron.classList.toggle("active-iron", !isVulcan && !isVoid);
@@ -3034,6 +3244,32 @@
     asteroid.classList.toggle("planet-arc",     p === "arc");
     clickArea.classList.toggle("planet-storm",  p === "storm");
     asteroid.classList.toggle("planet-storm",   p === "storm");
+    // Show/hide nebula vs energy buttons based on current galaxy
+    const isEnergyGalaxy = (state.currentGalaxy || "nebula") === "energy";
+    const nebulaIds = ["Iron","Vulcan","Void","Bio"];
+    const energyIds = ["Dynamo","Arc","Storm"];
+    nebulaIds.forEach(n => { const b = el("btnPlanet"+n); if(b) b.style.display = isEnergyGalaxy ? "none" : ""; });
+    energyIds.forEach(n => { const b = el("btnPlanet"+n); if(b) b.style.display = isEnergyGalaxy ? "" : "none"; });
+    if(isEnergyGalaxy) {
+      const btnDynamo = el("btnPlanetDynamo");
+      const btnArc    = el("btnPlanetArc");
+      const btnStorm  = el("btnPlanetStorm");
+      if(btnDynamo) btnDynamo.classList.toggle("active-dynamo", p==="dynamo");
+      if(btnArc)    btnArc.classList.toggle("active-arc",       p==="arc");
+      if(btnStorm)  btnStorm.classList.toggle("active-storm",   p==="storm");
+    }
+    // Update planet focus strip
+    var tipEl = document.getElementById("planetFocusStrip");
+    if(tipEl){
+      var pd = PLANETS[p];
+      if(pd && pd.focusTip){
+        var fc = {clicking:"#f97316",drones:"#a78bfa",mining:"#34d399",balanced:"#60a5fa"}[pd.focus]||"rgba(255,255,255,.5)";
+        tipEl.innerHTML = "<span style=\"color:"+fc+";font-weight:800;\">"+(pd.focusIcon||"")+" "+(pd.focus||"").toUpperCase()+"</span> &nbsp;"+pd.focusTip;
+        tipEl.style.display="";
+      } else {
+        tipEl.style.display="none";
+      }
+    }
   }
 
   function switchPlanet(planetId){
@@ -3085,7 +3321,10 @@
     return `${m}:${String(r).padStart(2,"0")}`;
   }
 
-  function totalCargoUnits(){ return Object.values(state.cargo).reduce((a,b)=>a+b,0); }
+  function totalCargoUnits(){
+    const oreIds = new Set(ORES.map(o=>o.id));
+    return Object.entries(state.cargo).reduce((a,[k,b])=> oreIds.has(k) ? a+(+b||0) : a, 0);
+  }
 
   /* ---- Active / specific planet sub-state accessor ---- */
   function P(planetId){ return state.planets[planetId || state.currentPlanet]; }
@@ -3098,6 +3337,8 @@
     const o = ORES.find(x=>x.id===id);
     if(!o) return false;
     if(state.minerRank < o.unlockMR) return false;
+    // Always show if ore is physically in cargo (prevents phantom cargo count)
+    if((state.cargo[id]||0) > 0) return true;
     // Show ore if: planet was bought, or currently on that planet
     // Iron Belt ores always shown (no planet restriction)
     if(o.planet && o.planet !== "iron"){
@@ -3116,19 +3357,18 @@
 
   function dronePulsesPerSecondFor(p, mr){
     const base = 0.22;
-    const ai = (p.droneAI||0);
+    const lvl  = (p.droneSpeedLvl||0);
     const speedMult = 1 + rankBonus("droneSpeed", mr);
-    return Math.min(1.05, (base + ai*0.05) * speedMult);
+    return Math.min(1.5, (base + lvl * 0.06) * speedMult);
   }
   function droneCreditsPerPulseFor(p, planetId){
-    const base = Math.max(1, Math.floor((p.laserPower||1) * 0.65));
-    const ai = Math.floor((p.droneAI||0) / 3);
-    const mult      = PLANETS[planetId]?.creditMult || 1;
+    // Base yield independent of laserPower — grows with droneYieldLvl
+    const base = 10 + (p.droneYieldLvl||0) * 8;
+    const mult        = PLANETS[planetId]?.creditMult || 1;
     const droneMult   = PLANETS[planetId]?.droneMult  || 1;
     const droneRankMult = 1 + rankBonus("droneCredit");
-    return Math.round((base + ai) * mult * droneMult * droneRankMult);
+    return Math.round(base * mult * droneMult * droneRankMult);
   }
-
   function applyStatsPlanet(s, pid){
     const p = s.planets[pid];
     if(!p) return;
@@ -3210,25 +3450,47 @@
     if(iconHTML){ p.innerHTML = `${iconHTML}<span>${text}</span>`; }
     else p.textContent = text;
     clickArea.appendChild(p);
-    setTimeout(()=>p.remove(), 1000);
+    setTimeout(()=>{ if(p.parentNode) p.parentNode.removeChild(p); }, 950);
   }
 
-  function spawnDronePopAt(x, y, text, kind="credit", iconHTML=""){
-    const p = document.createElement("div");
-    p.className = `dronePop ${kind}`;
-    p.style.left = `${x}px`;
-    p.style.top  = `${y}px`;
-    p.style.setProperty("--dx", `${(Math.random()*24 - 12).toFixed(1)}px`);
-    p.style.setProperty("--dy", `${(-14 - Math.random()*10).toFixed(1)}px`);
-    p.innerHTML = `${iconHTML}${text}`;
-    stage.appendChild(p);
-    setTimeout(()=>p.remove(), 1150);
+  // Drone pop pool
+  const _dronePopPool = [];
+  const _DRONE_POP_SIZE = 40;
+  (function(){
+    for(let i=0;i<_DRONE_POP_SIZE;i++){
+      const p=document.createElement("div");
+      p.className="dronePop credit";
+      p.style.display="none";
+      stage.appendChild(p);
+      _dronePopPool.push({el:p,free:true});
+    }
+  })();
+  let _dronePoolIdx=0;
+  function spawnDronePopAt(x,y,text,kind="credit",iconHTML=""){
+    let slot=null;
+    for(let j=0;j<_DRONE_POP_SIZE;j++){
+      const s=_dronePopPool[(_dronePoolIdx+j)%_DRONE_POP_SIZE];
+      if(s.free){slot=s;_dronePoolIdx=(_dronePoolIdx+j+1)%_DRONE_POP_SIZE;break;}
+    }
+    if(!slot) return;
+    slot.free=false;
+    const p=slot.el;
+    p.className=`dronePop ${kind}`;
+    p.style.left=`${x}px`;
+    p.style.top=`${y}px`;
+    p.style.setProperty("--dx",`${(Math.random()*24-12).toFixed(1)}px`);
+    p.style.setProperty("--dy",`${(-14-Math.random()*10).toFixed(1)}px`);
+    p.innerHTML=`${iconHTML}${text}`;
+    p.style.display="";
+    p.style.animation="none";
+    void p.offsetWidth;
+    p.style.animation="";
+    setTimeout(()=>{p.style.display="none";slot.free=true;},1100);
   }
   function spawnDronePop(droneEl, text, kind="credit", iconHTML=""){
-    const stageRect = stage.getBoundingClientRect();
     const dRect = droneEl.getBoundingClientRect();
-    const x = (dRect.left - stageRect.left) + dRect.width/2;
-    const y = (dRect.top  - stageRect.top ) + dRect.height/2 - 16;
+    const x = (dRect.left - _stageRect.left) + dRect.width/2;
+    const y = (dRect.top  - _stageRect.top)  + dRect.height/2 - 16;
     spawnDronePopAt(x, y, text, kind, iconHTML);
   }
 
@@ -3251,23 +3513,47 @@
     }
   }
 
+  // ── Particle pool (avoids GC thrash from createElement/remove) ──
+  const _particlePool = [];
+  const _POOL_SIZE = 32;
+  (function initPool(){
+    for(let i=0;i<_POOL_SIZE;i++){
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.display = "none";
+      stage.appendChild(p);
+      _particlePool.push({el:p, free:true});
+    }
+  })();
+  let _poolIdx = 0;
   function spawnParticles(count=12, atX=null, atY=null){
     const rect = stage.getBoundingClientRect();
     const ox = atX ?? rect.width/2, oy = atY ?? rect.height/2;
     const palette = currentParticleColors();
-    for(let i=0;i<count;i++){
-      const p = document.createElement("div");
-      p.className = "particle";
+    const actual = Math.min(count, 10); // cap at 10 on mobile-friendly limit
+    for(let i=0;i<actual;i++){
+      // Round-robin the pool
+      let slot = null;
+      for(let j=0;j<_POOL_SIZE;j++){
+        const s = _particlePool[(_poolIdx+j) % _POOL_SIZE];
+        if(s.free){ slot = s; _poolIdx = (_poolIdx+j+1)%_POOL_SIZE; break; }
+      }
+      if(!slot) continue;
+      slot.free = false;
+      const p = slot.el;
       const col = palette[Math.floor(Math.random()*palette.length)];
       p.style.background = col;
       const ang = Math.random()*Math.PI*2;
-      const dist = 16 + Math.random()*48;
+      const dist = 16 + Math.random()*44;
       p.style.setProperty("--dx", (Math.cos(ang)*dist).toFixed(1)+"px");
       p.style.setProperty("--dy", (Math.sin(ang)*dist).toFixed(1)+"px");
       p.style.left = (ox + (Math.random()*6-3)) + "px";
       p.style.top  = (oy + (Math.random()*6-3)) + "px";
-      stage.appendChild(p);
-      setTimeout(()=>p.remove(), 650);
+      p.style.display = "";
+      p.style.animation = "none";
+      void p.offsetWidth; // reflow to restart animation
+      p.style.animation = "";
+      setTimeout(()=>{ p.style.display="none"; slot.free=true; }, 530);
     }
   }
 
@@ -3389,33 +3675,25 @@
   function animateDroneMining(droneEl, isRare=false){
     if(!droneEl) return;
     const skinId = droneEl.dataset.skin || "default";
-
-    const stageRect = stage.getBoundingClientRect();
+    // Use cached rects — no forced layout reads per pulse
     const dRect = droneEl.getBoundingClientRect();
-    const aRect = asteroid.getBoundingClientRect();
-
-    const xD = (dRect.left - stageRect.left) + dRect.width/2;
-    const yD = (dRect.top  - stageRect.top ) + dRect.height/2;
-    const xA = (aRect.left - stageRect.left) + aRect.width/2;
-    const yA = (aRect.top  - stageRect.top ) + aRect.height/2;
-
+    const xD = (dRect.left - _stageRect.left) + dRect.width/2;
+    const yD = (dRect.top  - _stageRect.top)  + dRect.height/2;
+    const xA = (_asteroidRect.left - _stageRect.left) + _asteroidRect.width/2;
+    const yA = (_asteroidRect.top  - _stageRect.top)  + _asteroidRect.height/2;
     droneEl.classList.add("aim");
     setTimeout(()=>{
       droneEl.classList.remove("aim");
       droneEl.classList.add("fire");
-
       fireDroneBeam(xD,yD,xA,yA, skinId);
       spawnImpactGlow(xA,yA);
-      spawnParticles(12, xA, yA);
+      spawnParticles(6, xA, yA);
       spawnOreShard(xA,yA, xD,yD, isRare);
-
-      asteroidWrap.classList.remove("shake");
-      void asteroidWrap.offsetWidth;
+      // No offsetWidth reflow — use animation class with CSS reset
       asteroidWrap.classList.add("shake");
-      setTimeout(()=>asteroidWrap.classList.remove("shake"), 240);
-
-      setTimeout(()=>droneEl.classList.remove("fire"), 210);
-    }, 90);
+      setTimeout(()=>asteroidWrap.classList.remove("shake"), 220);
+      setTimeout(()=>droneEl.classList.remove("fire"), 200);
+    }, 85);
   }
 
   function playDroneSpawnFX(droneEl){
@@ -3577,7 +3855,11 @@
     return candidates[0] || null;
   }
 
-  function freeSpace(){ return Math.max(0, state.cargoCap - totalCargoUnits()); }
+  let _freeSpaceCache = 0; let _freeSpaceFrame = -1;
+  function freeSpace(){
+    if(_tickFrame !== _freeSpaceFrame){ _freeSpaceCache = Math.max(0, state.cargoCap - totalCargoUnits()); _freeSpaceFrame = _tickFrame; }
+    return _freeSpaceCache;
+  }
 
   function autoSellToMakeRoom(neededUnits){
     const order = [...ORES].sort((a,b)=>a.value-b.value);
@@ -3621,7 +3903,7 @@
           setCargoDirtyAll();
         }else break;
       }
-      state.cargo[oreId] += 1;
+      state.cargo[oreId] = (state.cargo[oreId]||0) + 1;
       took += 1;
     }
     // Track bio ore stats for achievements
@@ -3683,7 +3965,8 @@
       }
     }
     if(total > 0){
-      addCredits(total);
+      const autoGained = addCredits(total);
+      if(state._stats) state._stats.oreCredits=(state._stats.oreCredits||0)+autoGained;
       setCargoDirtyAll();
     }
     return total;
@@ -3694,7 +3977,7 @@
     const gain = Math.round(amount * boostMult() * (1 + skillBonus("globalCreditMult")) * voidBonus);
     state.credits += gain;
     questProgressUpdate("earn", gain);
-    if(state._stats){state._stats.totalEarned=(state._stats.totalEarned||0)+gain;state._stats._cc=(state._stats._cc||0)+1;if(state._stats._cc%50===0)checkAchievements();}
+    if(state._stats){state._stats.totalEarned=(state._stats.totalEarned||0)+gain;state._stats._cc=(state._stats._cc||0)+1;if(state._stats._cc%5===0)checkAchievements();}
     return gain;
   }
 
@@ -3727,6 +4010,7 @@
 
     fireLaserFX(crit, clientX, clientY);
     const gained = addCredits(regolith);
+    if(state._stats) state._stats.clickCredits=(state._stats.clickCredits||0)+gained;
 
     // Combo indicator
     const comboTier = Math.floor(comboCount / 5);
@@ -4093,12 +4377,13 @@
 
           const credit = droneCreditsPerPulseFor(pp, pid);
           const gained = addCredits(credit);
+          if(state._stats) state._stats.droneCredits=(state._stats.droneCredits||0)+gained;
 
-          if(isActive && droneEl){
+          if(isActive && droneEl && _tickFrame % 2 === 0){
             spawnDronePop(droneEl, `+${fmt(gained)}c`, "credit", `<span class="ico">${ICONS.coin}</span>`);
           }
 
-          addMiningXP((0.65 + pp.droneAI*0.06) * planetXpMult() * (1 + skillBonus("xpMult")));
+          addMiningXP((0.65 + (pp.droneSpeedLvl||0)*0.06) * planetXpMult() * (1 + skillBonus("xpMult")));
 
           // Drones give credits only — no ore drops (miners handle that)
         }
@@ -4114,16 +4399,21 @@
         minerAccum[pid] += orePerSec * dt;
         while(minerAccum[pid] >= 1 && freeSpace() > 0){
           minerAccum[pid] -= 1;
-          // pick ore valid for this planet
-          const candidates = ORES.filter(o=>{
-            if(state.minerRank < o.unlockMR) return false;
-            if(o.planet && o.planet !== pid) return false;
-            return true;
-          });
+          // pick ore valid for this planet — cached by planet+MR
+          if(!_oreCache[pid]||_oreCacheMR[pid]!==state.minerRank){
+            _oreCacheMR[pid]=state.minerRank;
+            const cands=ORES.filter(o=>{
+              if(state.minerRank<o.unlockMR) return false;
+              if(o.planet&&o.planet!==pid) return false;
+              return true;
+            });
+            let tot=0; for(const o of cands) tot+=o.rarity;
+            _oreCache[pid]={cands,total:tot};
+          }
+          const {cands:candidates,total}=_oreCache[pid];
           if(candidates.length){
-            let total=0; for(const o of candidates) total+=o.rarity;
-            let roll=Math.random()*total, picked=candidates[0];
-            for(const o of candidates){ roll-=o.rarity; if(roll<=0){picked=o;break;} }
+            let roll=Math.random()*total,picked=candidates[0];
+            for(const o of candidates){roll-=o.rarity;if(roll<=0){picked=o;break;}}
             addCargo(picked.id,1);
             if(isActive) questProgressUpdate("mine_ore",1,picked.id);
             if(state._stats) state._stats.minerOres=(state._stats.minerOres||0)+1;
@@ -4398,21 +4688,20 @@
   function prestigeCostFor(planetId){
     const base  = PLANETS[planetId]?.prestigeBaseCost || 50000;
     const count = (state.prestigeCount?.[planetId] || 0);
-    return base * (count + 1);
+    // Exponential scaling — each reset costs 2.5× more, empty resets become very costly
+    return Math.floor(base * Math.pow(2.5, count));
   }
 
   function dustEarnedFor(planetId){
     const pp      = state.planets[planetId];
     const spent   = pp?.totalSpent || 0;
-    // Divisor per planet — lower = more dust per credit invested
+    // Divisor per planet — dust only from real investment
     const divisors = { iron:20000000, vulcan:40000000, void:120000000, bio:320000000, dynamo:800000000, arc:2000000000, storm:5000000000 };
-    const divisor  = divisors[planetId] || 2000;
+    const divisor  = divisors[planetId] || 20000000;
     const fromSpent = Math.floor(spent / divisor);
-    // Minimum guarantee scales with prestige count
-    const count   = state.prestigeCount?.[planetId] || 0;
-    const minimum = 1 + count * 2;  // tiny base if nothing invested
-    const base    = Math.max(minimum, fromSpent);
-    const mult    = 1 + prestigeBonus("dustMult") + rankBonus("dustMult");
+    // Flat minimum of 1 — no count-scaling exploit
+    const base = Math.max(1, fromSpent);
+    const mult = 1 + prestigeBonus("dustMult") + rankBonus("dustMult");
     return Math.floor(base * mult);
   }
 
@@ -5284,6 +5573,7 @@
     }
     if(total<=0) return toast("Nothing sellable (check Keep reserve).");
     const gained = addCredits(total);
+    if(state._stats) state._stats.oreCredits=(state._stats.oreCredits||0)+gained;
     toast(`Sold for +${fmt(gained)} credits`);
     setCargoDirtyAll();
     updateHUD();
@@ -5329,7 +5619,7 @@
       // Drone credits (always run, efficiency applies)
       const droneCredits = (pp.rps || 0) * capped * efficiency;
       totalCredits += droneCredits;
-      totalXP += (pp.dronesLvl||0) * (0.65 + (pp.droneAI||0)*0.06) * pXpMult * capped * efficiency;
+      totalXP += (pp.dronesLvl||0) * (0.65 + (pp.droneSpeedLvl||0)*0.06) * pXpMult * capped * efficiency;
 
       // Miner ores into cargo (pauses when full, efficiency applies)
       const minersActive = pp.minersDeployed || 0;
@@ -5435,19 +5725,30 @@
     updateHUD();
   }
 
-  function buyDroneAI(){
+  function buyDroneSpeed(){
     const p = P();
-    if(state.credits < p.costDroneAI) return toast("Not enough credits.");
-    p.totalSpent = (p.totalSpent||0) + p.costDroneAI;
-    state.credits -= p.costDroneAI;
-    p.droneAI += 1;
-    p.costDroneAI = Math.floor(p.costDroneAI * 1.65 + 200);
+    if(state.credits < p.costDroneSpeed) return;
+    p.totalSpent = (p.totalSpent||0) + p.costDroneSpeed;
+    state.credits -= p.costDroneSpeed;
+    p.droneSpeedLvl = (p.droneSpeedLvl||0) + 1;
+    p.costDroneSpeed = Math.floor(p.costDroneSpeed * 1.65 + 200);
     applyStats(state);
-    toast("Drone AI improved.");
-    pingCard("droneAI");
-    updateUpgradeTexts();
-    updateUpgradeAffordability();
-    updateHUD();
+    toast("Drone speed increased!");
+    pingCard("droneSpeed");
+    updateUpgradeTexts(); updateUpgradeAffordability(); updateHUD();
+  }
+
+  function buyDroneYield(){
+    const p = P();
+    if(state.credits < p.costDroneYield) return;
+    p.totalSpent = (p.totalSpent||0) + p.costDroneYield;
+    state.credits -= p.costDroneYield;
+    p.droneYieldLvl = (p.droneYieldLvl||0) + 1;
+    p.costDroneYield = Math.floor(p.costDroneYield * 1.65 + 200);
+    applyStats(state);
+    toast("Drone yield increased!");
+    pingCard("droneYield");
+    updateUpgradeTexts(); updateUpgradeAffordability(); updateHUD();
   }
 
   function buyProspect(){
@@ -5645,52 +5946,56 @@
       id: "hangar",
       name: "Hangar Bay",
       icon: "🛸",
-      desc: "Increases max Miners per planet by 1.",
+      desc: "Increases max Miners per planet by 1. Lv 9–12 requires Energy Cluster.",
+      galaxyLockLvl: 9,
       effect: s => {
         const lvl = s.station?.hangar||0;
         for(const pid of Object.keys(PLANETS)){
           if(s.planets[pid]) s.planets[pid].maxMiners = 2 + lvl;
         }
       },
-      maxLvl: 8,
-      cost: lvl => Math.floor(800 * Math.pow(2.2, lvl)),
-      costLabel: lvl => `${fmt(Math.floor(800*Math.pow(2.2,lvl)))}c`,
+      maxLvl: 12,
+      cost: lvl => lvl < 8 ? Math.floor(800*Math.pow(2.2,lvl)) : Math.floor(800*Math.pow(2.2,7)*Math.pow(3.5,lvl-7)),
+      costLabel: lvl => `${fmt(lvl<8?Math.floor(800*Math.pow(2.2,lvl)):Math.floor(800*Math.pow(2.2,7)*Math.pow(3.5,lvl-7)))}c`,
       statLabel: s => `Max miners/planet: ${2+(s.station?.hangar||0)}`,
     },
     {
       id: "reactor",
       name: "Fusion Reactor",
       icon: "⚡",
-      desc: "Boosts all Miner ore output by +25% per level.",
-      effect: ()=>{}, // applied in miner tick via state.station.reactor
-      maxLvl: 8,
-      cost: lvl => Math.floor(1200 * Math.pow(2.4, lvl)),
-      costLabel: lvl => `${fmt(Math.floor(1200*Math.pow(2.4,lvl)))}c`,
+      desc: "Boosts all Miner ore output by +25%/lv. Lv 9–12 requires Energy Cluster.",
+      galaxyLockLvl: 9,
+      effect: ()=>{},
+      maxLvl: 12,
+      cost: lvl => lvl < 8 ? Math.floor(1200*Math.pow(2.4,lvl)) : Math.floor(1200*Math.pow(2.4,7)*Math.pow(4.0,lvl-7)),
+      costLabel: lvl => `${fmt(lvl<8?Math.floor(1200*Math.pow(2.4,lvl)):Math.floor(1200*Math.pow(2.4,7)*Math.pow(4.0,lvl-7)))}c`,
       statLabel: s => `Miner output: ×${(1+(s.station?.reactor||0)*0.25).toFixed(2)}`,
     },
     {
       id: "smelter",
       name: "Ore Smelter",
       icon: "🔥",
-      desc: "Unlocks Smelting recipes. Each level adds more recipes.",
+      desc: "Unlocks Smelting recipes. Lv 6–8 unlocks Energy alloys (needs Energy Cluster).",
+      galaxyLockLvl: 6,
       effect: ()=>{},
-      maxLvl: 5,
-      cost: lvl => Math.floor(3000 * Math.pow(3, lvl)),
-      costLabel: lvl => `${fmt(Math.floor(3000*Math.pow(3,lvl)))}c`,
+      maxLvl: 8,
+      cost: lvl => lvl < 5 ? Math.floor(3000*Math.pow(3,lvl)) : Math.floor(3000*Math.pow(3,4)*Math.pow(5.0,lvl-4)),
+      costLabel: lvl => `${fmt(lvl<5?Math.floor(3000*Math.pow(3,lvl)):Math.floor(3000*Math.pow(3,4)*Math.pow(5.0,lvl-4)))}c`,
       statLabel: s => {
         const lvl=s.station?.smelter||0;
-        return lvl===0 ? "Locked — buy to unlock" : `Recipes unlocked: ${Math.min(SMELT_RECIPES.filter(r=>r.unlockSmelter<=lvl).length, SMELT_RECIPES.length)}`;
+        return lvl===0 ? "Locked — buy to unlock" : `Recipes unlocked: ${SMELT_RECIPES.filter(r=>r.unlockSmelter<=lvl).length} / ${SMELT_RECIPES.length}`;
       },
     },
     {
       id: "tradeDock",
       name: "Trade Dock",
       icon: "🤝",
-      desc: "More & better trade offers per rotation. Req. MR 6.",
+      desc: "More & better trade offers per rotation. Req. MR 6. Lv 6–8 needs Energy Cluster.",
+      galaxyLockLvl: 6,
       effect: ()=>{},
-      maxLvl: 5,
-      cost: lvl => Math.floor(2000 * Math.pow(2.8, lvl)),
-      costLabel: lvl => `${fmt(Math.floor(2000*Math.pow(2.8,lvl)))}c`,
+      maxLvl: 8,
+      cost: lvl => lvl < 5 ? Math.floor(2000*Math.pow(2.8,lvl)) : Math.floor(2000*Math.pow(2.8,4)*Math.pow(4.5,lvl-4)),
+      costLabel: lvl => `${fmt(lvl<5?Math.floor(2000*Math.pow(2.8,lvl)):Math.floor(2000*Math.pow(2.8,4)*Math.pow(4.5,lvl-4)))}c`,
       statLabel: s => {
         const lvl=s.station?.tradeDock||0;
         return `Trade offers: ${3+lvl} · Bonus: +${lvl*10}% value`;
@@ -5727,6 +6032,15 @@
     { id:"livingcrystal",name:"Living Crystal",   icon:"💚", unlockSmelter:5, duration:180,
       inputs:{biolith:4, biocore:1}, output:{id:"livingcrystal",count:1,value:35000},
       desc:"4 Biolith + 1 Bio Core → Living Crystal (35,000c)" },
+    { id:"voltitecore",  name:"Voltite Core",     icon:"⚡", unlockSmelter:6, duration:120,
+      inputs:{voltite:6, powerCell:4}, output:{id:"voltitecore", count:1, value:180000},
+      desc:"6 Voltite + 4 Power Cells → Voltite Core (180k c)" },
+    { id:"plasmabattery",name:"Plasma Battery",   icon:"🔋", unlockSmelter:7, duration:300,
+      inputs:{plasmaShard:4, hypercore:2}, output:{id:"plasmabattery",count:1,value:1200000},
+      desc:"4 Plasma Shards + 2 Hypercores → Plasma Battery (1.2M c)" },
+    { id:"stormforge",   name:"Storm Forge",      icon:"🌪️", unlockSmelter:8, duration:600,
+      inputs:{stormCrystal:3, thunderite:2, voidCrystal:1}, output:{id:"stormforge",count:1,value:8000000},
+      desc:"3 Storm Crystals + 2 Thunderite + 1 Void Crystal → Storm Forge (8M c)" },
   ];
 
   /* Smelt inventory: holds processed alloys (separate from ore cargo) */
@@ -5956,6 +6270,8 @@
     if(!mod) return;
     const lvl = state.station[moduleId]||0;
     if(lvl >= mod.maxLvl) return toast(`${mod.name} already maxed.`);
+    if(mod.galaxyLockLvl && (lvl+1) >= mod.galaxyLockLvl && !galaxyUnlocked("energy"))
+      return toast("⚡ Requires Energy Cluster galaxy unlock.");
     const cost = mod.cost(lvl);
     if(state.credits < cost) return toast("Not enough credits.");
     state.credits -= cost;
@@ -6016,19 +6332,30 @@
       next:()=>`Next: +${(dronePulsesPerSecondFor(P())*droneCreditsPerPulseFor(P(),state.currentPlanet)).toFixed(1)}/s`,
       buy:buyDrone
     },
-    { id:"droneAI", tab:"core", name:"Drone AI Uplink", icon:ICONS.ai,
-      desc:"Faster, more productive drones on this planet.",
-      hideBuy:false,
-      costText:()=>`${fmt(P().costDroneAI)} credits`,
-      canBuy:()=>state.credits >= P().costDroneAI,
+    { id:"droneSpeed", tab:"core", name:"Drone Afterburner", icon:"⚡",
+      desc:"Increases drone pulse rate — more shots per second.",
+      costText:()=>`${fmt(P().costDroneSpeed)} credits`,
+      canBuy:()=>state.credits >= P().costDroneSpeed,
       chips:()=>[
-        {text:`AI Level: ${P().droneAI}`},
-        {text:`${dronePulsesPerSecondFor(P()).toFixed(2)} pulses/s`,kind:"warn"},
-        {text:`${droneCreditsPerPulseFor(P(),state.currentPlanet)}c/pulse`,kind:"good"}
+        {text:`Speed Lv ${P().droneSpeedLvl||0}`},
+        {text:`${dronePulsesPerSecondFor(P(), state.minerRank).toFixed(2)} pulses/s`,kind:"warn"},
       ],
-      current:()=>`Drone speed + yield`,
-      next:()=>`Faster & stronger`,
-      buy:buyDroneAI
+      current:()=>`${dronePulsesPerSecondFor(P(), state.minerRank).toFixed(2)} pulses/s`,
+      next:()=>`+0.06 pulses/s`,
+      buy:buyDroneSpeed
+    },
+    {
+      id:"droneYield", tab:"core", name:"Drone Payload", icon:"💰",
+      desc:"Increases credits earned per drone pulse — independent of laser power.",
+      costText:()=>`${fmt(P().costDroneYield)} credits`,
+      canBuy:()=>state.credits >= P().costDroneYield,
+      chips:()=>[
+        {text:`Yield Lv ${P().droneYieldLvl||0}`},
+        {text:`${droneCreditsPerPulseFor(P(), state.currentPlanet)}c/pulse`,kind:"good"},
+      ],
+      current:()=>`${droneCreditsPerPulseFor(P(), state.currentPlanet)}c/pulse`,
+      next:()=>`+8 base yield/pulse`,
+      buy:buyDroneYield
     },
     { id:"prospect", tab:"core", name:"Prospecting Array", icon:ICONS.prospect,
       desc:"Boosts rare drop rates from Miners on this planet.",
@@ -6049,7 +6376,7 @@
       desc:"Ores mined by your Miners. Sell or smelt them.",
       hideBuy:true, costText:()=>`—`, canBuy:()=>true,
       chips:()=>[
-        {text:`${totalCargoUnits()}/${state.cargoCap} units`,kind:totalCargoUnits()>=state.cargoCap?"bad":"good"},
+        {text:(()=>{let u=0;for(const o of ORES){if(oreUnlocked(o.id))u+=state.cargo[o.id]||0;}return`${u}/${state.cargoCap} units`;})(),kind:totalCargoUnits()>=state.cargoCap?"bad":"good"},
         {text:state.autoSellOnFull?"Auto-sell: ON":"Auto-sell: OFF",kind:state.autoSellOnFull?"good":""}
       ],
       current:()=>`Miners fill this`,
@@ -6681,7 +7008,9 @@
   }
 
   function cargoPanelHTML(){
-    const units = totalCargoUnits();
+    // Count only visible ores for display consistency
+    let units = 0;
+    for(const o of ORES){ if(oreUnlocked(o.id)) units += state.cargo[o.id]||0; }
     const cap   = state.cargoCap;
     const pct   = Math.min(100, Math.round(units/cap*100));
     const cargoColor = pct>=100 ? "#ef4444" : pct>=80 ? "#f59e0b" : "#32d583";
@@ -6755,7 +7084,8 @@
       const maxed = lvl >= mod.maxLvl;
       const cost = mod.cost(lvl);
       const canAfford = state.credits >= cost;
-      const locked = mod.id==="tradeDock" && state.minerRank<6;
+      const needsEnergy = mod.galaxyLockLvl && lvl >= mod.galaxyLockLvl - 1 && !galaxyUnlocked("energy");
+      const locked = (mod.id==="tradeDock" && state.minerRank<6) || (mod.galaxyLockLvl && (lvl+1) >= mod.galaxyLockLvl && !galaxyUnlocked("energy"));
       html += `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
         <div style="font-size:26px;width:36px;text-align:center;">${mod.icon}</div>
@@ -6769,7 +7099,7 @@
         <button class="btn ${maxed||locked?"secondary":canAfford?"good":""}"
           style="padding:6px 12px;font-size:12px;white-space:nowrap;min-width:70px;"
           ${maxed||locked?"disabled":""} data-act="buyStation" data-module="${mod.id}">
-          ${locked?"MR 6":maxed?"Max ✓":mod.costLabel(lvl)}
+          ${locked?(mod.id==="tradeDock"?"MR 6":"⚡ Energy Cluster"):maxed?"Max ✓":mod.costLabel(lvl)}
         </button>
       </div>`;
     }
@@ -6784,8 +7114,13 @@
       const pp = state.planets[pid];
       if(!pp) continue;
 
-      // Unlock check: iron always available, others need planetsBought
-      const isUnlocked = pid === "iron" || !!(state.planetsBought?.[pid]);
+      // Unlock check: iron always, others via planetsBought or galaxy unlock
+      const energyPids = ["dynamo","arc","storm"];
+      const isEnergy = energyPids.includes(pid);
+      // Energy cluster: dynamo available when galaxy unlocked, arc/storm need planetsBought
+      const isUnlocked = pid === "iron"
+        || !!(state.planetsBought?.[pid])
+        || (pid === "dynamo" && galaxyUnlocked("energy"));
       if(!isUnlocked) continue;
       // Void requires MR 15
       if(pid === "void" && state.minerRank < 15) continue;
@@ -7325,19 +7660,26 @@
     });
   }
 
+  let _hud={};
+  function _ht(el,val){const s=String(val);if(el&&el.textContent!==s)el.textContent=s;}
   function updateHUD(){
-    creditsEl.textContent = fmt(state.credits);
+    _ht(creditsEl, fmt(state.credits));
     const ap = P();
-    rpsEl.textContent = ((ap.rps||0) * boostMult()).toFixed(1);
-    laserPowerEl.textContent = ap.laserPower || 1;
-
-    minerRankEl.textContent = state.minerRank;
-    xpNowEl.textContent = Math.floor(state.miningXP);
-    xpNeedEl.textContent = state.miningNeed;
-    if(stellarDustHudEl) stellarDustHudEl.textContent = fmt(state.stellarDust || 0);
-    xpBarEl.style.width = `${Math.min(100, (state.miningXP/state.miningNeed)*100)}%`;
-    rankPerkTextEl.textContent = currentRankBonusText();
-    nextUnlockTextEl.textContent = nextUnlockText();
+    _ht(rpsEl, ((ap.rps||0)*boostMult()).toFixed(1));
+    _ht(laserPowerEl, ap.laserPower||1);
+    _ht(minerRankEl, state.minerRank);
+    _ht(xpNowEl, Math.floor(state.miningXP));
+    _ht(xpNeedEl, state.miningNeed);
+    if(stellarDustHudEl) _ht(stellarDustHudEl, fmt(state.stellarDust||0));
+    const _xp=Math.min(100,(state.miningXP/state.miningNeed)*100);
+    if(_hud.xp!==_xp){_hud.xp=_xp;xpBarEl.style.width=`${_xp}%`;}
+    if(state.minerRank !== _lastMR){
+      _lastMR = state.minerRank;
+      _cachedRankText = currentRankBonusText();
+      _cachedNextText = nextUnlockText();
+    }
+    rankPerkTextEl.textContent = _cachedRankText;
+    nextUnlockTextEl.textContent = _cachedNextText;
 
     const active = now() < state.boostUntil;
 
@@ -7355,10 +7697,12 @@
     }
 
     // Miner status in HUD
-    const totalMiners=Object.values(state.planets).reduce((t,p)=>t+(p.minersDeployed||0),0);
-    const reactorBonus=1+(state.station?.reactor||0)*0.25;
-    const orePerMin=Object.entries(state.planets).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*reactorBonus,0);
-    if(minerHudEl) minerHudEl.textContent=totalMiners>0?`⛏ ${orePerMin.toFixed(1)} ore/min`:"⛏ No miners";
+    if(_tickFrame % 20 === 0){
+      _lastTotalMiners=Object.values(state.planets).reduce((t,p)=>t+(p.minersDeployed||0),0);
+      const _rb=1+(state.station?.reactor||0)*0.25;
+      _lastOreMin=Object.entries(state.planets).reduce((t,[,p])=>t+(p.minersDeployed||0)*(p.minerSpeed||1)*_rb,0);
+    }
+    if(minerHudEl) minerHudEl.textContent=_lastTotalMiners>0?`⛏ ${_lastOreMin.toFixed(1)} ore/min`:"⛏ No miners";
     if(cpsHudEl){
       const nowMs = performance.now();
       // Keep only clicks in the last 3 seconds
@@ -7370,12 +7714,14 @@
 
     // Cargo fill indicator
     if(cargoHudEl){
-      const u=totalCargoUnits(), cap=state.cargoCap, pct=Math.round(u/cap*100);
-      cargoHudEl.textContent=`📦 ${u}/${cap}`;
+      let _cu=0;for(const _o of ORES){if(oreUnlocked(_o.id))_cu+=state.cargo[_o.id]||0;}
+      const cap=state.cargoCap,pct=Math.round(_cu/cap*100);
+      cargoHudEl.textContent=`📦 ${_cu}/${cap}`;
       cargoHudEl.style.color=pct>=100?"#ef4444":pct>=80?"#f59e0b":"var(--muted)";
     }
 
-    applyPlanetVisuals();
+    // Throttle applyPlanetVisuals — planet state changes rarely
+    if(_tickFrame % 6 === 0) applyPlanetVisuals();
 
     // Bio Surge active indicator
     const surgeActive = state.currentPlanet === "bio" && Date.now() < (state._bioSurgeUntil||0);
@@ -7430,10 +7776,13 @@
         ["Alloys Smelted",       fmt(st.smeltCount||0),  "#f97316"],
       ])+
       section("💰","Economy",[
-        ["Total Credits Earned", fmt(st.totalEarned||0)+"c","#fbbf24"],
-        ["Cargo Hauls Sold",     fmt(st.cargoSells||0),  "#a5d4ff"],
-        ["Trade Deals",          fmt(st.tradeDeals||0),  "#a5d4ff"],
-        ["Station Upgrades",     fmt(st.stationUpgrades||0),"#c084fc"],
+        ["Total Credits Earned", fmt(st.totalEarned||0)+"c",   "#fbbf24"],
+        ["↳ from Laser Clicks",  fmt(st.clickCredits||0)+"c",  "#a5d4ff"],
+        ["↳ from Drones",        fmt(st.droneCredits||0)+"c",  "#c084fc"],
+        ["↳ from Ore Sales",     fmt(st.oreCredits||0)+"c",    "#34d399"],
+        ["Cargo Hauls Sold",     fmt(st.cargoSells||0),        "#a5d4ff"],
+        ["Trade Deals",          fmt(st.tradeDeals||0),        "#a5d4ff"],
+        ["Station Upgrades",     fmt(st.stationUpgrades||0),   "#c084fc"],
       ])+
       section("🚀","Progression",[
         ["Miner Rank",           `MR ${state.minerRank}`,       "#a5d4ff"],
@@ -7472,8 +7821,8 @@
     { id:"prestige5",       label:"🌟 Prestige V",          desc:"Prestige 5 times total",           check: s => Object.values(s.prestigeCount||{}).reduce((a,b)=>a+b,0) >= 5 },
     { id:"prestige10",      label:"💠 Prestige X",          desc:"Prestige 10 times total",          check: s => Object.values(s.prestigeCount||{}).reduce((a,b)=>a+b,0) >= 10 },
     { id:"smelt_master",    label:"⚗️ Alloy Architect",     desc:"Smelt 200 alloys total",           check: s => (s._stats?.smeltCount||0) >= 200 },
-    { id:"bio_surge_god",   label:"🌿 Bio Surge Deity",     desc:"Trigger Bio Surge 50 times",       check: s => (s._stats?.bioSurgeCount||0) >= 50 },
-    { id:"crit_god",        label:"💥 Crit God",            desc:"Land 500 critical hits",           check: s => (s._stats?.critCount||0) >= 500 },
+    { id:"bio_surge_god",   label:"🌿 Bio Surge Deity",     desc:"Trigger Bio Surge 50 times",       check: s => (s._stats?.bioSurges||0) >= 50 },
+    { id:"crit_god",        label:"💥 Crit God",            desc:"Land 500 critical hits",           check: s => (s._stats?.crits||0) >= 500 },
     { id:"drone_god",       label:"🤖 Drone Overlord",      desc:"Deploy 50 drones total",           check: s => Object.values(s.planets||{}).reduce((t,p)=>t+(p.dronesLvl||0),0) >= 50 },
     { id:"credit_god",      label:"💸 Credit God",          desc:"Earn 1 billion credits total",     check: s => (s._stats?.totalEarned||0) >= 1000000000 },
     { id:"void_god",        label:"🔮 Void God",            desc:"Reach Miner Rank 69",              check: s => (s.minerRank||1) >= 69 },
@@ -7758,6 +8107,7 @@
           const loadedAt = new Date(r.updated_at).toLocaleString();
           // Merge loaded state
           state = r.state;
+          migrateSaveState(state);
           applyStats(state);
           const offResult_cloud = simulateOffline();
           save();
@@ -7803,6 +8153,7 @@
   function renderAchievements(){
     const grid=document.getElementById("profileAchGrid");
     if(!grid||!state) return;
+    checkAchievements();
     const unlocked=state.unlockedAch||[];
     const dust=ACHIEVEMENTS.filter(a=>unlocked.includes(a.id)).reduce((t,a)=>t+(a.reward||0),0);
     const sub=document.getElementById("profileSub");
@@ -7845,6 +8196,17 @@
 
   let lastTick = now();
   let lastSecond = -1;
+  let _lastMR = -1; let _cachedRankText = ""; let _cachedNextText = "";
+  let _lastOreMin = 0; let _lastTotalMiners = 0;
+  let _oreCache = {}; let _oreCacheMR = {}; // per-planet ore candidate cache
+  // Cached rects — avoid getBoundingClientRect every drone pulse
+  let _stageRect = {left:0,top:0,width:300,height:300};
+  let _asteroidRect = {left:100,top:100,width:100,height:100};
+  let _lastRectUpdate = 0;
+  function _updateCachedRects(){
+    _stageRect = stage.getBoundingClientRect();
+    _asteroidRect = asteroid.getBoundingClientRect();
+  }
   let comboCount = 0;
   const clickTimestamps = []; // rolling window for CPS
 
@@ -7868,9 +8230,10 @@
 
       stepDroneCharges(dt);
       stepSmelting(dt);
-      tickSmeltUI();
+      if((state.smeltSlots||[]).some(s=>s)) tickSmeltUI();
 
       const sec = Math.floor(t/1000);
+      if(t - _lastRectUpdate > 500){ _updateCachedRects(); _lastRectUpdate = t; }
       if(sec !== lastSecond){
         lastSecond = sec;
         state.lastSeen = t;
@@ -7924,6 +8287,9 @@
   el("btnPlanetVulcan").addEventListener("click", ()=>switchPlanet("vulcan"));
   if(el("btnPlanetVoid")) el("btnPlanetVoid").addEventListener("click", ()=>switchPlanet("void"));
   if(el("btnPlanetBio"))  el("btnPlanetBio").addEventListener("click",  ()=>switchPlanet("bio"));
+  if(el("btnPlanetDynamo")) el("btnPlanetDynamo").addEventListener("click", ()=>switchPlanet("dynamo"));
+  if(el("btnPlanetArc"))    el("btnPlanetArc").addEventListener("click",    ()=>switchPlanet("arc"));
+  if(el("btnPlanetStorm"))  el("btnPlanetStorm").addEventListener("click",  ()=>switchPlanet("storm"));
   el("reset").addEventListener("click", ()=>{
     if(!confirm("Wirklich alles zurücksetzen?")) return;
     state = defaultState();
@@ -8048,6 +8414,7 @@
   state.planetsBought = state.planetsBought || {};
   if(!state.skills) state.skills = [];
   if(!state.currentGalaxy) state.currentGalaxy = 'nebula';
+  if(!state.unlockedGalaxies) state.unlockedGalaxies = {};
   if(!state.quests) state.quests = { date:"", list:[] };
 
   if(!state.trades || !state.trades.offers || state.trades.offers.length===0){
@@ -8108,7 +8475,11 @@
     var gal = GALAXIES[galaxyId];
     if(!gal) return false;
     if(gal.unlocked) return true;
-    return galaxyTotalResets("nebula") >= gal.unlockResets && state.credits >= gal.unlockCredits;
+    if(!state.unlockedGalaxies) state.unlockedGalaxies = {};
+    if(state.unlockedGalaxies[galaxyId]) return true;
+    var earned = galaxyTotalResets("nebula") >= gal.unlockResets && state.credits >= gal.unlockCredits;
+    if(earned) state.unlockedGalaxies[galaxyId] = true;
+    return earned;
   }
 
   function switchGalaxy(galaxyId){
@@ -8154,7 +8525,7 @@
       var bgCol     = "linear-gradient(135deg,"+col+".06),rgba(0,0,0,.2))";
       var opacity   = isUnlocked ? "" : "opacity:.6;filter:grayscale(.4);";
 
-      html += "<div style='border-radius:20px;border:1px solid "+borderCol+";background:"+bgCol+";padding:18px 20px;position:relative;overflow:hidden;"+opacity+"'>";
+      html += "<div style='border-radius:20px;border:1px solid "+borderCol+";background:"+bgCol+";padding:18px 20px;position:relative;"+opacity+"'>";
 
       if(isCurrent){
         html += "<div style='position:absolute;top:12px;right:14px;font-size:10px;font-weight:900;letter-spacing:1px;background:"+col+".18);border:1px solid "+col+".3);border-radius:6px;padding:2px 8px;color:"+col+".95);'>● ACTIVE</div>";
@@ -8166,22 +8537,35 @@
       html += "<div style='font-weight:900;font-size:16px;color:"+col+".95);'>"+gal.name+"</div>";
       html += "<div style='font-size:12px;color:rgba(255,255,255,.55);margin:4px 0 10px;'>"+gal.desc+"</div>";
 
-      // Planet chips
-      html += "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;'>";
+      // Planet chips — cards with focus + tip
+      html += "<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px;'>";
       for(var pi=0; pi<gal.planets.length; pi++){
         var pid = gal.planets[pi];
         var pd = PLANETS[pid] || GALAXY_PLANETS_DATA[pid] || {};
         var isHere = state.currentPlanet === pid && isCurrent;
-        var chipBg = isHere ? col+".18)" : "rgba(255,255,255,.06)";
-        var chipBorder = isHere ? col+".3)" : "rgba(255,255,255,.1)";
-        var chipColor = isHere ? col+".95)" : "rgba(255,255,255,.7)";
-        var cursor = isUnlocked ? "pointer" : "default";
+        var chipBg     = isHere ? col+".14)" : "rgba(255,255,255,.05)";
+        var chipBorder = isHere ? col+".4)"  : "rgba(255,255,255,.1)";
+        var chipColor  = isHere ? col+".95)" : "rgba(255,255,255,.75)";
+        var cursor     = isUnlocked ? "pointer" : "default";
         var dataPlanet = isUnlocked ? "data-goto-planet='"+pid+"' data-goto-galaxy='"+galId+"'" : "";
-        html += "<div style='padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;background:"+chipBg+";border:1px solid "+chipBorder+";cursor:"+cursor+";color:"+chipColor+";' "+dataPlanet+">"+(pd.icon||"🪨")+" "+(pd.name||pid)+(isHere?" ●":"")+"</div>";
+        var focusColor = {clicking:"#f97316",drones:"#a78bfa",mining:"#34d399",balanced:"#60a5fa"}[pd.focus] || "rgba(255,255,255,.5)";
+        var focusBadge = pd.focus
+          ? "<div style='margin-top:6px;display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:6px;background:"+focusColor+"22;border:1px solid "+focusColor+"44;color:"+focusColor+";'>"+(pd.focusIcon||"")+" "+(pd.focus.toUpperCase())+"</div>"
+          : "";
+        var tipText = pd.focusTip
+          ? "<div style='margin-top:5px;font-size:10px;color:rgba(255,255,255,.45);line-height:1.45;'>"+pd.focusTip+"</div>"
+          : "";
+        var activeDot = isHere
+          ? " <span style='display:inline-block;width:5px;height:5px;border-radius:50%;background:"+col+".9);margin-left:3px;vertical-align:middle;'></span>"
+          : "";
+        html += "<div style='padding:10px 12px;border-radius:14px;font-size:12px;font-weight:700;background:"+chipBg+";border:1px solid "+chipBorder+";cursor:"+cursor+";color:"+chipColor+";box-sizing:border-box;' "+dataPlanet+">"
+          + "<div style='display:flex;align-items:center;gap:5px;'>"+(pd.icon||"🪨")+" <span>"+(pd.name||pid)+"</span>"+activeDot+"</div>"
+          + focusBadge + tipText
+          + "</div>";
       }
       html += "</div>";
 
-      // Unlock requirements or travel button
+            // Unlock requirements or travel button
       if(!isUnlocked){
         var needResets = gal.unlockResets - nebulaResets;
         var needCredits = gal.unlockCredits - state.credits;
@@ -8619,6 +9003,7 @@
     if(tCos)   tCos.addEventListener("click",   ()=>showProfileTab("cos"));;
 
     document.getElementById("openProfileBtn").addEventListener("click", ()=>{
+      checkAchievements();
       showProfileTab("ach");
       document.getElementById("profileBackdrop").classList.add("show");
     });
