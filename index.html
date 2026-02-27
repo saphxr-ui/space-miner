@@ -1401,7 +1401,7 @@
     }
     .planetDot.dynamo{ background:radial-gradient(circle at 35% 30%, #fde68a, #d97706); box-shadow:0 0 5px rgba(251,191,36,.5); }
     .planetDot.arc{    background:radial-gradient(circle at 35% 30%, #7dd3fc, #0369a1); box-shadow:0 0 5px rgba(56,189,248,.5); }
-    .planetDot.storm{  background:radial-gradient(circle at 35% 30%, #d8b4fe, #7c3aed); box-shadow:0 0 5px rgba(168,85,247,.5); }
+    .planetDot.storm{  background:radial-gradient(circle at 35% 30%, #fef08a, #d97706); box-shadow:0 0 5px rgba(250,204,21,.6); }
 
     .planetBtn.active-bio{
       background:rgba(22,163,74,.16); border-color:rgba(134,239,172,.35);
@@ -1416,8 +1416,8 @@
       color:#bae6fd; box-shadow:0 0 12px rgba(56,189,248,.22);
     }
     .planetBtn.active-storm{
-      background:rgba(124,58,237,.16); border-color:rgba(168,85,247,.40);
-      color:#e9d5ff; box-shadow:0 0 12px rgba(168,85,247,.22);
+      background:rgba(180,120,0,.18); border-color:rgba(250,204,21,.42);
+      color:#fef08a; box-shadow:0 0 12px rgba(250,204,21,.24);
     }
     .planetBtn.active-void{
       background:rgba(124,58,237,.18);
@@ -1952,79 +1952,82 @@
       box-shadow: 0 0 0 3px rgba(125,211,252,.55), 0 0 0 7px rgba(56,189,248,.16), 0 8px 24px rgba(0,0,0,.45);
     }
 
-    /* ── STORM GIANT ── violent purple/violet gas giant ──────────────── */
+    /* ── STORM GIANT ── violent electric yellow/white lightning gas giant ── */
     .clickArea.planet-storm {
       background:
-        radial-gradient(240px 180px at 50% 48%, rgba(168,85,247,.32), rgba(109,40,217,.05)),
-        radial-gradient(400px 240px at 74% 8%,  rgba(192,132,252,.18), transparent 60%);
-      border-color: rgba(168,85,247,.24);
+        radial-gradient(240px 180px at 50% 48%, rgba(250,204,21,.22), rgba(202,138,4,.04)),
+        radial-gradient(400px 240px at 74% 8%,  rgba(253,224,71,.14), transparent 60%),
+        radial-gradient(300px 160px at 20% 80%,  rgba(234,179,8,.10), transparent 55%);
+      border-color: rgba(250,204,21,.28);
     }
     .clickArea.planet-storm::after {
       background: repeating-linear-gradient(
         0deg, transparent, transparent 3px,
-        rgba(168,85,247,.025) 3px, rgba(168,85,247,.025) 4px
+        rgba(250,204,21,.028) 3px, rgba(250,204,21,.028) 4px
       );
     }
     .asteroid.planet-storm {
       background:
-        radial-gradient(circle at 30% 28%, rgba(255,255,255,.85) 0 6px, transparent 8px),
-        radial-gradient(circle at 40% 35%, #f3e8ff 0%, #c084fc 18%, #7c3aed 44%, #4c1d95 74%, #1e0a40 100%);
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 8px, transparent 10px),
+        radial-gradient(circle at 62% 18%, rgba(255,255,255,.60) 0 4px, transparent 6px),
+        radial-gradient(circle at 40% 35%, #fffbeb 0%, #fcd34d 16%, #d97706 40%, #92400e 68%, #2d1401 100%);
       box-shadow:
-        0 0 0 12px rgba(168,85,247,.10),
+        0 0 0 14px rgba(250,204,21,.10),
         0 34px 70px rgba(0,0,0,.48),
-        0 0 70px rgba(168,85,247,.32),
-        inset 0 0 36px rgba(109,40,217,.28);
-      animation: stormAsteroidPulse 1.2s ease-in-out infinite alternate;
+        0 0 80px rgba(250,204,21,.40),
+        inset 0 0 40px rgba(217,119,6,.30);
+      animation: stormAsteroidPulse 0.9s ease-in-out infinite alternate;
     }
     .asteroid.planet-storm .cracks {
       background:
-        radial-gradient(70px 50px at 62% 40%, rgba(192,132,252,.40) 0%, transparent 68%),
-        radial-gradient(90px 65px at 32% 68%, rgba(168,85,247,.30) 0%, transparent 72%),
-        radial-gradient(50px 38px at 50% 52%, rgba(233,213,255,.22) 0%, transparent 62%);
+        radial-gradient(70px 50px at 62% 40%, rgba(253,224,71,.50) 0%, transparent 68%),
+        radial-gradient(90px 65px at 32% 68%, rgba(250,204,21,.38) 0%, transparent 72%),
+        radial-gradient(50px 38px at 50% 52%, rgba(255,255,200,.28) 0%, transparent 62%),
+        radial-gradient(30px 20px at 75% 72%, rgba(255,255,255,.35) 0%, transparent 55%);
       opacity:1;
     }
     @keyframes stormAsteroidPulse {
-      from { box-shadow: 0 0 0 12px rgba(168,85,247,.08), 0 34px 70px rgba(0,0,0,.48), 0 0 60px rgba(168,85,247,.28), inset 0 0 32px rgba(109,40,217,.24); }
-      to   { box-shadow: 0 0 0 16px rgba(168,85,247,.14), 0 34px 70px rgba(0,0,0,.48), 0 0 90px rgba(192,132,252,.50), inset 0 0 42px rgba(109,40,217,.38); }
+      from { box-shadow: 0 0 0 10px rgba(250,204,21,.08), 0 34px 70px rgba(0,0,0,.48), 0 0 65px rgba(250,204,21,.35), inset 0 0 35px rgba(217,119,6,.25); }
+      to   { box-shadow: 0 0 0 18px rgba(253,224,71,.16), 0 34px 70px rgba(0,0,0,.48), 0 0 110px rgba(250,204,21,.62), inset 0 0 50px rgba(217,119,6,.42); }
     }
     .ring.planet-storm {
-      border-color: rgba(168,85,247,.30);
-      filter: drop-shadow(0 0 18px rgba(168,85,247,.22));
+      border-color: rgba(250,204,21,.34);
+      filter: drop-shadow(0 0 20px rgba(250,204,21,.28));
     }
     /* Galaxy card */
     .storm-banner {
       background: linear-gradient(135deg,
-        rgba(35,10,70,.92) 0%,
-        rgba(60,15,110,.78) 40%,
-        rgba(18,5,45,.90) 100%);
+        rgba(55,30,0,.92) 0%,
+        rgba(80,45,0,.78) 40%,
+        rgba(30,15,0,.90) 100%);
     }
     .planetOrb.storm-orb {
       background: radial-gradient(circle at 35% 30%,
-        #faf5ff 0%, #c084fc 18%, #7c3aed 46%, #4c1d95 78%, #1c0945 100%);
+        #fffde7 0%, #fcd34d 16%, #d97706 42%, #92400e 74%, #2d1401 100%);
       box-shadow:
-        0 0 0 2px rgba(168,85,247,.30),
+        0 0 0 2px rgba(250,204,21,.36),
         0 8px 24px rgba(0,0,0,.50),
-        0 0 44px rgba(168,85,247,.38);
-      animation: stormOrbPulse 1.8s ease-in-out infinite;
+        0 0 50px rgba(250,204,21,.44);
+      animation: stormOrbPulse 1.4s ease-in-out infinite;
     }
     .planetOrb.storm-orb::after {
       content:"";
       position:absolute; inset:0; border-radius:50%;
       background:
-        radial-gradient(circle at 28% 24%, rgba(255,255,255,.28) 0 18%, transparent 45%),
-        radial-gradient(ellipse at 64% 66%, rgba(168,85,247,.24), transparent 52%);
+        radial-gradient(circle at 28% 24%, rgba(255,255,255,.38) 0 20%, transparent 45%),
+        radial-gradient(ellipse at 64% 66%, rgba(250,204,21,.28), transparent 52%);
     }
     @keyframes stormOrbPulse {
-      0%,100%{ box-shadow:0 0 0 2px rgba(168,85,247,.30),0 8px 24px rgba(0,0,0,.50),0 0 44px rgba(168,85,247,.38); }
-      50%{     box-shadow:0 0 0 4px rgba(192,132,252,.55),0 8px 24px rgba(0,0,0,.50),0 0 80px rgba(168,85,247,.65); }
+      0%,100%{ box-shadow:0 0 0 2px rgba(250,204,21,.36),0 8px 24px rgba(0,0,0,.50),0 0 50px rgba(250,204,21,.44); }
+      50%{     box-shadow:0 0 0 5px rgba(253,224,71,.60),0 8px 24px rgba(0,0,0,.50),0 0 95px rgba(250,204,21,.75); }
     }
-    .planetCard.storm-card { border-color: rgba(168,85,247,.24); }
+    .planetCard.storm-card { border-color: rgba(250,204,21,.26); }
     .planetCard.storm-card.active-card {
-      border-color: rgba(192,132,252,.55);
-      box-shadow: 0 0 0 1px rgba(168,85,247,.20), 0 12px 32px rgba(168,85,247,.16);
+      border-color: rgba(253,224,71,.55);
+      box-shadow: 0 0 0 1px rgba(250,204,21,.20), 0 12px 32px rgba(250,204,21,.16);
     }
     .planetOrb.active-glow.storm-orb {
-      box-shadow: 0 0 0 3px rgba(192,132,252,.60), 0 0 0 8px rgba(168,85,247,.18), 0 8px 24px rgba(0,0,0,.50);
+      box-shadow: 0 0 0 3px rgba(253,224,71,.62), 0 0 0 8px rgba(250,204,21,.20), 0 8px 24px rgba(0,0,0,.50);
     }
 </style>
 </head>
@@ -8639,6 +8642,32 @@
   if(offResult && offResult.credits > 0){
     setTimeout(()=>showOfflineModal(offResult), 800);
   }
+
+
+  // ── Galaxy System ─────────────────────────────────────────────────────
+  var GALAXIES = {
+    nebula: {
+      id:"nebula", name:"Starter Nebula", icon:"🌌",
+      desc:"The birthplace of your mining empire.",
+      color:"rgba(43,212,255,",
+      planets:["iron","vulcan","void","bio"],
+      unlocked:true
+    },
+    energy: {
+      id:"energy", name:"Energy Cluster", icon:"⚡",
+      desc:"A system pulsing with raw electrical energy. Drone fleets dominate here.",
+      color:"rgba(250,204,21,",
+      planets:["dynamo","arc","storm"],
+      unlockResets:8,
+      unlockCredits:500000000
+    }
+  };
+
+  var GALAXY_PLANETS_DATA = {
+    dynamo:{ id:"dynamo", name:"Dynamo Prime",  icon:"⚡", galaxy:"energy" },
+    arc:   { id:"arc",    name:"Arc Station",   icon:"🔵", galaxy:"energy" },
+    storm: { id:"storm",  name:"Storm Giant",   icon:"🌪️", galaxy:"energy" }
+  };
 
 
   function galaxyTotalResets(galaxyId){
