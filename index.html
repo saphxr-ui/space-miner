@@ -1812,13 +1812,220 @@
     }
 
     /* ===== Energy Cluster Planet Visuals ===== */
-    .planet-dynamo .asteroid{ background: radial-gradient(circle at 35% 32%, #fde68a, #d97706 50%, #78350f 85%); box-shadow: 0 0 40px rgba(250,204,21,.6), 0 0 80px rgba(250,204,21,.2); }
-    .planet-dynamo{ background: radial-gradient(300px 200px at 50% 40%, rgba(250,204,21,.12), rgba(217,119,6,.04)), #0a0d1a; }
-    .planet-arc .asteroid{ background: radial-gradient(circle at 35% 32%, #bae6fd, #0284c7 50%, #0c4a6e 85%); box-shadow: 0 0 40px rgba(56,189,248,.6), 0 0 80px rgba(56,189,248,.2); }
-    .planet-arc{ background: radial-gradient(300px 200px at 50% 40%, rgba(56,189,248,.12), rgba(2,132,199,.04)), #0a0d1a; }
-    .planet-storm .asteroid{ background: radial-gradient(circle at 35% 32%, #fef08a, #ca8a04 50%, #422006 85%); box-shadow: 0 0 50px rgba(250,204,21,.75), 0 0 100px rgba(234,179,8,.3); animation: stormPulse 0.8s ease-in-out infinite alternate; }
-    @keyframes stormPulse { from{ box-shadow: 0 0 50px rgba(250,204,21,.6), 0 0 90px rgba(234,179,8,.25); } to{ box-shadow: 0 0 70px rgba(250,204,21,.9), 0 0 130px rgba(234,179,8,.45); } }
-    .planet-storm{ background: radial-gradient(300px 200px at 50% 40%, rgba(250,204,21,.15), rgba(202,138,4,.06)), #0a0d1a; }
+
+    /* ── DYNAMO PRIME ── gold/amber electrical planet ─────────────────── */
+    .clickArea.planet-dynamo {
+      background:
+        radial-gradient(220px 170px at 52% 46%, rgba(251,191,36,.30), rgba(217,119,6,.04)),
+        radial-gradient(380px 220px at 72% 9%,  rgba(253,224,71,.16), transparent 60%);
+      border-color: rgba(251,191,36,.22);
+    }
+    .clickArea.planet-dynamo::after {
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(251,191,36,.022) 3px, rgba(251,191,36,.022) 4px
+      );
+    }
+    .asteroid.planet-dynamo {
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.88) 0 7px, transparent 9px),
+        radial-gradient(circle at 40% 35%, #fde68a 0%, #d97706 22%, #92400e 52%, #451a03 80%, #1c0a01 100%);
+      box-shadow:
+        0 0 0 10px rgba(251,191,36,.10),
+        0 34px 70px rgba(0,0,0,.42),
+        0 0 60px rgba(251,191,36,.18);
+    }
+    .asteroid.planet-dynamo .cracks {
+      background:
+        radial-gradient(60px 40px at 65% 42%, rgba(253,224,71,.38) 0%, transparent 70%),
+        radial-gradient(80px 60px at 35% 65%, rgba(251,191,36,.28) 0%, transparent 72%),
+        radial-gradient(40px 30px at 50% 50%, rgba(255,255,180,.20) 0%, transparent 65%);
+      opacity:1;
+    }
+    .ring.planet-dynamo {
+      border-color: rgba(251,191,36,.26);
+      filter: drop-shadow(0 0 14px rgba(251,191,36,.18));
+    }
+    /* Galaxy card */
+    .dynamo-banner {
+      background: linear-gradient(135deg,
+        rgba(92,55,0,.90) 0%,
+        rgba(60,35,0,.75) 40%,
+        rgba(28,14,0,.88) 100%);
+    }
+    .planetOrb.dynamo-orb {
+      background: radial-gradient(circle at 35% 30%,
+        #fef9c3 0%, #fbbf24 22%, #d97706 52%, #78350f 82%, #2d1301 100%);
+      box-shadow:
+        0 0 0 2px rgba(251,191,36,.28),
+        0 8px 24px rgba(0,0,0,.45),
+        0 0 36px rgba(251,191,36,.30);
+      animation: dynamoOrbPulse 2.8s ease-in-out infinite;
+    }
+    .planetOrb.dynamo-orb::after {
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,220,.30) 0 18%, transparent 45%),
+        radial-gradient(ellipse at 62% 68%, rgba(251,191,36,.22), transparent 55%);
+    }
+    @keyframes dynamoOrbPulse {
+      0%,100%{ box-shadow:0 0 0 2px rgba(251,191,36,.28),0 8px 24px rgba(0,0,0,.45),0 0 36px rgba(251,191,36,.30); }
+      50%{     box-shadow:0 0 0 3px rgba(253,224,71,.50),0 8px 24px rgba(0,0,0,.45),0 0 64px rgba(251,191,36,.55); }
+    }
+    .planetCard.dynamo-card { border-color: rgba(251,191,36,.22); }
+    .planetCard.dynamo-card.active-card {
+      border-color: rgba(253,224,71,.50);
+      box-shadow: 0 0 0 1px rgba(251,191,36,.18), 0 12px 32px rgba(251,191,36,.14);
+    }
+    .planetOrb.active-glow.dynamo-orb {
+      box-shadow: 0 0 0 3px rgba(253,224,71,.55), 0 0 0 7px rgba(251,191,36,.16), 0 8px 24px rgba(0,0,0,.45);
+    }
+
+    /* ── ARC STATION ── icy blue/electric mining platform ────────────── */
+    .clickArea.planet-arc {
+      background:
+        radial-gradient(220px 170px at 52% 46%, rgba(56,189,248,.26), rgba(2,132,199,.04)),
+        radial-gradient(380px 220px at 68% 10%,  rgba(125,211,252,.14), transparent 60%);
+      border-color: rgba(56,189,248,.22);
+    }
+    .clickArea.planet-arc::after {
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(56,189,248,.022) 3px, rgba(56,189,248,.022) 4px
+      );
+    }
+    .asteroid.planet-arc {
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.92) 0 7px, transparent 9px),
+        radial-gradient(circle at 40% 35%, #e0f2fe 0%, #38bdf8 20%, #0284c7 48%, #075985 76%, #0c2d48 100%);
+      box-shadow:
+        0 0 0 10px rgba(56,189,248,.10),
+        0 34px 70px rgba(0,0,0,.42),
+        0 0 55px rgba(56,189,248,.22),
+        inset 0 0 28px rgba(14,116,144,.20);
+    }
+    .asteroid.planet-arc .cracks {
+      background:
+        radial-gradient(60px 40px at 65% 42%, rgba(125,211,252,.34) 0%, transparent 70%),
+        radial-gradient(80px 60px at 35% 65%, rgba(56,189,248,.24) 0%, transparent 72%),
+        radial-gradient(40px 30px at 50% 50%, rgba(224,242,254,.18) 0%, transparent 65%);
+      opacity:1;
+    }
+    .ring.planet-arc {
+      border-color: rgba(56,189,248,.28);
+      filter: drop-shadow(0 0 16px rgba(56,189,248,.20));
+    }
+    /* Galaxy card */
+    .arc-banner {
+      background: linear-gradient(135deg,
+        rgba(5,30,55,.90) 0%,
+        rgba(7,55,85,.75) 40%,
+        rgba(2,20,40,.88) 100%);
+    }
+    .planetOrb.arc-orb {
+      background: radial-gradient(circle at 35% 30%,
+        #f0f9ff 0%, #7dd3fc 20%, #0284c7 50%, #0c4a6e 80%, #042130 100%);
+      box-shadow:
+        0 0 0 2px rgba(56,189,248,.28),
+        0 8px 24px rgba(0,0,0,.45),
+        0 0 38px rgba(56,189,248,.32);
+      animation: arcOrbPulse 3.5s ease-in-out infinite;
+    }
+    .planetOrb.arc-orb::after {
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      background:
+        radial-gradient(circle at 28% 24%, rgba(255,255,255,.32) 0 18%, transparent 45%),
+        radial-gradient(ellipse at 58% 70%, rgba(56,189,248,.20), transparent 55%);
+    }
+    @keyframes arcOrbPulse {
+      0%,100%{ box-shadow:0 0 0 2px rgba(56,189,248,.28),0 8px 24px rgba(0,0,0,.45),0 0 38px rgba(56,189,248,.32); }
+      50%{     box-shadow:0 0 0 3px rgba(125,211,252,.50),0 8px 24px rgba(0,0,0,.45),0 0 68px rgba(56,189,248,.58); }
+    }
+    .planetCard.arc-card { border-color: rgba(56,189,248,.22); }
+    .planetCard.arc-card.active-card {
+      border-color: rgba(125,211,252,.50);
+      box-shadow: 0 0 0 1px rgba(56,189,248,.16), 0 12px 32px rgba(56,189,248,.14);
+    }
+    .planetOrb.active-glow.arc-orb {
+      box-shadow: 0 0 0 3px rgba(125,211,252,.55), 0 0 0 7px rgba(56,189,248,.16), 0 8px 24px rgba(0,0,0,.45);
+    }
+
+    /* ── STORM GIANT ── violent purple/violet gas giant ──────────────── */
+    .clickArea.planet-storm {
+      background:
+        radial-gradient(240px 180px at 50% 48%, rgba(168,85,247,.32), rgba(109,40,217,.05)),
+        radial-gradient(400px 240px at 74% 8%,  rgba(192,132,252,.18), transparent 60%);
+      border-color: rgba(168,85,247,.24);
+    }
+    .clickArea.planet-storm::after {
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(168,85,247,.025) 3px, rgba(168,85,247,.025) 4px
+      );
+    }
+    .asteroid.planet-storm {
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.85) 0 6px, transparent 8px),
+        radial-gradient(circle at 40% 35%, #f3e8ff 0%, #c084fc 18%, #7c3aed 44%, #4c1d95 74%, #1e0a40 100%);
+      box-shadow:
+        0 0 0 12px rgba(168,85,247,.10),
+        0 34px 70px rgba(0,0,0,.48),
+        0 0 70px rgba(168,85,247,.32),
+        inset 0 0 36px rgba(109,40,217,.28);
+      animation: stormAsteroidPulse 1.2s ease-in-out infinite alternate;
+    }
+    .asteroid.planet-storm .cracks {
+      background:
+        radial-gradient(70px 50px at 62% 40%, rgba(192,132,252,.40) 0%, transparent 68%),
+        radial-gradient(90px 65px at 32% 68%, rgba(168,85,247,.30) 0%, transparent 72%),
+        radial-gradient(50px 38px at 50% 52%, rgba(233,213,255,.22) 0%, transparent 62%);
+      opacity:1;
+    }
+    @keyframes stormAsteroidPulse {
+      from { box-shadow: 0 0 0 12px rgba(168,85,247,.08), 0 34px 70px rgba(0,0,0,.48), 0 0 60px rgba(168,85,247,.28), inset 0 0 32px rgba(109,40,217,.24); }
+      to   { box-shadow: 0 0 0 16px rgba(168,85,247,.14), 0 34px 70px rgba(0,0,0,.48), 0 0 90px rgba(192,132,252,.50), inset 0 0 42px rgba(109,40,217,.38); }
+    }
+    .ring.planet-storm {
+      border-color: rgba(168,85,247,.30);
+      filter: drop-shadow(0 0 18px rgba(168,85,247,.22));
+    }
+    /* Galaxy card */
+    .storm-banner {
+      background: linear-gradient(135deg,
+        rgba(35,10,70,.92) 0%,
+        rgba(60,15,110,.78) 40%,
+        rgba(18,5,45,.90) 100%);
+    }
+    .planetOrb.storm-orb {
+      background: radial-gradient(circle at 35% 30%,
+        #faf5ff 0%, #c084fc 18%, #7c3aed 46%, #4c1d95 78%, #1c0945 100%);
+      box-shadow:
+        0 0 0 2px rgba(168,85,247,.30),
+        0 8px 24px rgba(0,0,0,.50),
+        0 0 44px rgba(168,85,247,.38);
+      animation: stormOrbPulse 1.8s ease-in-out infinite;
+    }
+    .planetOrb.storm-orb::after {
+      content:"";
+      position:absolute; inset:0; border-radius:50%;
+      background:
+        radial-gradient(circle at 28% 24%, rgba(255,255,255,.28) 0 18%, transparent 45%),
+        radial-gradient(ellipse at 64% 66%, rgba(168,85,247,.24), transparent 52%);
+    }
+    @keyframes stormOrbPulse {
+      0%,100%{ box-shadow:0 0 0 2px rgba(168,85,247,.30),0 8px 24px rgba(0,0,0,.50),0 0 44px rgba(168,85,247,.38); }
+      50%{     box-shadow:0 0 0 4px rgba(192,132,252,.55),0 8px 24px rgba(0,0,0,.50),0 0 80px rgba(168,85,247,.65); }
+    }
+    .planetCard.storm-card { border-color: rgba(168,85,247,.24); }
+    .planetCard.storm-card.active-card {
+      border-color: rgba(192,132,252,.55);
+      box-shadow: 0 0 0 1px rgba(168,85,247,.20), 0 12px 32px rgba(168,85,247,.16);
+    }
+    .planetOrb.active-glow.storm-orb {
+      box-shadow: 0 0 0 3px rgba(192,132,252,.60), 0 0 0 8px rgba(168,85,247,.18), 0 8px 24px rgba(0,0,0,.50);
+    }
 </style>
 </head>
 <body>
@@ -5045,6 +5252,39 @@
         { label:"XP ×2.2",        kind:"good" },
         { label:"Bio Surge: 6%",  kind:"warn" },
         { label:"Exclusive ores", kind:"ore" },
+      ]
+    },
+    dynamo: {
+      orb:"dynamo-orb", banner:"dynamo-banner",
+      subtitle:"Electrical storms supercharge your drones 7×. Clicks suppressed.",
+      ores:["staticDust","voltCrystal","arcGlass"],
+      stats:[
+        { label:"Drones ×7.0",        kind:"good" },
+        { label:"XP ×1.5",            kind:"good" },
+        { label:"Clicks ×0.8",        kind:"warn" },
+        { label:"Exclusive ores",     kind:"ore"  },
+      ]
+    },
+    arc: {
+      orb:"arc-orb", banner:"arc-banner",
+      subtitle:"Perfect mining — miners run 10×. EM fields jam drones.",
+      ores:["ionDust","arcCrystal","plasmaCore"],
+      stats:[
+        { label:"Miners ×10.0",       kind:"good" },
+        { label:"XP ×1.5",            kind:"good" },
+        { label:"Drones ×0.3",        kind:"warn" },
+        { label:"Exclusive ores",     kind:"ore"  },
+      ]
+    },
+    storm: {
+      orb:"storm-orb", banner:"storm-banner",
+      subtitle:"Storm energy gives 20× credits per click. Extreme crits.",
+      ores:["ionDust","stormCrystal","thunderite"],
+      stats:[
+        { label:"Clicks ×20",         kind:"good" },
+        { label:"Crits +35% / +3.0×", kind:"good" },
+        { label:"XP ×3.0",            kind:"good" },
+        { label:"Exclusive ores",     kind:"ore"  },
       ]
     },
     future: {
